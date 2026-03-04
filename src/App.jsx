@@ -481,6 +481,24 @@ export default function App() {
         setReceivedEmojis([])
       }
 
+      // Host ended game — send everyone home
+      if (data.status === "ended") {
+        setNickname(""); setTeam(""); setScreen("home"); setGameMode("sameroom")
+        setRounds(3); setCurrentRound(1); setScores({ "Team 1": 0, "Team 2": 0, "Team 3": 0 })
+        setJoinCode(""); setSearch(""); setSentEmojis([]); setTimer(60)
+        setTimerActive(false); setCountdown(null); setReceivedEmojis([])
+        setGuess(""); setWrongGuesses([]); setCorrect(false)
+        setGuesserTimer(60); setGuesserActive(false)
+        setCategory(""); setCurrentTopic(""); setRoomCode(""); setRole("")
+        setIsHost(false); setPlayers({}); setTeammate("")
+      }
+      if (data.status !== "nextround") {
+        if (data.wrongGuesses) {
+          setWrongGuesses(data.wrongGuesses)
+        } else {
+          setWrongGuesses([])
+        }
+      }
       // Countdown triggered by host
       if (data.status === "countdown") {
         setCountdown(0)
@@ -513,13 +531,15 @@ export default function App() {
       if (data.status === "nextround") {
         const newRound = data.currentRound || 1
         const myRole = data.roles?.[nickname] || "guesser"
+        const myTeam = data.players?.[nickname]?.team || ""
         const myTeammate = Object.entries(data.players || {}).find(
-          ([n, p]) => n !== nickname && p.team === data.players?.[nickname]?.team
+          ([n, p]) => n !== nickname && p.team === myTeam
         )?.[0] || ""
         setCurrentTopic(data.topic || "")
         setCurrentRound(newRound)
         setScores(data.scores || { "Team 1": 0, "Team 2": 0, "Team 3": 0 })
         setRole(myRole)
+        setTeam(myTeam)
         setTeammate(myTeammate)
         setSentEmojis([])
         setReceivedEmojis([])
@@ -612,7 +632,10 @@ export default function App() {
     setShowResetConfirm(true)
   }
 
-  const confirmReset = () => {
+  const confirmReset = async () => {
+    if (roomCode) {
+      await update(ref(db, `rooms/${roomCode}`), { status: "ended" })
+    }
     setNickname(""); setTeam(""); setScreen("home"); setGameMode("sameroom")
     setRounds(3); setCurrentRound(1); setScores({ "Team 1": 0, "Team 2": 0, "Team 3": 0 })
     setJoinCode(""); setSearch(""); setSentEmojis([]); setTimer(60)
@@ -712,6 +735,7 @@ export default function App() {
       roles: newRoles,
       emojis: null,
       correct: false,
+      wrongGuesses: null,
       scores
     })
   }
@@ -731,13 +755,15 @@ export default function App() {
     searchRef.current?.focus()
   }
 
-  const submitGuess = () => {
+  const submitGuess = async () => {
     if (!guess.trim()) return
     if (guess.trim().toLowerCase() === currentTopic.toLowerCase()) {
       endRound(true)
     } else {
-      setWrongGuesses(prev => [...prev, guess.trim()])
+      const newWrong = [...wrongGuesses, guess.trim()]
+      setWrongGuesses(newWrong)
       setGuess("")
+      await update(ref(db, `rooms/${roomCode}`), { wrongGuesses: newWrong })
     }
   }
 
@@ -848,6 +874,18 @@ export default function App() {
             </div>
           </>
         )}
+
+        {wrongGuesses.length > 0 && (
+          <>
+            <p style={{ fontSize: "13px", color: "#999", margin: "8px 0", letterSpacing: "1px" }}>WRONG GUESSES 😬</p>
+            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", justifyContent: "center", marginBottom: "16px" }}>
+              {wrongGuesses.map((g, i) => (
+                <span key={i} style={{ background: "#ffe0e0", color: "#cc0000", padding: "4px 10px", borderRadius: "20px", fontSize: "14px" }}>❌ {g}</span>
+              ))}
+            </div>
+          </>
+        )}
+
 
         <p style={{ fontSize: "13px", color: "#999", margin: "8px 0", letterSpacing: "1px" }}>SCORES</p>
         <div style={{ marginBottom: "20px" }}>
@@ -989,6 +1027,18 @@ export default function App() {
             : sentEmojis.map((e, i) => <span key={i} style={{ fontSize: "28px" }}>{e}</span>)
           }
         </div>
+
+        {timerActive && (
+          <div style={{ background: "#fff8f8", border: "2px solid #ffcccc", borderRadius: "12px", padding: "10px", marginBottom: "12px" }}>
+            <p style={{ margin: "0 0 6px", fontSize: "12px", color: "#cc0000", letterSpacing: "1px" }}>THEIR GUESSES SO FAR</p>
+            {wrongGuesses.length === 0
+              ? <p style={{ color: "#ccc", margin: 0, fontSize: "13px" }}>No guesses yet...</p>
+              : <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                  {wrongGuesses.map((g, i) => <span key={i} style={{ background: "#ffe0e0", color: "#cc0000", padding: "4px 10px", borderRadius: "20px", fontSize: "14px" }}>❌ {g}</span>)}
+                </div>
+            }
+          </div>
+        )}
 
         <input
           ref={searchRef}
