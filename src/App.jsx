@@ -556,6 +556,10 @@ export default function App() {
       }
       // Countdown triggered by host
       if (data.status === "countdown") {
+        if (screenRef.current === "role") {
+          const isClue = role === "clue"
+          setScreen(isClue ? "cluegiver" : "guesser")
+        }
         setCountdown(0)
         let index = 0
         const interval = setInterval(() => {
@@ -617,7 +621,7 @@ export default function App() {
       }
 
       // Host started game — go to role screen
-      if (data.status === "playing" && screen === "waiting") {
+      if (data.status === "playing" && screenRef.current === "waiting") {
         const myRole = data.roles?.[nickname] || "guesser"
         const myTeam = data.players?.[nickname]?.team || ""
         const myTeammate = Object.entries(data.players || {}).find(
