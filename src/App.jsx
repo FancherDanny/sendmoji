@@ -510,6 +510,7 @@ export default function App() {
   const [guesserTimer, setGuesserTimer] = useState(60)
   const [guesserActive, setGuesserActive] = useState(false)
   const [teammate, setTeammate] = useState("")
+  const [readyPlayers, setReadyPlayers] = useState({})
 
   const searchRef = useRef(null)
   const screenRef = useRef(screen)
@@ -528,6 +529,13 @@ export default function App() {
       if (!data) return
 
       setPlayers(data.players || {})
+      if (data.ready) {
+        const readyCount = Object.keys(data.ready).length
+        const totalPlayers = Object.keys(data.players || {}).length
+        if (readyCount >= totalPlayers && isHost && screenRef.current === "cluegiver") {
+          // All players ready — notify host
+        }
+      }
 
       // Sync emojis to guesser in real time
       if (data.emojis) {
@@ -795,6 +803,7 @@ export default function App() {
       emojis: null,
       correct: false,
       wrongGuesses: null,
+      ready: null,
       scores
     })
   }
@@ -1063,9 +1072,9 @@ export default function App() {
           <div style={{ fontSize: "28px", fontWeight: "bold", color: timer <= 10 ? "red" : teamColor }}>⏱️ {timer}s</div>
         </div>
 
-        <div style={{ background: teamColor, color: "white", borderRadius: "12px", padding: "16px", textAlign: "center", margin: "16px 0" }}>
-          <p style={{ margin: 0, fontSize: "14px", opacity: 0.8 }}>YOUR TOPIC — SEND TO {teammate.toUpperCase() || "YOUR TEAMMATE"}</p>
-          <h1 style={{ margin: "8px 0 0", fontSize: "32px" }}>{currentTopic}</h1>
+        <div style={{ background: teamColor, color: "white", borderRadius: "12px", padding: "12px 16px", textAlign: "center", margin: "8px 0", position: "sticky", top: "0", zIndex: 9 }}>
+          <p style={{ margin: 0, fontSize: "12px", opacity: 0.8 }}>YOUR TOPIC</p>
+          <h1 style={{ margin: "4px 0 0", fontSize: "28px" }}>{currentTopic}</h1>
         </div>
 
         {countdown !== null && (
@@ -1075,9 +1084,14 @@ export default function App() {
         )}
 
         {!timerActive && countdown === null && (
-          <button onClick={startCountdown} style={{ width: "100%", padding: "14px", fontSize: "18px", borderRadius: "12px", background: teamColor, color: "white", border: "none", cursor: "pointer", marginBottom: "16px", fontWeight: "bold" }}>
-            Start Round ▶️
-          </button>
+          <>
+            {Object.keys(players).filter(n => n !== nickname).every(n => readyPlayers[n]) && Object.keys(players).length > 1 && (
+              <p style={{ textAlign: "center", color: "#00aa44", fontWeight: "bold", fontSize: "16px", margin: "0 0 8px" }}>✅ Everyone is ready!</p>
+            )}
+            <button onClick={startCountdown} style={{ width: "100%", padding: "14px", fontSize: "18px", borderRadius: "12px", background: teamColor, color: "white", border: "none", cursor: "pointer", marginBottom: "16px", fontWeight: "bold" }}>
+              Start Round ▶️
+            </button>
+          </>
         )}
 
         <div style={{ minHeight: "50px", background: "#f5f5f5", borderRadius: "12px", padding: "10px", marginBottom: "16px", display: "flex", flexWrap: "wrap", gap: "6px" }}>
