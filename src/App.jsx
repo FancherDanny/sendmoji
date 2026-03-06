@@ -555,7 +555,7 @@ export default function App() {
         }
       }
       // Countdown triggered by host
-      if (data.status === "countdown") {
+      if (data.status === "countdown" && countdown === null && !timerActive) {
         if (screenRef.current === "role") {
           const isClue = role === "clue"
           setScreen(isClue ? "cluegiver" : "guesser")
@@ -1106,17 +1106,18 @@ export default function App() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           disabled={!timerActive}
-          style={{ width: "100%", padding: "12px", fontSize: "16px", borderRadius: "12px", border: `2px solid ${teamColor}`, boxSizing: "border-box", marginBottom: "12px", background: timerActive ? "white" : "#f0f0f0", color: timerActive ? "black" : "#aaa" }}
+          style={{ width: "100%", padding: "12px", fontSize: "16px", borderRadius: "12px", border: `2px solid ${teamColor}`, boxSizing: "border-box", marginBottom: "12px", background: timerActive ? "white" : "#f0f0f0", color: timerActive ? "black" : "#aaa", position: "sticky", bottom: "8px", zIndex: 10 }}
         />
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center" }}>
+        {search.trim() !== "" && filteredEmojis.length === 0 && (
+          <p style={{ color: "#999", textAlign: "center" }}>No emojis found. Try another word.</p>
+        )}
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center", paddingBottom: "120px" }}>
           {filteredEmojis.map((e, i) => (
             <button key={i} onClick={() => sendEmoji(e.emoji)} style={{ fontSize: "40px", background: "none", border: "2px solid #eee", borderRadius: "12px", padding: "8px", cursor: "pointer" }}>{e.emoji}</button>
           ))}
         </div>
-        {search.trim() !== "" && filteredEmojis.length === 0 && (
-          <p style={{ color: "#999", textAlign: "center" }}>No emojis found. Try another word.</p>
-        )}
       </div>
     )
   }
