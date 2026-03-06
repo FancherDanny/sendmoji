@@ -370,7 +370,49 @@ const EMOJI_LIST = [
   { emoji: "🏳️", keywords: ["white flag", "surrender", "peace", "give up", "truce"] },
   { emoji: "🚩", keywords: ["red flag", "warning", "danger", "mark", "signal", "alert"] },
   { emoji: "🏁", keywords: ["checkered flag", "finish", "race", "win", "end", "formula one", "done"] },
-  { emoji: "🎌", keywords: ["japan", "flag", "crossed", "country", "asian", "tokyo", "red"] },
+{ emoji: "🎌", keywords: ["japan", "flag", "crossed", "country", "asian", "tokyo", "red"] },
+    // Communication & Gestures
+  { emoji: "🏠", keywords: ["house", "home", "building", "live", "inside", "shelter", "roof", "family"] },
+  { emoji: "🏡", keywords: ["house", "home", "garden", "cottage", "suburb", "cozy", "family", "yard"] },
+  { emoji: "👍", keywords: ["yes", "good", "approve", "agree", "like", "thumbs up", "ok", "correct"] },
+  { emoji: "👎", keywords: ["no", "bad", "disagree", "dislike", "thumbs down", "wrong", "reject", "boo"] },
+  { emoji: "✅", keywords: ["yes", "check", "correct", "done", "complete", "right", "confirm", "true"] },
+  { emoji: "❌", keywords: ["no", "wrong", "cancel", "false", "x", "stop", "delete", "incorrect", "not"] },
+  { emoji: "⬆️", keywords: ["up", "above", "rise", "increase", "north", "higher", "top", "climb"] },
+  { emoji: "⬇️", keywords: ["down", "below", "fall", "decrease", "south", "lower", "bottom", "drop"] },
+  { emoji: "➡️", keywords: ["right", "next", "forward", "east", "go", "direction", "arrow", "continue"] },
+  { emoji: "⬅️", keywords: ["left", "back", "west", "return", "arrow", "direction", "previous", "undo"] },
+  { emoji: "💬", keywords: ["talk", "speak", "say", "chat", "word", "message", "conversation", "text"] },
+  { emoji: "🗣️", keywords: ["speak", "talk", "loud", "voice", "announce", "shout", "say", "person"] },
+  { emoji: "👋", keywords: ["wave", "hello", "goodbye", "hi", "bye", "greet", "hand"] },
+  { emoji: "🤝", keywords: ["handshake", "deal", "agree", "meet", "partner", "shake", "business"] },
+  { emoji: "🙏", keywords: ["pray", "please", "thank", "hope", "wish", "beg", "grateful", "namaste"] },
+  { emoji: "😡", keywords: ["angry", "mad", "rage", "furious", "red", "upset", "anger", "hostile"] },
+  { emoji: "😤", keywords: ["frustrated", "annoyed", "huff", "steam", "proud", "determined", "nose"] },
+  { emoji: "😮", keywords: ["surprised", "shocked", "wow", "gasp", "open mouth", "amazed", "oh"] },
+  { emoji: "🤐", keywords: ["zip", "silent", "secret", "quiet", "mouth shut", "shush", "no talking"] },
+  { emoji: "😴", keywords: ["sleep", "tired", "dream", "night", "rest", "snore", "bed", "lazy", "boring"] },
+  { emoji: "🔊", keywords: ["loud", "sound", "volume", "speaker", "noise", "hear", "audio", "music"] },
+  { emoji: "🔇", keywords: ["mute", "silent", "quiet", "no sound", "off", "volume", "shush"] },
+  { emoji: "⏫", keywords: ["up", "fast forward", "increase", "rise", "level up", "higher", "boost"] },
+  { emoji: "⏬", keywords: ["down", "decrease", "drop", "lower", "fall", "sink", "reduce"] },
+  { emoji: "🔁", keywords: ["repeat", "loop", "again", "cycle", "redo", "replay", "circular"] },
+  { emoji: "⏹️", keywords: ["stop", "end", "halt", "finish", "square", "cancel", "cease"] },
+  { emoji: "▶️", keywords: ["play", "start", "go", "begin", "forward", "video", "run", "launch"] },
+  { emoji: "⏸️", keywords: ["pause", "wait", "stop", "hold", "break", "freeze", "rest"] },
+  { emoji: "🆕", keywords: ["new", "fresh", "latest", "recent", "update", "novel", "modern"] },
+  { emoji: "🆓", keywords: ["free", "no cost", "open", "liberty", "available", "gratis"] },
+  { emoji: "🔝", keywords: ["top", "best", "up", "highest", "number one", "above", "peak"] },
+  { emoji: "💯", keywords: ["perfect", "100", "yes", "correct", "excellent", "full", "complete", "real"] },
+  { emoji: "🚫", keywords: ["no", "not", "banned", "forbidden", "stop", "cancel", "prohibited", "never"] },
+  { emoji: "⛔", keywords: ["stop", "no", "forbidden", "blocked", "cancel", "do not", "halt", "red"] },
+  { emoji: "🆗", keywords: ["ok", "okay", "fine", "agree", "yes", "accepted", "alright"] },
+  { emoji: "🔃", keywords: ["refresh", "reload", "repeat", "cycle", "rotate", "sync", "redo"] },
+  { emoji: "↩️", keywords: ["back", "return", "undo", "reply", "go back", "reverse", "left"] },
+  { emoji: "🏘️", keywords: ["neighborhood", "houses", "village", "suburb", "town", "community", "homes"] },
+  { emoji: "🏗️", keywords: ["construction", "build", "crane", "work", "scaffold", "new", "develop"] },
+  { emoji: "🏢", keywords: ["office", "building", "work", "city", "corporate", "business", "tall"] },
+  { emoji: "🏦", keywords: ["bank", "money", "finance", "save", "rich", "vault", "institution"] },
 ]
 
 const RESET_MESSAGES = [
@@ -422,9 +464,9 @@ function assignRoles(players, round) {
 
 function Logo({ onTap }) {
   return (
-    <h1 onClick={onTap} style={{ cursor: "pointer", userSelect: "none", margin: "0 0 8px" }}>
-      📲 Sendmoji
-    </h1>
+    <div onClick={onTap} style={{ cursor: "pointer", userSelect: "none", margin: "0 0 8px", display: "flex", alignItems: "center", gap: "8px" }}>
+      <img src="/logo.png" alt="Sendmoji" style={{ height: "48px", width: "auto" }} />
+    </div>
   )
 }
 
@@ -459,7 +501,9 @@ export default function App() {
   const [teammate, setTeammate] = useState("")
 
   const searchRef = useRef(null)
-  const countdownWords = ["SEE", "SAY", "SEND!"]
+  const screenRef = useRef(screen)
+  useEffect(() => { screenRef.current = screen }, [screen])
+  const countdownWords = ["Ready", "Set", "GO!"]
   const teamColor = TEAM_COLORS[team] || "#999"
   const [codeCopied, setCodeCopied] = useState(false)
 
@@ -579,7 +623,7 @@ export default function App() {
       }
     })
     return () => unsub()
-  }, [roomCode, screen, nickname])
+  }, [roomCode, nickname])
 
   // Clue giver timer
   useEffect(() => {
@@ -1028,7 +1072,7 @@ export default function App() {
           }
         </div>
 
-        {timerActive && (
+        {timerActive && gameMode === "remote" && (
           <div style={{ background: "#fff8f8", border: "2px solid #ffcccc", borderRadius: "12px", padding: "10px", marginBottom: "12px" }}>
             <p style={{ margin: "0 0 6px", fontSize: "12px", color: "#cc0000", letterSpacing: "1px" }}>THEIR GUESSES SO FAR</p>
             {wrongGuesses.length === 0
@@ -1085,7 +1129,7 @@ export default function App() {
           I'm Ready ✊
         </button>
         <br /><br />
-        <span onClick={handleLogoTap} style={{ fontSize: "14px", opacity: 0.6, cursor: "pointer", textDecoration: "underline" }}>📲 Sendmoji</span>
+        <span onClick={handleLogoTap} style={{ fontSize: "14px", opacity: 0.6, cursor: "pointer", textDecoration: "underline" }}>🎯 GuessMoji</span>
       </div>
     )
   }
@@ -1146,7 +1190,7 @@ export default function App() {
   // HOME SCREEN
   return (
     <div style={{ textAlign: "center", marginTop: "80px", fontFamily: "sans-serif", padding: "20px" }}>
-      <h1>📲 Sendmoji</h1>
+      <h1>🎯 GuessMoji</h1>
       <p>Enter your nickname to start</p>
       <input
         type="text"
