@@ -433,8 +433,19 @@ const TEAM_COLORS = {
   "unassigned": "#999"
 }
 
+const ROOM_WORDS = [
+  "MANGO", "TIGER", "DISCO", "PIZZA", "NINJA", "LEMON", "PANDA", "COBRA",
+  "HIPPO", "SALSA", "GECKO", "BURRO", "OLIVE", "TANGO", "RHINO", "CACTUS",
+  "BACON", "SOLAR", "BISON", "CRANE", "DINGO", "EMBER", "FLINT", "GUAVA",
+  "HAZEL", "IGLOO", "JELLY", "KARMA", "LASER", "MAPLE", "NEON", "ORBIT",
+  "PIXEL", "QUAIL", "RAVEN", "STORM", "TULIP", "ULTRA", "VIPER", "WALTZ",
+  "XENON", "YACHT", "ZEBRA", "BLAZE", "CHESS", "DRIFT", "EPOCH", "FROST",
+  "GLOOM", "HYENA", "IVORY", "JOKER", "KNACK", "LUNAR", "MOOSE", "NOBLE",
+  "OZONE", "PLUTO", "QUIRK", "REBEL", "SNACK", "TROUT", "UMBRA", "VAPOR"
+]
+
 function generateRoomCode() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase()
+  return ROOM_WORDS[Math.floor(Math.random() * ROOM_WORDS.length)]
 }
 
 function getRandomTopic(category) {
@@ -708,7 +719,7 @@ export default function App() {
   }
 
   const joinGame = async () => {
-    if (joinCode.length !== 6) return
+    if (joinCode.length < 4) return
     onValue(ref(db, `rooms/${joinCode}`), async (snapshot) => {
       const data = snapshot.val()
       if (!data) { alert("Room not found!"); return }
@@ -1165,7 +1176,7 @@ export default function App() {
       <div style={{ textAlign: "center", marginTop: "100px", fontFamily: "sans-serif", padding: "20px" }}>
         <Logo onTap={handleLogoTap} />
         <p>Enter the room code:</p>
-        <input type="text" placeholder="Room code..." value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase())} maxLength={6} style={{ padding: "10px", fontSize: "32px", borderRadius: "8px", border: "2px solid #ff6600", textAlign: "center", letterSpacing: "6px", width: "100%", maxWidth: "260px", boxSizing: "border-box" }} />
+        <input type="text" placeholder="Room code..." value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase())} maxLength={8} style={{ padding: "10px", fontSize: "32px", borderRadius: "8px", border: "2px solid #ff6600", textAlign: "center", letterSpacing: "6px", width: "100%", maxWidth: "260px", boxSizing: "border-box" }} />
         <br /><br />
         <button onClick={() => setScreen("lobby")} style={{ padding: "10px 30px", fontSize: "16px", borderRadius: "8px", background: "#ccc", color: "white", border: "none", cursor: "pointer", margin: "5px" }}>← Back</button>
         <button onClick={joinGame} style={{ padding: "10px 30px", fontSize: "16px", borderRadius: "8px", background: "#ff6600", color: "white", border: "none", cursor: "pointer", margin: "5px" }}>Join →</button>
