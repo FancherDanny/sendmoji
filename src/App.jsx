@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.1.4"
+const VERSION = "v0.1.5"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -115,8 +115,15 @@ const EMOJI_LIST = [
   { emoji: "🪨", keywords: ["rock", "stone", "hard", "heavy", "solid", "mountain", "throw"] },
   { emoji: "🌑", keywords: ["dark", "night", "moon", "black", "shadow", "eclipse", "space"] },
   { emoji: "💧", keywords: ["drop", "water", "rain", "tear", "drip", "blue", "wet", "cry"] },
-  { emoji: "⚡", keywords: ["lightning", "electric", "power", "fast", "bolt", "thunder", "energy", "zeus"] },
+  { emoji: "⚡", keywords: ["lightning", "electric", "power", "fast", "quick", "speed", "bolt", "thunder", "energy", "zeus", "time"] },
   { emoji: "🌤️", keywords: ["partly cloudy", "sun", "cloud", "weather", "day", "sky", "nice"] },
+  { emoji: "⏱️", keywords: ["timer", "stopwatch", "time", "clock", "speed", "quick", "fast", "countdown", "race"] },
+  { emoji: "⏰", keywords: ["alarm", "clock", "time", "wake", "morning", "ring", "buzz", "countdown"] },
+  { emoji: "⌚", keywords: ["watch", "clock", "time", "wrist", "hour", "minute", "second", "tick"] },
+  { emoji: "🕐", keywords: ["clock", "time", "hour", "one", "schedule", "tick", "round"] },
+  { emoji: "📅", keywords: ["calendar", "date", "schedule", "time", "day", "month", "plan", "event"] },
+  { emoji: "⏳", keywords: ["hourglass", "time", "sand", "wait", "countdown", "slow", "patience", "running out"] },
+  { emoji: "🕰️", keywords: ["clock", "time", "antique", "hour", "minute", "old", "grandfather", "tick"] },
   { emoji: "🌧️", keywords: ["rain", "cloud", "wet", "storm", "pour", "umbrella", "grey"] },
   { emoji: "🌨️", keywords: ["snow", "cloud", "winter", "cold", "blizzard", "flake", "white"] },
   { emoji: "🌫️", keywords: ["fog", "mist", "cloud", "grey", "hazy", "mysterious", "smoke"] },
@@ -137,7 +144,7 @@ const EMOJI_LIST = [
   { emoji: "🦜", keywords: ["parrot", "bird", "talk", "colorful", "pirate", "tropical", "repeat"] },
   { emoji: "🐸", keywords: ["frog", "green", "jump", "pond", "swamp", "croak", "lily", "rain"] },
   { emoji: "🦓", keywords: ["zebra", "stripes", "africa", "black", "white", "horse", "pattern"] },
-  { emoji: "🐆", keywords: ["leopard", "cheetah", "spots", "fast", "africa", "jungle", "cat", "wild"] },
+  { emoji: "🐆", keywords: ["leopard", "cheetah", "spots", "fast", "quick", "speed", "africa", "jungle", "cat", "wild"] },
   { emoji: "🦒", keywords: ["giraffe", "tall", "neck", "africa", "spots", "long", "savanna"] },
   { emoji: "🦏", keywords: ["rhino", "horn", "africa", "tough", "heavy", "grey", "charge"] },
   { emoji: "🦛", keywords: ["hippo", "water", "africa", "big", "heavy", "mouth", "river"] },
@@ -163,7 +170,7 @@ const EMOJI_LIST = [
   { emoji: "🐠", keywords: ["fish", "tropical", "color", "swim", "ocean", "clown", "nemo"] },
   { emoji: "🐬", keywords: ["dolphin", "ocean", "smart", "jump", "swim", "friendly", "navy"] },
   { emoji: "🦭", keywords: ["seal", "arctic", "swim", "bark", "fish", "flippers", "beach"] },
-  { emoji: "🐇", keywords: ["rabbit", "hop", "easter", "carrot", "white", "ears", "fast", "bunny"] },
+  { emoji: "🐇", keywords: ["rabbit", "hop", "easter", "carrot", "white", "ears", "fast", "quick", "bunny", "speed"] },
   { emoji: "🐿️", keywords: ["squirrel", "nuts", "tree", "acorn", "bushy", "tail", "forest", "store"] },
   { emoji: "🦫", keywords: ["beaver", "dam", "wood", "canada", "teeth", "build", "river", "tail"] },
   { emoji: "🐓", keywords: ["rooster", "chicken", "farm", "crow", "morning", "wake", "feather"] },
@@ -237,7 +244,7 @@ const EMOJI_LIST = [
   { emoji: "🎃", keywords: ["pumpkin", "halloween", "jack", "lantern", "october", "carve", "orange"] },
   { emoji: "🧑‍🤝‍🧑", keywords: ["couple", "friends", "together", "pair", "people", "hold hands", "walk"] },
   { emoji: "👨‍👩‍👧‍👦", keywords: ["family", "parents", "kids", "children", "home", "together", "love"] },
-  { emoji: "🏃", keywords: ["run", "running", "fast", "sprint", "jog", "race", "exercise", "chase", "flee"] },
+  { emoji: "🏃", keywords: ["run", "running", "fast", "quick", "sprint", "jog", "race", "exercise", "chase", "flee", "speed"] },
   { emoji: "🚶", keywords: ["walk", "walking", "stroll", "person", "go", "slow", "wander", "hike"] },
   { emoji: "🧍", keywords: ["stand", "standing", "person", "wait", "still", "upright"] },
   { emoji: "🧎", keywords: ["kneel", "kneeling", "pray", "bow", "propose", "down", "worship"] },
@@ -788,7 +795,7 @@ export default function App() {
   }, [guesserTimer, guesserActive])
 
   const resetAllState = () => {
-    setNickname(""); setTeam(""); setScreen("home"); setGameMode("sameroom")
+    setTeam(""); setScreen("home"); setGameMode("sameroom")
     setRounds(3); setCurrentRound(1); setScores({ "Team 1": 0, "Team 2": 0, "Team 3": 0 })
     setJoinCode(""); setSearch(""); setSentEmojis([]); setTimer(60)
     setTimerActive(false); setCountdown(null); setReceivedEmojis([])
