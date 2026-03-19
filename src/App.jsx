@@ -475,8 +475,8 @@ function assignRoles(players, round) {
 
 function Logo({ onTap }) {
   return (
-    <div onClick={onTap} style={{ cursor: "pointer", userSelect: "none", margin: "0 0 8px", display: "flex", alignItems: "center", gap: "8px" }}>
-      <img src="/logo.png" alt="Sendmoji" style={{ height: "48px", width: "auto" }} />
+     <div onClick={onTap} style={{ cursor: "pointer", userSelect: "none", margin: "0 0 8px" }}>
+      <span style={{ fontSize: "24px", fontWeight: "bold", color: "#0066ff" }}>🎯 GuessMoji</span>
     </div>
   )
 }
