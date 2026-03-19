@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.1.5"
+const VERSION = "v0.1.6"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -671,6 +671,7 @@ export default function App() {
       if (!data) return
 
       setPlayers(data.players || {})
+      setReadyPlayers(data.ready || {})
 
       if (data.emojis) {
         setReceivedEmojis(Object.values(data.emojis))
@@ -948,9 +949,11 @@ export default function App() {
     searchRef.current?.focus()
   }
 
+  const normalizeGuess = (str) => str.trim().toLowerCase().replace(/^the\s+/, "")
+
   const submitGuess = async () => {
     if (!guess.trim()) return
-    if (guess.trim().toLowerCase() === currentTopic.toLowerCase()) {
+    if (normalizeGuess(guess) === normalizeGuess(currentTopic)) {
       endRound(true)
     } else {
       const newWrong = [...wrongGuesses, guess.trim()]
@@ -1161,7 +1164,15 @@ export default function App() {
           </div>
         </div>
         {!guesserActive && countdown === null && (
-          <p style={{ textAlign: "center", color: teamColor, fontSize: "18px", marginTop: "30px" }}>⏳ Waiting for {teammate || "clue giver"} to start...</p>
+          <div style={{ textAlign: "center", marginTop: "30px" }}>
+            <p style={{ color: teamColor, fontSize: "18px", margin: "0 0 10px" }}>⏳ Waiting for {teammate || "clue giver"} to start...</p>
+            {readyPlayers[nickname] && !readyPlayers[teammate] && (
+              <p style={{ color: "#999", fontSize: "14px", margin: 0 }}>👀 {teammate || "Teammate"} hasn't hit ready yet...</p>
+            )}
+            {readyPlayers[teammate] && (
+              <p style={{ color: "#00aa44", fontSize: "15px", fontWeight: "bold", margin: 0 }}>✅ {teammate} is ready!</p>
+            )}
+          </div>
         )}
         {guesserActive && (
           <>
@@ -1207,9 +1218,16 @@ export default function App() {
           </div>
         )}
         {!timerActive && countdown === null && (
-          <button onClick={startCountdown} style={{ width: "100%", padding: "14px", fontSize: "18px", borderRadius: "12px", background: teamColor, color: "white", border: "none", cursor: "pointer", marginBottom: "16px", fontWeight: "bold" }}>
-            Start Round ▶️
-          </button>
+          <>
+            {readyPlayers[teammate] ? (
+              <p style={{ color: "#00aa44", fontSize: "15px", fontWeight: "bold", textAlign: "center", margin: "0 0 10px" }}>✅ {teammate} is ready!</p>
+            ) : (
+              <p style={{ color: "#999", fontSize: "14px", textAlign: "center", margin: "0 0 10px" }}>👀 Waiting for {teammate || "guesser"} to hit ready...</p>
+            )}
+            <button onClick={startCountdown} style={{ width: "100%", padding: "14px", fontSize: "18px", borderRadius: "12px", background: teamColor, color: "white", border: "none", cursor: "pointer", marginBottom: "16px", fontWeight: "bold" }}>
+              Start Round ▶️
+            </button>
+          </>
         )}
         <div style={{ minHeight: "50px", background: "#f5f5f5", borderRadius: "12px", padding: "10px", marginBottom: "16px", display: "flex", flexWrap: "wrap", gap: "6px" }}>
           {sentEmojis.length === 0
