@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
+const VERSION = "v0.1.2"
+const MADE_BY = "Fanch"
+
 const TOPICS = {
   "🎬 Movies": [
     "Titanic", "The Lion King", "Frozen", "Jurassic Park", "Home Alone",
@@ -71,7 +74,6 @@ const EMOJI_LIST = [
   { emoji: "🪨", keywords: ["rock", "stone", "hard", "heavy", "solid", "mountain", "throw"] },
   { emoji: "🌑", keywords: ["dark", "night", "moon", "black", "shadow", "eclipse", "space"] },
   { emoji: "💧", keywords: ["drop", "water", "rain", "tear", "drip", "blue", "wet", "cry"] },
-  { emoji: "🌊", keywords: ["wave", "ocean", "surf", "sea", "water", "beach", "tide"] },
   { emoji: "⚡", keywords: ["lightning", "electric", "power", "fast", "bolt", "thunder", "energy", "zeus"] },
   { emoji: "🌤️", keywords: ["partly cloudy", "sun", "cloud", "weather", "day", "sky", "nice"] },
   { emoji: "🌧️", keywords: ["rain", "cloud", "wet", "storm", "pour", "umbrella", "grey"] },
@@ -112,7 +114,6 @@ const EMOJI_LIST = [
   { emoji: "🦉", keywords: ["owl", "wise", "night", "hunt", "hoot", "forest", "bird", "moon"] },
   { emoji: "🦚", keywords: ["peacock", "feathers", "colorful", "display", "proud", "beautiful", "bird"] },
   { emoji: "🦩", keywords: ["flamingo", "pink", "stand", "one leg", "tropical", "bird", "elegant"] },
-  { emoji: "🐊", keywords: ["alligator", "swamp", "snap", "green", "reptile", "florida", "teeth"] },
   { emoji: "🐍", keywords: ["snake", "slither", "poison", "coil", "dangerous", "reptile", "hiss"] },
   { emoji: "🦎", keywords: ["lizard", "reptile", "green", "tongue", "gecko", "chameleon", "crawl"] },
   { emoji: "🐙", keywords: ["octopus", "tentacle", "ocean", "eight", "arms", "ink", "sea", "smart"] },
@@ -127,11 +128,9 @@ const EMOJI_LIST = [
   { emoji: "🐓", keywords: ["rooster", "chicken", "farm", "crow", "morning", "wake", "feather"] },
   { emoji: "🦃", keywords: ["turkey", "thanksgiving", "farm", "feather", "gobble", "bird"] },
   { emoji: "🐝", keywords: ["bee", "honey", "sting", "yellow", "black", "hive", "flower", "buzz"] },
-  { emoji: "🦋", keywords: ["butterfly", "wings", "colorful", "flutter", "flower", "transform"] },
   { emoji: "🐛", keywords: ["caterpillar", "worm", "green", "leaf", "slow", "transform", "bug"] },
   { emoji: "🕷️", keywords: ["spider", "web", "creepy", "bug", "scary", "spiderman", "eight legs"] },
   { emoji: "🦟", keywords: ["mosquito", "bite", "buzz", "blood", "annoying", "summer", "itch"] },
-  { emoji: "🐘", keywords: ["elephant", "trunk", "big", "memory", "grey", "africa", "tusk", "ivory"] },
 
   // People & Emotions
   { emoji: "👸", keywords: ["queen", "princess", "girl", "woman", "lady", "royal", "crown", "fairy tale"] },
@@ -212,7 +211,6 @@ const EMOJI_LIST = [
   { emoji: "🫐", keywords: ["blueberry", "blue", "fruit", "small", "muffin", "antioxidant", "sweet"] },
   { emoji: "🥦", keywords: ["broccoli", "green", "vegetable", "healthy", "tree", "vitamin", "chef"] },
   { emoji: "🌽", keywords: ["corn", "yellow", "vegetable", "farm", "pop", "summer", "barbecue"] },
-  { emoji: "🍄", keywords: ["mushroom", "fungi", "forest", "mario", "pizza", "soup", "earthy"] },
   { emoji: "🧄", keywords: ["garlic", "cooking", "italian", "vampire", "smell", "flavor", "herb"] },
   { emoji: "🧅", keywords: ["onion", "cooking", "cry", "layers", "flavor", "peel", "ogre"] },
   { emoji: "🥕", keywords: ["carrot", "orange", "vegetable", "rabbit", "healthy", "crunch", "bugs bunny"] },
@@ -260,11 +258,8 @@ const EMOJI_LIST = [
   { emoji: "🚢", keywords: ["ship", "boat", "cruise", "vessel", "titanic", "ocean liner", "sail", "sea"] },
   { emoji: "⚓", keywords: ["anchor", "ship", "boat", "sea", "navy", "port", "sailor", "dock"] },
   { emoji: "🏴‍☠️", keywords: ["pirate", "flag", "skull", "ship", "treasure", "sea", "jolly roger", "hook"] },
-  { emoji: "🌁", keywords: ["fog", "bridge", "city", "san francisco", "golden gate", "mist", "grey"] },
   { emoji: "🏖️", keywords: ["beach", "sand", "sun", "ocean", "summer", "vacation", "waves", "relax"] },
-  { emoji: "🏔️", keywords: ["mountain", "snow", "peak", "climb", "high", "rocky", "hike", "altitude"] },
   { emoji: "🌃", keywords: ["night", "city", "stars", "dark", "lights", "skyline", "moon", "urban"] },
-  { emoji: "🎠", keywords: ["carousel", "fun", "ride", "park", "horse", "spin", "fair", "children"] },
 
   // Objects & Symbols
   { emoji: "💎", keywords: ["diamond", "jewel", "necklace", "gem", "ring", "sparkle", "precious", "shine"] },
@@ -281,10 +276,9 @@ const EMOJI_LIST = [
   { emoji: "🎸", keywords: ["guitar", "music", "rock", "band", "string", "electric", "strum"] },
   { emoji: "🎻", keywords: ["violin", "music", "orchestra", "strings", "bow", "classical", "concert"] },
   { emoji: "🥁", keywords: ["drum", "music", "beat", "rhythm", "band", "percussion", "rock"] },
-  { emoji: "🎺", keywords: ["trumpet", "music", "jazz", "blow", "brass", "band", "jazz"] },
+  { emoji: "🎺", keywords: ["trumpet", "music", "jazz", "blow", "brass", "band"] },
   { emoji: "🎹", keywords: ["piano", "music", "keys", "classical", "keyboard", "play", "concert"] },
   { emoji: "🎷", keywords: ["saxophone", "jazz", "music", "blow", "cool", "blues", "band"] },
-  { emoji: "🪗", keywords: ["accordion", "french", "music", "squeeze", "folk", "polka", "paris"] },
   { emoji: "🏆", keywords: ["trophy", "win", "champion", "gold", "prize", "award", "best", "winner"] },
   { emoji: "🥇", keywords: ["gold", "first", "win", "medal", "champion", "best", "number one", "olympic"] },
   { emoji: "💰", keywords: ["money", "rich", "cash", "gold", "wealth", "dollar", "bag", "greedy"] },
@@ -299,13 +293,11 @@ const EMOJI_LIST = [
   { emoji: "🧪", keywords: ["test tube", "science", "chemistry", "lab", "experiment", "liquid", "research"] },
   { emoji: "🔬", keywords: ["microscope", "science", "tiny", "lab", "biology", "cell", "research"] },
   { emoji: "🧬", keywords: ["dna", "genetics", "science", "biology", "helix", "code", "life"] },
-  { emoji: "🛸", keywords: ["ufo", "alien", "fly", "space", "abduct", "mystery", "roswell"] },
   { emoji: "📡", keywords: ["satellite", "signal", "broadcast", "antenna", "space", "receive", "dish"] },
   { emoji: "🔦", keywords: ["flashlight", "light", "dark", "beam", "torch", "explore", "search"] },
   { emoji: "🕯️", keywords: ["candle", "light", "flame", "dark", "romantic", "glow", "wax", "birthday"] },
   { emoji: "🪄", keywords: ["magic wand", "trick", "wizard", "spell", "poof", "fantasy", "abracadabra"] },
   { emoji: "🎩", keywords: ["top hat", "magic", "fancy", "gentleman", "pull rabbit", "hat", "trick"] },
-  { emoji: "🪃", keywords: ["boomerang", "australia", "throw", "return", "curved", "outback"] },
   { emoji: "🏹", keywords: ["arrow", "bow", "shoot", "aim", "hunt", "target", "archery", "cupid"] },
   { emoji: "⛏️", keywords: ["pickaxe", "mine", "dig", "gold", "mountain", "work", "minecraft"] },
   { emoji: "🔧", keywords: ["wrench", "fix", "tool", "mechanic", "repair", "bolt", "engineer"] },
@@ -314,105 +306,58 @@ const EMOJI_LIST = [
   { emoji: "🪞", keywords: ["mirror", "reflect", "vanity", "look", "snow white", "glass", "selfie"] },
   { emoji: "🚪", keywords: ["door", "entrance", "exit", "open", "knock", "close", "opportunity"] },
   { emoji: "📜", keywords: ["scroll", "map", "old", "document", "ancient", "letter", "parchment"] },
-  { emoji: "🗞️", keywords: ["newspaper", "news", "print", "read", "headline", "press", "reporter"] },
-  { emoji: "📰", keywords: ["newspaper", "news", "headline", "read", "daily", "press", "print"] },
   { emoji: "📷", keywords: ["camera", "photo", "picture", "shoot", "snap", "lens", "photography"] },
   { emoji: "🎥", keywords: ["camera", "movie", "film", "record", "video", "director", "shoot"] },
   { emoji: "📺", keywords: ["tv", "television", "watch", "show", "screen", "remote", "channel"] },
   { emoji: "🎙️", keywords: ["microphone", "sing", "record", "podcast", "radio", "voice", "speak"] },
-  { emoji: "🎚️", keywords: ["slider", "mix", "music", "studio", "level", "adjust", "sound"] },
   { emoji: "🧸", keywords: ["teddy bear", "toy", "soft", "cute", "child", "hug", "stuffed", "comfort"] },
   { emoji: "🎁", keywords: ["gift", "present", "wrap", "birthday", "surprise", "box", "ribbon"] },
   { emoji: "🎉", keywords: ["party", "celebrate", "fun", "confetti", "birthday", "cheer", "pop"] },
-  { emoji: "🎊", keywords: ["confetti", "party", "celebrate", "pop", "colorful", "new year", "cheer"] },
   { emoji: "🎈", keywords: ["balloon", "party", "float", "red", "celebrate", "birthday", "air"] },
-  { emoji: "🎏", keywords: ["streamer", "colorful", "celebrate", "japan", "fish", "flag", "wind"] },
-  { emoji: "🧨", keywords: ["firecracker", "explode", "chinese new year", "loud", "red", "bang"] },
   { emoji: "✨", keywords: ["sparkle", "magic", "shine", "glitter", "star", "special", "fairy"] },
   { emoji: "🎯", keywords: ["target", "aim", "goal", "bullseye", "hit", "focus", "darts", "precise"] },
   { emoji: "🧩", keywords: ["puzzle", "piece", "solve", "mystery", "fit", "game", "jigsaw"] },
   { emoji: "♟️", keywords: ["chess", "strategy", "game", "king", "queen", "pawn", "think", "checkmate"] },
   { emoji: "🎲", keywords: ["dice", "random", "game", "luck", "roll", "chance", "board game"] },
   { emoji: "🃏", keywords: ["card", "joker", "game", "magic", "trick", "wild", "poker", "play"] },
-  { emoji: "🀄", keywords: ["mahjong", "china", "tile", "game", "dragon", "bamboo", "chinese"] },
-  { emoji: "🎴", keywords: ["flower card", "japan", "game", "hanafuda", "card", "floral"] },
   { emoji: "🧧", keywords: ["red envelope", "chinese new year", "money", "gift", "lucky", "red"] },
-
-  // Ships, Transport & Adventure
-  { emoji: "🚢", keywords: ["ship", "boat", "cruise", "vessel", "titanic", "ocean", "sail"] },
-  { emoji: "⚓", keywords: ["anchor", "ship", "sea", "navy", "port", "sailor", "weight"] },
   { emoji: "🛟", keywords: ["lifebuoy", "rescue", "save", "float", "ring", "safety", "ocean"] },
-  { emoji: "🧭", keywords: ["compass", "navigate", "north", "direction", "explore", "lost"] },
-
-  // Horror & Dark
-  { emoji: "🕷️", keywords: ["spider", "web", "creepy", "bug", "scary", "spiderman", "arachnid"] },
   { emoji: "🦇", keywords: ["bat", "night", "dracula", "vampire", "dark", "cave", "halloween", "fly"] },
   { emoji: "🪦", keywords: ["grave", "death", "buried", "tombstone", "cemetery", "rip", "ghost"] },
-  { emoji: "🔪", keywords: ["knife", "cut", "sharp", "horror", "cook", "weapon", "blade"] },
+  { emoji: "🔪", keywords: ["knife", "cut", "sharp", "horror", "cook", "weapon", "blade", "stab"] },
   { emoji: "☠️", keywords: ["skull", "crossbones", "pirate", "poison", "death", "danger", "dead"] },
-
-  // Misc & Fun
   { emoji: "🎪", keywords: ["circus", "fun", "show", "entertainment", "tent", "clown", "acrobat"] },
   { emoji: "🧳", keywords: ["luggage", "travel", "trip", "bag", "suitcase", "pack", "vacation"] },
   { emoji: "❤️", keywords: ["love", "heart", "romance", "valentines", "care", "red", "passion"] },
   { emoji: "💔", keywords: ["heartbreak", "sad", "loss", "broken", "hurt", "split", "end"] },
-  { emoji: "💫", keywords: ["dizzy", "stars", "floating", "dream", "magic", "sparkle", "spin"] },
-  { emoji: "🌟", keywords: ["star", "glow", "famous", "shine", "bright", "celebrity", "special"] },
   { emoji: "💥", keywords: ["explosion", "bang", "pow", "comic", "crash", "impact", "boom"] },
-  { emoji: "💨", keywords: ["wind", "fast", "blow", "air", "gone", "speed", "dash", "ghost"] },
-  { emoji: "💦", keywords: ["sweat", "water", "splash", "wet", "drop", "swim", "rain"] },
   { emoji: "🌀", keywords: ["spiral", "cyclone", "dizzy", "spin", "tornado", "swirl", "hypnotic"] },
-  { emoji: "🔴", keywords: ["red", "circle", "stop", "danger", "alert", "button", "dot"] },
-  { emoji: "🟡", keywords: ["yellow", "circle", "caution", "sun", "gold", "dot", "warning"] },
-  { emoji: "🟢", keywords: ["green", "circle", "go", "safe", "nature", "dot", "button"] },
-  { emoji: "⬛", keywords: ["black", "square", "dark", "night", "block", "void", "solid"] },
-  { emoji: "⬜", keywords: ["white", "square", "blank", "empty", "clean", "snow", "pure"] },
-  { emoji: "🏳️", keywords: ["white flag", "surrender", "peace", "give up", "truce"] },
-  { emoji: "🚩", keywords: ["red flag", "warning", "danger", "mark", "signal", "alert"] },
-  { emoji: "🏁", keywords: ["checkered flag", "finish", "race", "win", "end", "formula one", "done"] },
-{ emoji: "🎌", keywords: ["japan", "flag", "crossed", "country", "asian", "tokyo", "red"] },
-    // Communication & Gestures
   { emoji: "🏠", keywords: ["house", "home", "building", "live", "inside", "shelter", "roof", "family"] },
-  { emoji: "🏡", keywords: ["house", "home", "garden", "cottage", "suburb", "cozy", "family", "yard"] },
+  { emoji: "🏢", keywords: ["office", "building", "work", "city", "corporate", "business", "tall"] },
+  { emoji: "🏦", keywords: ["bank", "money", "finance", "save", "rich", "vault", "institution"] },
   { emoji: "👍", keywords: ["yes", "good", "approve", "agree", "like", "thumbs up", "ok", "correct"] },
-  { emoji: "👎", keywords: ["no", "bad", "disagree", "dislike", "thumbs down", "wrong", "reject", "boo"] },
+  { emoji: "👎", keywords: ["no", "bad", "disagree", "dislike", "thumbs down", "wrong", "reject"] },
   { emoji: "✅", keywords: ["yes", "check", "correct", "done", "complete", "right", "confirm", "true"] },
-  { emoji: "❌", keywords: ["no", "wrong", "cancel", "false", "x", "stop", "delete", "incorrect", "not"] },
-  { emoji: "⬆️", keywords: ["up", "above", "rise", "increase", "north", "higher", "top", "climb"] },
-  { emoji: "⬇️", keywords: ["down", "below", "fall", "decrease", "south", "lower", "bottom", "drop"] },
-  { emoji: "➡️", keywords: ["right", "next", "forward", "east", "go", "direction", "arrow", "continue"] },
-  { emoji: "⬅️", keywords: ["left", "back", "west", "return", "arrow", "direction", "previous", "undo"] },
+  { emoji: "❌", keywords: ["no", "wrong", "cancel", "false", "x", "stop", "delete", "incorrect"] },
   { emoji: "💬", keywords: ["talk", "speak", "say", "chat", "word", "message", "conversation", "text"] },
-  { emoji: "🗣️", keywords: ["speak", "talk", "loud", "voice", "announce", "shout", "say", "person"] },
   { emoji: "👋", keywords: ["wave", "hello", "goodbye", "hi", "bye", "greet", "hand"] },
   { emoji: "🤝", keywords: ["handshake", "deal", "agree", "meet", "partner", "shake", "business"] },
   { emoji: "🙏", keywords: ["pray", "please", "thank", "hope", "wish", "beg", "grateful", "namaste"] },
   { emoji: "😡", keywords: ["angry", "mad", "rage", "furious", "red", "upset", "anger", "hostile"] },
-  { emoji: "😤", keywords: ["frustrated", "annoyed", "huff", "steam", "proud", "determined", "nose"] },
   { emoji: "😮", keywords: ["surprised", "shocked", "wow", "gasp", "open mouth", "amazed", "oh"] },
-  { emoji: "🤐", keywords: ["zip", "silent", "secret", "quiet", "mouth shut", "shush", "no talking"] },
-  { emoji: "😴", keywords: ["sleep", "tired", "dream", "night", "rest", "snore", "bed", "lazy", "boring"] },
-  { emoji: "🔊", keywords: ["loud", "sound", "volume", "speaker", "noise", "hear", "audio", "music"] },
-  { emoji: "🔇", keywords: ["mute", "silent", "quiet", "no sound", "off", "volume", "shush"] },
-  { emoji: "⏫", keywords: ["up", "fast forward", "increase", "rise", "level up", "higher", "boost"] },
-  { emoji: "⏬", keywords: ["down", "decrease", "drop", "lower", "fall", "sink", "reduce"] },
-  { emoji: "🔁", keywords: ["repeat", "loop", "again", "cycle", "redo", "replay", "circular"] },
-  { emoji: "⏹️", keywords: ["stop", "end", "halt", "finish", "square", "cancel", "cease"] },
-  { emoji: "▶️", keywords: ["play", "start", "go", "begin", "forward", "video", "run", "launch"] },
-  { emoji: "⏸️", keywords: ["pause", "wait", "stop", "hold", "break", "freeze", "rest"] },
-  { emoji: "🆕", keywords: ["new", "fresh", "latest", "recent", "update", "novel", "modern"] },
-  { emoji: "🆓", keywords: ["free", "no cost", "open", "liberty", "available", "gratis"] },
-  { emoji: "🔝", keywords: ["top", "best", "up", "highest", "number one", "above", "peak"] },
   { emoji: "💯", keywords: ["perfect", "100", "yes", "correct", "excellent", "full", "complete", "real"] },
   { emoji: "🚫", keywords: ["no", "not", "banned", "forbidden", "stop", "cancel", "prohibited", "never"] },
-  { emoji: "⛔", keywords: ["stop", "no", "forbidden", "blocked", "cancel", "do not", "halt", "red"] },
-  { emoji: "🆗", keywords: ["ok", "okay", "fine", "agree", "yes", "accepted", "alright"] },
-  { emoji: "🔃", keywords: ["refresh", "reload", "repeat", "cycle", "rotate", "sync", "redo"] },
-  { emoji: "↩️", keywords: ["back", "return", "undo", "reply", "go back", "reverse", "left"] },
-  { emoji: "🏘️", keywords: ["neighborhood", "houses", "village", "suburb", "town", "community", "homes"] },
-  { emoji: "🏗️", keywords: ["construction", "build", "crane", "work", "scaffold", "new", "develop"] },
-  { emoji: "🏢", keywords: ["office", "building", "work", "city", "corporate", "business", "tall"] },
-  { emoji: "🏦", keywords: ["bank", "money", "finance", "save", "rich", "vault", "institution"] },
+  { emoji: "🏁", keywords: ["checkered flag", "finish", "race", "win", "end", "formula one", "done"] },
+
+  // ✅ NEW — Weapons & Action (fixes "gun" search)
+  { emoji: "🔫", keywords: ["gun", "pistol", "shoot", "weapon", "bang", "bullet", "wild west", "cop", "shoot", "fire", "armed", "cowboy", "crime", "war", "police"] },
+  { emoji: "💣", keywords: ["bomb", "explode", "blast", "danger", "tick", "war", "destroy", "countdown"] },
+  { emoji: "🪃", keywords: ["boomerang", "australia", "throw", "return", "curved", "outback", "come back"] },
+  { emoji: "🏹", keywords: ["bow", "arrow", "shoot", "aim", "archery", "hunt", "cupid", "target"] },
+  { emoji: "⚔️", keywords: ["swords", "fight", "battle", "war", "cross", "duel", "knight", "clash", "weapon"] },
+  { emoji: "🪖", keywords: ["helmet", "military", "soldier", "army", "war", "protect", "camouflage"] },
+  { emoji: "🎖️", keywords: ["medal", "military", "honor", "award", "soldier", "war", "brave"] },
+  { emoji: "🚨", keywords: ["alarm", "police", "emergency", "siren", "red", "alert", "danger", "crime"] },
 ]
 
 const RESET_MESSAGES = [
@@ -444,6 +389,14 @@ const ROOM_WORDS = [
   "OZONE", "PLUTO", "QUIRK", "REBEL", "SNACK", "TROUT", "UMBRA", "VAPOR"
 ]
 
+const HOW_TO_PLAY_STEPS = [
+  { emoji: "👥", title: "Form Teams", desc: "Split into 2 teams. Each team has a Clue Giver and a Guesser." },
+  { emoji: "🎯", title: "Get a Topic", desc: "The Clue Giver sees a secret word — don't show your screen!" },
+  { emoji: "🔍", title: "Search Emojis", desc: "Type keywords to find emojis that hint at the topic. Send them one by one." },
+  { emoji: "🤔", title: "Guess It!", desc: "The Guesser sees the emojis and types their answer. No words allowed from the Clue Giver!" },
+  { emoji: "🏆", title: "Score Points", desc: "Guess correctly before time runs out to score. Most points wins!" },
+]
+
 function generateRoomCode() {
   return ROOM_WORDS[Math.floor(Math.random() * ROOM_WORDS.length)]
 }
@@ -453,8 +406,6 @@ function getRandomTopic(category) {
   return list[Math.floor(Math.random() * list.length)]
 }
 
-// Given players object and current round, assign roles within each team
-// Odd rounds: first joined = clue, second joined = guesser. Even rounds: swap.
 function assignRoles(players, round) {
   const teams = {}
   Object.entries(players).forEach(([name, info]) => {
@@ -473,10 +424,21 @@ function assignRoles(players, round) {
   return roles
 }
 
+// Footer component
+function Footer() {
+  return (
+    <div style={{ textAlign: "center", marginTop: "32px", paddingBottom: "16px" }}>
+      <span style={{ fontSize: "11px", color: "#bbb", letterSpacing: "0.5px" }}>
+        🎯 GuessMoji {VERSION} · Made by {MADE_BY}
+      </span>
+    </div>
+  )
+}
+
 function Logo({ onTap }) {
   return (
-     <div onClick={onTap} style={{ cursor: "pointer", userSelect: "none", margin: "0 0 8px" }}>
-      <span style={{ fontSize: "24px", fontWeight: "bold", color: "#0066ff" }}>🎯 GuessMoji</span>
+    <div onClick={onTap} style={{ cursor: "pointer", userSelect: "none", margin: "0 0 8px", display: "flex", alignItems: "center", gap: "8px" }}>
+      <span style={{ fontSize: "22px", fontWeight: "bold", color: "#0066ff" }}>🎯 GuessMoji</span>
     </div>
   )
 }
@@ -484,6 +446,7 @@ function Logo({ onTap }) {
 export default function App() {
   const [nickname, setNickname] = useState("")
   const [screen, setScreen] = useState("home")
+  const [showHowToPlay, setShowHowToPlay] = useState(false)
   const [gameMode, setGameMode] = useState("sameroom")
   const [rounds, setRounds] = useState(3)
   const [currentRound, setCurrentRound] = useState(1)
@@ -511,14 +474,20 @@ export default function App() {
   const [guesserActive, setGuesserActive] = useState(false)
   const [teammate, setTeammate] = useState("")
   const [readyPlayers, setReadyPlayers] = useState({})
+  const [codeCopied, setCodeCopied] = useState(false)
 
   const searchRef = useRef(null)
   const screenRef = useRef(screen)
+  // FIX: track countdown in a ref so Firebase listener always sees current value
+  const countdownRef = useRef(null)
+  const timerActiveRef = useRef(false)
+
   useEffect(() => { screenRef.current = screen }, [screen])
+  useEffect(() => { countdownRef.current = countdown }, [countdown])
+  useEffect(() => { timerActiveRef.current = timerActive }, [timerActive])
+
   const countdownWords = ["Ready", "Set", "GO!"]
   const teamColor = TEAM_COLORS[team] || "#999"
-  const [codeCopied, setCodeCopied] = useState(false)
-
 
   // Firebase room listener
   useEffect(() => {
@@ -529,43 +498,26 @@ export default function App() {
       if (!data) return
 
       setPlayers(data.players || {})
-      if (data.ready) {
-        const readyCount = Object.keys(data.ready).length
-        const totalPlayers = Object.keys(data.players || {}).length
-        if (readyCount >= totalPlayers && isHost && screenRef.current === "cluegiver") {
-          // All players ready — notify host
-        }
-      }
 
-      // Sync emojis to guesser in real time
       if (data.emojis) {
         setReceivedEmojis(Object.values(data.emojis))
       } else {
         setReceivedEmojis([])
       }
 
-      // Host ended game — send everyone home
       if (data.status === "ended") {
-        setNickname(""); setTeam(""); setScreen("home"); setGameMode("sameroom")
-        setRounds(3); setCurrentRound(1); setScores({ "Team 1": 0, "Team 2": 0, "Team 3": 0 })
-        setJoinCode(""); setSearch(""); setSentEmojis([]); setTimer(60)
-        setTimerActive(false); setCountdown(null); setReceivedEmojis([])
-        setGuess(""); setWrongGuesses([]); setCorrect(false)
-        setGuesserTimer(60); setGuesserActive(false)
-        setCategory(""); setCurrentTopic(""); setRoomCode(""); setRole("")
-        setIsHost(false); setPlayers({}); setTeammate("")
+        resetAllState()
+        return
       }
+
       if (data.status !== "nextround") {
-        if (data.wrongGuesses) {
-          setWrongGuesses(data.wrongGuesses)
-        } else {
-          setWrongGuesses([])
-        }
+        setWrongGuesses(data.wrongGuesses || [])
       }
-      // Countdown triggered by host
-      if (data.status === "countdown" && countdown === null && !timerActive) {
+
+      // FIX: Use refs instead of stale closure values for countdown/timerActive check
+      if (data.status === "countdown" && countdownRef.current === null && !timerActiveRef.current) {
         if (screenRef.current === "role") {
-          const isClue = role === "clue"
+          const isClue = data.roles?.[nickname] === "clue"
           setScreen(isClue ? "cluegiver" : "guesser")
         }
         setCountdown(0)
@@ -584,7 +536,6 @@ export default function App() {
         }, 800)
       }
 
-      // Round end
       if (data.status === "roundend") {
         setCorrect(data.correct || false)
         setSentEmojis(data.emojis ? Object.values(data.emojis) : [])
@@ -594,7 +545,6 @@ export default function App() {
         setScreen("roundend")
       }
 
-      // Next round
       if (data.status === "nextround") {
         const newRound = data.currentRound || 1
         const myRole = data.roles?.[nickname] || "guesser"
@@ -612,23 +562,21 @@ export default function App() {
         setReceivedEmojis([])
         setTimer(60)
         setTimerActive(false)
-        setCountdown(null)
+        setGuesserActive(false) // FIX: explicitly reset guesserActive
+        setCountdown(null)      // FIX: explicitly reset countdown
         setGuess("")
         setWrongGuesses([])
         setCorrect(false)
         setGuesserTimer(60)
-        setGuesserActive(false)
         setSearch("")
         setScreen("role")
       }
 
-      // Game over
       if (data.status === "gameover") {
         setScores(data.scores || { "Team 1": 0, "Team 2": 0, "Team 3": 0 })
         setScreen("gameover")
       }
 
-      // Host started game — go to role screen
       if (data.status === "playing" && screenRef.current === "waiting") {
         const myRole = data.roles?.[nickname] || "guesser"
         const myTeam = data.players?.[nickname]?.team || ""
@@ -650,16 +598,14 @@ export default function App() {
 
   // Clue giver timer
   useEffect(() => {
-    if (!timerActive) return
-    if (timer <= 0) return
+    if (!timerActive || timer <= 0) return
     const interval = setInterval(() => setTimer(t => t - 1), 1000)
     return () => clearInterval(interval)
   }, [timerActive, timer])
 
   // Guesser timer
   useEffect(() => {
-    if (!guesserActive) return
-    if (guesserTimer <= 0) return
+    if (!guesserActive || guesserTimer <= 0) return
     const interval = setInterval(() => setGuesserTimer(t => t - 1), 1000)
     return () => clearInterval(interval)
   }, [guesserActive, guesserTimer])
@@ -679,6 +625,17 @@ export default function App() {
       setScreen("roundend")
     }
   }, [guesserTimer, guesserActive])
+
+  const resetAllState = () => {
+    setNickname(""); setTeam(""); setScreen("home"); setGameMode("sameroom")
+    setRounds(3); setCurrentRound(1); setScores({ "Team 1": 0, "Team 2": 0, "Team 3": 0 })
+    setJoinCode(""); setSearch(""); setSentEmojis([]); setTimer(60)
+    setTimerActive(false); setCountdown(null); setReceivedEmojis([])
+    setGuess(""); setWrongGuesses([]); setCorrect(false)
+    setGuesserTimer(60); setGuesserActive(false)
+    setCategory(""); setCurrentTopic(""); setRoomCode(""); setRole("")
+    setIsHost(false); setPlayers({}); setTeammate("")
+  }
 
   const endRound = async (won) => {
     const newScores = { ...scores }
@@ -703,14 +660,8 @@ export default function App() {
     if (roomCode) {
       await update(ref(db, `rooms/${roomCode}`), { status: "ended" })
     }
-    setNickname(""); setTeam(""); setScreen("home"); setGameMode("sameroom")
-    setRounds(3); setCurrentRound(1); setScores({ "Team 1": 0, "Team 2": 0, "Team 3": 0 })
-    setJoinCode(""); setSearch(""); setSentEmojis([]); setTimer(60)
-    setTimerActive(false); setCountdown(null); setReceivedEmojis([])
-    setGuess(""); setWrongGuesses([]); setCorrect(false)
-    setGuesserTimer(60); setGuesserActive(false); setShowResetConfirm(false)
-    setCategory(""); setCurrentTopic(""); setRoomCode(""); setRole("")
-    setIsHost(false); setPlayers({}); setTeammate("")
+    resetAllState()
+    setShowResetConfirm(false)
   }
 
   const createGame = async () => {
@@ -816,9 +767,11 @@ export default function App() {
     ? []
     : EMOJI_LIST.filter(e => e.keywords.some(k => k.includes(search.toLowerCase())))
 
+  // FIX: clear search first, then push emoji — prevents flicker/re-render with old results
   const sendEmoji = async (emoji) => {
     setSentEmojis(prev => [...prev, emoji])
-    setSearch("")
+    setSearch("")           // clear immediately before async push
+    if (searchRef.current) searchRef.current.value = ""
     await push(ref(db, `rooms/${roomCode}/emojis`), emoji)
     searchRef.current?.focus()
   }
@@ -833,6 +786,35 @@ export default function App() {
       setGuess("")
       await update(ref(db, `rooms/${roomCode}`), { wrongGuesses: newWrong })
     }
+  }
+
+  // HOW TO PLAY MODAL
+  if (showHowToPlay) {
+    return (
+      <div style={{ fontFamily: "sans-serif", padding: "24px", maxWidth: "400px", margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: "20px" }}>
+          <div style={{ fontSize: "40px" }}>🎯</div>
+          <h2 style={{ fontSize: "26px", color: "#0066ff", margin: "8px 0 4px" }}>How to Play</h2>
+          <p style={{ color: "#999", fontSize: "13px", margin: 0 }}>GuessMoji</p>
+        </div>
+        {HOW_TO_PLAY_STEPS.map((step, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "14px", marginBottom: "18px", background: "#f9f9f9", borderRadius: "12px", padding: "14px 16px" }}>
+            <div style={{ fontSize: "30px", minWidth: "36px", textAlign: "center" }}>{step.emoji}</div>
+            <div>
+              <div style={{ fontWeight: "bold", fontSize: "15px", color: "#111", marginBottom: "3px" }}>{step.title}</div>
+              <div style={{ fontSize: "14px", color: "#555", lineHeight: "1.4" }}>{step.desc}</div>
+            </div>
+          </div>
+        ))}
+        <button
+          onClick={() => setShowHowToPlay(false)}
+          style={{ width: "100%", padding: "14px", fontSize: "17px", borderRadius: "12px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", fontWeight: "bold", marginTop: "8px" }}
+        >
+          Got it! Let's Play 🎯
+        </button>
+        <Footer />
+      </div>
+    )
   }
 
   // RESET CONFIRM
@@ -871,19 +853,14 @@ export default function App() {
           </div>
         </div>
         <p style={{ color: "#999", fontSize: "13px", marginBottom: "20px" }}>{category} · {rounds} rounds</p>
-
         <p style={{ fontSize: "13px", color: "#999", margin: "0 0 10px", letterSpacing: "1px" }}>PLAYERS</p>
-
         {playerList.map(([name, info]) => {
           const tc = TEAM_COLORS[info.team] || "#999"
           return (
             <div key={name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", borderRadius: "12px", marginBottom: "8px", background: "#f5f5f5", border: `2px solid ${tc}` }}>
               <span style={{ fontWeight: "bold", fontSize: "16px" }}>{name} {name === nickname ? "👤" : ""}</span>
               {isHost ? (
-                <button
-                  onClick={() => assignTeam(name, info.team)}
-                  style={{ padding: "6px 14px", fontSize: "13px", borderRadius: "8px", background: tc, color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}
-                >
+                <button onClick={() => assignTeam(name, info.team)} style={{ padding: "6px 14px", fontSize: "13px", borderRadius: "8px", background: tc, color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}>
                   {info.team === "unassigned" ? "Assign +" : info.team}
                 </button>
               ) : (
@@ -892,28 +869,14 @@ export default function App() {
             </div>
           )
         })}
-
         {isHost && (
           <div style={{ marginTop: "16px", display: "flex", gap: "10px", justifyContent: "center" }}>
-            <button
-              onClick={randomizeTeams}
-              style={{ padding: "10px 20px", fontSize: "15px", borderRadius: "10px", background: "#888", color: "white", border: "none", cursor: "pointer" }}
-            >
-              🎲 Randomize
-            </button>
-            <button
-              onClick={startGame}
-              disabled={!allAssigned || playerList.length < 2}
-              style={{ padding: "10px 24px", fontSize: "15px", borderRadius: "10px", background: allAssigned && playerList.length >= 2 ? "#0066ff" : "#aaa", color: "white", border: "none", cursor: allAssigned && playerList.length >= 2 ? "pointer" : "not-allowed", fontWeight: "bold" }}
-            >
-              Start Game →
-            </button>
+            <button onClick={randomizeTeams} style={{ padding: "10px 20px", fontSize: "15px", borderRadius: "10px", background: "#888", color: "white", border: "none", cursor: "pointer" }}>🎲 Randomize</button>
+            <button onClick={startGame} disabled={!allAssigned || playerList.length < 2} style={{ padding: "10px 24px", fontSize: "15px", borderRadius: "10px", background: allAssigned && playerList.length >= 2 ? "#0066ff" : "#aaa", color: "white", border: "none", cursor: allAssigned && playerList.length >= 2 ? "pointer" : "not-allowed", fontWeight: "bold" }}>Start Game →</button>
           </div>
         )}
-
-        {!isHost && (
-          <p style={{ color: "#999", marginTop: "20px" }}>⏳ Waiting for host to start...</p>
-        )}
+        {!isHost && <p style={{ color: "#999", marginTop: "20px" }}>⏳ Waiting for host to start...</p>}
+        <Footer />
       </div>
     )
   }
@@ -921,7 +884,6 @@ export default function App() {
   // ROUND END
   if (screen === "roundend") {
     const gotIt = correct
-    const maxLen = Math.max(sentEmojis.length, 1)
     return (
       <div style={{ fontFamily: "sans-serif", padding: "20px", maxWidth: "400px", margin: "0 auto", textAlign: "center" }}>
         <Logo onTap={handleLogoTap} />
@@ -931,7 +893,6 @@ export default function App() {
           <p style={{ fontSize: "18px", margin: "8px 0", color: "#111" }}>The answer was <strong>{currentTopic}</strong></p>
           {gotIt && <p style={{ color: "#666", fontSize: "14px" }}>Solved in {60 - guesserTimer}s with {sentEmojis.length} emoji{sentEmojis.length !== 1 ? "s" : ""}</p>}
         </div>
-
         {sentEmojis.length > 0 && (
           <>
             <p style={{ fontSize: "13px", color: "#999", margin: "8px 0", letterSpacing: "1px" }}>CLUES SENT</p>
@@ -942,7 +903,6 @@ export default function App() {
             </div>
           </>
         )}
-
         {wrongGuesses.length > 0 && (
           <>
             <p style={{ fontSize: "13px", color: "#999", margin: "8px 0", letterSpacing: "1px" }}>WRONG GUESSES 😬</p>
@@ -953,8 +913,6 @@ export default function App() {
             </div>
           </>
         )}
-
-
         <p style={{ fontSize: "13px", color: "#999", margin: "8px 0", letterSpacing: "1px" }}>SCORES</p>
         <div style={{ marginBottom: "20px" }}>
           {Object.entries(scores).filter(([t]) => {
@@ -967,7 +925,6 @@ export default function App() {
             </div>
           ))}
         </div>
-
         <p style={{ color: "#999", fontSize: "14px" }}>Round {currentRound} of {rounds}</p>
         <div style={{ display: "flex", justifyContent: "center", gap: "12px", marginTop: "8px" }}>
           <button onClick={confirmReset} style={{ padding: "12px 24px", fontSize: "16px", borderRadius: "12px", background: "#ccc", color: "white", border: "none", cursor: "pointer" }}>🏠 End Game</button>
@@ -979,6 +936,7 @@ export default function App() {
             <p style={{ color: "#999", fontSize: "14px", margin: "12px 0" }}>Waiting for host...</p>
           )}
         </div>
+        <Footer />
       </div>
     )
   }
@@ -1003,6 +961,7 @@ export default function App() {
           ))}
         </div>
         <button onClick={confirmReset} style={{ padding: "14px 40px", fontSize: "20px", borderRadius: "12px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}>🔄 Play Again</button>
+        <Footer />
       </div>
     )
   }
@@ -1015,13 +974,11 @@ export default function App() {
           <Logo onTap={handleLogoTap} />
           <div style={{ fontSize: "28px", fontWeight: "bold", color: guesserTimer <= 10 ? "red" : teamColor }}>⏱️ {guesserTimer}s</div>
         </div>
-
         {countdown !== null && (
           <div style={{ fontSize: "100px", fontWeight: "bold", textAlign: "center", color: teamColor, margin: "20px 0" }}>
             {countdownWords[countdown]}
           </div>
         )}
-
         <div style={{ background: "#f9f9f9", border: `2px solid ${teamColor}`, borderRadius: "12px", padding: "16px", margin: "16px 0", minHeight: "80px" }}>
           <p style={{ margin: "0 0 8px", fontSize: "12px", color: teamColor, letterSpacing: "1px" }}>CLUES FROM {teammate.toUpperCase() || "YOUR TEAMMATE"}</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
@@ -1031,11 +988,9 @@ export default function App() {
             }
           </div>
         </div>
-
         {!guesserActive && countdown === null && (
           <p style={{ textAlign: "center", color: teamColor, fontSize: "18px", marginTop: "30px" }}>⏳ Waiting for {teammate || "clue giver"} to start...</p>
         )}
-
         {guesserActive && (
           <>
             <input
@@ -1050,7 +1005,6 @@ export default function App() {
             <button onClick={submitGuess} style={{ width: "100%", padding: "12px", fontSize: "18px", borderRadius: "12px", background: teamColor, color: "white", border: "none", cursor: "pointer" }}>Submit Guess ✊</button>
           </>
         )}
-
         {wrongGuesses.length > 0 && (
           <div style={{ marginTop: "16px" }}>
             <p style={{ fontSize: "13px", color: "#999", margin: "0 0 6px" }}>WRONG GUESSES</p>
@@ -1071,36 +1025,26 @@ export default function App() {
           <Logo onTap={handleLogoTap} />
           <div style={{ fontSize: "28px", fontWeight: "bold", color: timer <= 10 ? "red" : teamColor }}>⏱️ {timer}s</div>
         </div>
-
         <div style={{ background: teamColor, color: "white", borderRadius: "12px", padding: "12px 16px", textAlign: "center", margin: "8px 0", position: "sticky", top: "0", zIndex: 9 }}>
           <p style={{ margin: 0, fontSize: "12px", opacity: 0.8 }}>YOUR TOPIC</p>
           <h1 style={{ margin: "4px 0 0", fontSize: "28px" }}>{currentTopic}</h1>
         </div>
-
         {countdown !== null && (
           <div style={{ fontSize: "100px", fontWeight: "bold", textAlign: "center", color: teamColor, margin: "20px 0" }}>
             {countdownWords[countdown]}
           </div>
         )}
-
         {!timerActive && countdown === null && (
-          <>
-            {Object.keys(players).filter(n => n !== nickname).every(n => readyPlayers[n]) && Object.keys(players).length > 1 && (
-              <p style={{ textAlign: "center", color: "#00aa44", fontWeight: "bold", fontSize: "16px", margin: "0 0 8px" }}>✅ Everyone is ready!</p>
-            )}
-            <button onClick={startCountdown} style={{ width: "100%", padding: "14px", fontSize: "18px", borderRadius: "12px", background: teamColor, color: "white", border: "none", cursor: "pointer", marginBottom: "16px", fontWeight: "bold" }}>
-              Start Round ▶️
-            </button>
-          </>
+          <button onClick={startCountdown} style={{ width: "100%", padding: "14px", fontSize: "18px", borderRadius: "12px", background: teamColor, color: "white", border: "none", cursor: "pointer", marginBottom: "16px", fontWeight: "bold" }}>
+            Start Round ▶️
+          </button>
         )}
-
         <div style={{ minHeight: "50px", background: "#f5f5f5", borderRadius: "12px", padding: "10px", marginBottom: "16px", display: "flex", flexWrap: "wrap", gap: "6px" }}>
           {sentEmojis.length === 0
             ? <p style={{ color: "#999", margin: 0, fontSize: "14px" }}>Sent emojis appear here...</p>
             : sentEmojis.map((e, i) => <span key={i} style={{ fontSize: "28px" }}>{e}</span>)
           }
         </div>
-
         {timerActive && gameMode === "remote" && (
           <div style={{ background: "#fff8f8", border: "2px solid #ffcccc", borderRadius: "12px", padding: "10px", marginBottom: "12px" }}>
             <p style={{ margin: "0 0 6px", fontSize: "12px", color: "#cc0000", letterSpacing: "1px" }}>THEIR GUESSES SO FAR</p>
@@ -1112,7 +1056,6 @@ export default function App() {
             }
           </div>
         )}
-
         <input
           ref={searchRef}
           type="text"
@@ -1122,11 +1065,9 @@ export default function App() {
           disabled={!timerActive}
           style={{ width: "100%", padding: "12px", fontSize: "16px", borderRadius: "12px", border: `2px solid ${teamColor}`, boxSizing: "border-box", marginBottom: "12px", background: timerActive ? "white" : "#f0f0f0", color: timerActive ? "black" : "#aaa", position: "sticky", bottom: "8px", zIndex: 10 }}
         />
-
         {search.trim() !== "" && filteredEmojis.length === 0 && (
           <p style={{ color: "#999", textAlign: "center" }}>No emojis found. Try another word.</p>
         )}
-
         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center", paddingBottom: "120px" }}>
           {filteredEmojis.map((e, i) => (
             <button key={i} onClick={() => sendEmoji(e.emoji)} style={{ fontSize: "40px", background: "none", border: "2px solid #eee", borderRadius: "12px", padding: "8px", cursor: "pointer" }}>{e.emoji}</button>
@@ -1185,6 +1126,7 @@ export default function App() {
         <button onClick={() => setScreen("lobby")} style={{ padding: "10px 30px", fontSize: "16px", borderRadius: "8px", background: "#ccc", color: "white", border: "none", cursor: "pointer", margin: "5px" }}>← Back</button>
         <button onClick={createGame} style={{ padding: "10px 30px", fontSize: "16px", borderRadius: "8px", background: category ? "#0066ff" : "#aaa", color: "white", border: "none", cursor: category ? "pointer" : "not-allowed", margin: "5px" }}>Create Room →</button>
         {!category && <p style={{ color: "#cc0000", fontSize: "13px" }}>Pick a category first!</p>}
+        <Footer />
       </div>
     )
   }
@@ -1199,6 +1141,7 @@ export default function App() {
         <br /><br />
         <button onClick={() => setScreen("lobby")} style={{ padding: "10px 30px", fontSize: "16px", borderRadius: "8px", background: "#ccc", color: "white", border: "none", cursor: "pointer", margin: "5px" }}>← Back</button>
         <button onClick={joinGame} style={{ padding: "10px 30px", fontSize: "16px", borderRadius: "8px", background: "#ff6600", color: "white", border: "none", cursor: "pointer", margin: "5px" }}>Join →</button>
+        <Footer />
       </div>
     )
   }
@@ -1213,6 +1156,7 @@ export default function App() {
         <button onClick={() => setScreen("create")} style={{ padding: "10px 30px", fontSize: "18px", borderRadius: "8px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", margin: "10px" }}>🎮 Create Game</button>
         <br />
         <button onClick={() => setScreen("join")} style={{ padding: "10px 30px", fontSize: "18px", borderRadius: "8px", background: "#ff6600", color: "white", border: "none", cursor: "pointer", margin: "10px" }}>🔗 Join Game</button>
+        <Footer />
       </div>
     )
   }
@@ -1220,8 +1164,8 @@ export default function App() {
   // HOME SCREEN
   return (
     <div style={{ textAlign: "center", marginTop: "80px", fontFamily: "sans-serif", padding: "20px" }}>
-      <h1>🎯 GuessMoji</h1>
-      <p>Enter your nickname to start</p>
+      <h1 style={{ fontSize: "36px", margin: "0 0 4px" }}>🎯 GuessMoji</h1>
+      <p style={{ color: "#999", fontSize: "14px", margin: "0 0 24px" }}>Send emojis. Guess the word.</p>
       <input
         type="text"
         placeholder="Your nickname..."
@@ -1237,6 +1181,15 @@ export default function App() {
           </button>
         </div>
       )}
+      <div style={{ marginTop: "24px" }}>
+        <button
+          onClick={() => setShowHowToPlay(true)}
+          style={{ background: "none", border: "none", color: "#0066ff", fontSize: "15px", cursor: "pointer", textDecoration: "underline" }}
+        >
+          ❓ How to Play
+        </button>
+      </div>
+      <Footer />
     </div>
   )
 }
