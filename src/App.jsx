@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.2.4"
+const VERSION = "v0.2.5"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -576,6 +576,13 @@ const ROOM_WORDS = [
   "OZONE", "PLUTO", "QUIRK", "REBEL", "SNACK", "TROUT", "UMBRA", "VAPOR"
 ]
 
+const TEAM_NAME_PRESETS = [
+  ["🔥 Fire", "💧 Water", "⚡ Thunder", "🌪️ Storm", "🦁 Lions", "🐺 Wolves"],
+  ["🍕 Pizza", "🌮 Tacos", "🍔 Burgers", "🌯 Burritos", "🍣 Sushi", "🍜 Ramen"],
+  ["🚀 Rockets", "🛸 UFOs", "🌙 Moons", "⭐ Stars", "🪐 Saturn", "🌍 Earth"],
+  ["🎯 Bulls", "🎲 Dice", "♟️ Kings", "🃏 Jokers", "🎰 Aces", "🎳 Strikers"],
+]
+
 const HOW_TO_PLAY_STEPS = [
   { emoji: "👥", title: "Form Teams", desc: "Split into 2 teams. Each team has a Clue Giver and a Guesser." },
   { emoji: "🎯", title: "Get a Topic", desc: "The Clue Giver sees a secret word — don't show your screen!" },
@@ -660,7 +667,7 @@ function playChiptune() {
       gain.connect(ctx.destination)
       osc.type = "square"
       osc.frequency.setValueAtTime(freq, ctx.currentTime)
-      gain.gain.setValueAtTime(0.06, ctx.currentTime)
+      gain.gain.setValueAtTime(0.02, ctx.currentTime)
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + noteDur * 0.8)
       osc.start(ctx.currentTime)
       osc.stop(ctx.currentTime + noteDur)
@@ -848,6 +855,9 @@ export default function App() {
   const [hintText, setHintText] = useState("")
   const [muted, setMuted] = useState(false)
   const [sharing, setSharing] = useState(false)
+  const [teamNames, setTeamNames] = useState({ "Team 1": "Team 1", "Team 2": "Team 2", "Team 3": "Team 3" })
+  const [editingTeam, setEditingTeam] = useState(null)
+  const [editingName, setEditingName] = useState("")
   const [difficulty, setDifficulty] = useState("medium")
 
   const searchRef = useRef(null)
@@ -855,6 +865,7 @@ export default function App() {
   const countdownRef = useRef(null)
   const timerActiveRef = useRef(false)
   const difficultyRef = useRef("medium")
+  const lastStatusRef = useRef("")
 
   useEffect(() => { screenRef.current = screen }, [screen])
   useEffect(() => { countdownRef.current = countdown }, [countdown])
@@ -874,6 +885,7 @@ export default function App() {
       setPlayers(data.players || {})
       setReadyPlayers(data.ready || {})
       if (data.hint) setHintText(data.hint)
+      if (data.teamNames) setTeamNames(data.teamNames)
 
       if (data.emojis) {
         setReceivedEmojis(Object.values(data.emojis))
@@ -890,7 +902,8 @@ export default function App() {
         setWrongGuesses(data.wrongGuesses || [])
       }
 
-      if (data.status === "countdown" && countdownRef.current === null && !timerActiveRef.current) {
+      if (data.status === "countdown" && countdownRef.current === null && !timerActiveRef.current && lastStatusRef.current !== "countdown") {
+        lastStatusRef.current = "countdown"
         if (screenRef.current === "role") {
           const isClue = data.roles?.[nickname] === "clue"
           setScreen(isClue ? "cluegiver" : "guesser")
@@ -963,6 +976,7 @@ export default function App() {
         setSearch("")
         setHintUsed(false)
         setHintText("")
+        lastStatusRef.current = ""
         setScreen("role")
       }
 
@@ -1029,6 +1043,7 @@ export default function App() {
     setCategory(""); setCurrentTopic(""); setRoomCode(""); setRole("")
     setIsHost(false); setPlayers({}); setTeammate("")
     setHintUsed(false); setHintText("")
+    setTeamNames({ "Team 1": "Team 1", "Team 2": "Team 2", "Team 3": "Team 3" }); setEditingTeam(null)
   }
 
   const endRound = async (won) => {
@@ -1205,6 +1220,14 @@ export default function App() {
     }
   }
 
+  const saveTeamName = async (teamKey, newName) => {
+    if (!newName.trim()) return
+    const updated = { ...teamNames, [teamKey]: newName.trim() }
+    setTeamNames(updated)
+    setEditingTeam(null)
+    await update(ref(db, `rooms/${roomCode}`), { teamNames: updated })
+  }
+
   const useHint = async () => {
     if (hintUsed) return
     const firstLetter = currentTopic[0].toUpperCase()
@@ -1281,24 +1304,63 @@ export default function App() {
         <p style={{ fontSize: "13px", color: "#999", margin: "0 0 10px", letterSpacing: "1px" }}>PLAYERS</p>
         {playerList.map(([name, info]) => {
           const tc = TEAM_COLORS[info.team] || "#999"
-          // FIX: dark background on assigned team buttons, white text always readable
+          const displayName = teamNames[info.team] || info.team
           return (
             <div key={name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", borderRadius: "12px", marginBottom: "8px", background: info.team !== "unassigned" ? tc : "#f5f5f5", border: `2px solid ${tc}` }}>
               <span style={{ fontWeight: "bold", fontSize: "16px", color: info.team !== "unassigned" ? "white" : "#111" }}>{name} {name === nickname ? "👤" : ""}</span>
               {isHost ? (
-                <button onClick={() => assignTeam(name, info.team)} style={{ padding: "6px 14px", fontSize: "13px", borderRadius: "8px", background: info.team !== "unassigned" ? "rgba(255,255,255,0.25)" : tc === "#999" ? "#eee" : tc, color: info.team !== "unassigned" ? "white" : info.team === "unassigned" ? "#333" : "white", border: info.team !== "unassigned" ? "1px solid rgba(255,255,255,0.4)" : "none", cursor: "pointer", fontWeight: "bold" }}>
-                  {info.team === "unassigned" ? "Assign +" : info.team}
+                <button onClick={() => assignTeam(name, info.team)} style={{ padding: "6px 14px", fontSize: "13px", borderRadius: "8px", background: info.team !== "unassigned" ? "rgba(255,255,255,0.25)" : "#eee", color: info.team !== "unassigned" ? "white" : "#333", border: info.team !== "unassigned" ? "1px solid rgba(255,255,255,0.4)" : "none", cursor: "pointer", fontWeight: "bold" }}>
+                  {info.team === "unassigned" ? "Assign +" : displayName}
                 </button>
               ) : (
-                <span style={{ color: info.team !== "unassigned" ? "white" : "#999", fontWeight: "bold", fontSize: "14px" }}>{info.team === "unassigned" ? "Waiting..." : info.team}</span>
+                <span style={{ color: info.team !== "unassigned" ? "white" : "#999", fontWeight: "bold", fontSize: "14px" }}>{info.team === "unassigned" ? "Waiting..." : displayName}</span>
               )}
             </div>
           )
         })}
+
+        {isHost && allAssigned && (
+          <div style={{ margin: "12px 0", background: "#f0f0f0", borderRadius: "12px", padding: "12px" }}>
+            <p style={{ fontSize: "12px", color: "#999", margin: "0 0 8px", letterSpacing: "1px" }}>TEAM NAMES</p>
+            {[...new Set(playerList.map(([,p]) => p.team).filter(t => t && t !== "unassigned"))].map(teamKey => (
+              <div key={teamKey} style={{ marginBottom: "8px" }}>
+                {editingTeam === teamKey ? (
+                  <div>
+                    <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "6px" }}>
+                      {TEAM_NAME_PRESETS[Math.floor(Math.random() * 0) % TEAM_NAME_PRESETS.length + 0].map((preset, i) => (
+                        <button key={i} onClick={() => saveTeamName(teamKey, preset)} style={{ padding: "4px 10px", fontSize: "13px", borderRadius: "8px", background: "#fff", border: `1px solid ${TEAM_COLORS[teamKey]}`, cursor: "pointer", color: TEAM_COLORS[teamKey] }}>{preset}</button>
+                      ))}
+                    </div>
+                    <div style={{ display: "flex", gap: "6px" }}>
+                      <input autoFocus value={editingName} onChange={e => setEditingName(e.target.value)} onKeyDown={e => { if (e.key === "Enter") saveTeamName(teamKey, editingName) }} placeholder="Custom name..." style={{ flex: 1, padding: "6px 10px", borderRadius: "8px", border: `2px solid ${TEAM_COLORS[teamKey]}`, fontSize: "14px" }} />
+                      <button onClick={() => saveTeamName(teamKey, editingName)} style={{ padding: "6px 12px", borderRadius: "8px", background: TEAM_COLORS[teamKey], color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}>✓</button>
+                      <button onClick={() => setEditingTeam(null)} style={{ padding: "6px 12px", borderRadius: "8px", background: "#eee", color: "#666", border: "none", cursor: "pointer" }}>✕</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontWeight: "bold", color: TEAM_COLORS[teamKey], fontSize: "15px" }}>{teamNames[teamKey] || teamKey}</span>
+                    <button onClick={() => { setEditingTeam(teamKey); setEditingName(teamNames[teamKey] || teamKey) }} style={{ padding: "4px 12px", fontSize: "12px", borderRadius: "8px", background: "#eee", border: "none", cursor: "pointer", color: "#666" }}>✏️ Rename</button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
         {isHost && (
           <div style={{ marginTop: "16px", display: "flex", gap: "10px", justifyContent: "center" }}>
             <button onClick={randomizeTeams} style={{ padding: "10px 20px", fontSize: "15px", borderRadius: "10px", background: "#888", color: "white", border: "none", cursor: "pointer" }}>🎲 Randomize</button>
-            <button onClick={startGame} disabled={!allAssigned || playerList.length < 2} style={{ padding: "10px 24px", fontSize: "15px", borderRadius: "10px", background: allAssigned && playerList.length >= 2 ? "#0066ff" : "#aaa", color: "white", border: "none", cursor: allAssigned && playerList.length >= 2 ? "pointer" : "not-allowed", fontWeight: "bold" }}>Start Game →</button>
+            {(() => {
+              const readyCount = playerList.filter(([n]) => readyPlayers[n]).length
+              const allReady = readyCount >= playerList.length && playerList.length >= 2
+              const canStart = allAssigned && playerList.length >= 2
+              return (
+                <button onClick={startGame} disabled={!canStart} style={{ padding: "10px 24px", fontSize: "15px", borderRadius: "10px", background: !canStart ? "#aaa" : allReady ? "#00aa44" : "#ff9900", color: "white", border: "none", cursor: canStart ? "pointer" : "not-allowed", fontWeight: "bold" }}>
+                  {!canStart ? "Assign teams first" : allReady ? "✅ Start Game!" : `Start Anyway ⚠️ (${readyCount}/${playerList.length})`}
+                </button>
+              )
+            })()}
           </div>
         )}
         {!isHost && <p style={{ color: "#999", marginTop: "20px" }}>⏳ Waiting for host to start...</p>}
@@ -1559,8 +1621,8 @@ export default function App() {
           placeholder="Search emojis..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          disabled={!timerActive}
-          style={{ width: "100%", padding: "12px", fontSize: "16px", borderRadius: "12px", border: `2px solid ${teamColor}`, boxSizing: "border-box", marginBottom: "12px", background: timerActive ? "white" : "#f0f0f0", color: timerActive ? "black" : "#aaa", position: "sticky", bottom: "8px", zIndex: 10 }}
+          disabled={!timerActive && !(difficulty === "easy" && guesserActive)}
+          style={{ width: "100%", padding: "12px", fontSize: "16px", borderRadius: "12px", border: `2px solid ${teamColor}`, boxSizing: "border-box", marginBottom: "12px", background: (timerActive || (difficulty === "easy" && guesserActive)) ? "white" : "#f0f0f0", color: (timerActive || (difficulty === "easy" && guesserActive)) ? "black" : "#aaa", position: "sticky", bottom: "8px", zIndex: 10 }}
         />
         {search.trim() !== "" && filteredEmojis.length === 0 && (
           <p style={{ color: "#999", textAlign: "center" }}>No emojis found. Try another word.</p>
