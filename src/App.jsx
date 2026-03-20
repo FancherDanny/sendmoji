@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.2.9"
+const VERSION = "v0.3.0"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -524,6 +524,29 @@ const EMOJI_LIST = [
   { emoji: "🏁", keywords: ["checkered flag", "finish", "race", "win", "end", "formula one", "done"] },
   { emoji: "🚩", keywords: ["red flag", "warning", "danger", "mark", "signal", "alert", "flag"] },
   { emoji: "🏳️", keywords: ["white flag", "surrender", "peace", "give up", "truce", "flag"] },
+
+  // Craft, sewing, tools
+  { emoji: "🧵", keywords: ["thread", "string", "sew", "needle", "stitch", "yarn", "fabric", "craft", "thin"] },
+  { emoji: "🪡", keywords: ["spool", "thread", "string", "sew", "craft", "wind", "yarn", "needle"] },
+  { emoji: "🧶", keywords: ["yarn", "knit", "wool", "string", "craft", "ball", "soft", "loop"] },
+  { emoji: "📌", keywords: ["pin", "push pin", "tack", "stick", "map", "point", "red", "attach"] },
+  { emoji: "📍", keywords: ["pin", "location", "map", "point", "place", "mark", "stick", "red"] },
+  { emoji: "🪢", keywords: ["knot", "rope", "string", "tie", "bind", "loop", "tangle", "twist"] },
+  { emoji: "🔗", keywords: ["chain", "link", "connect", "string", "attach", "bind", "together"] },
+  { emoji: "💉", keywords: ["needle", "syringe", "shot", "inject", "medical", "vaccine", "sharp", "doctor"] },
+  { emoji: "🪡", keywords: ["needle", "thread", "sew", "string", "craft", "thin", "sharp"] },
+  { emoji: "🎋", keywords: ["bamboo", "stick", "green", "japan", "tall", "thin", "pole", "nature"] },
+  { emoji: "🥢", keywords: ["chopsticks", "sticks", "eat", "japanese", "chinese", "food", "pair", "thin"] },
+  { emoji: "🪄", keywords: ["wand", "stick", "magic", "wizard", "spell", "thin", "wave"] },
+  { emoji: "🏒", keywords: ["hockey stick", "stick", "sport", "ice", "hockey", "hit", "puck"] },
+  { emoji: "🥍", keywords: ["lacrosse", "stick", "sport", "net", "field", "catch", "throw"] },
+  { emoji: "🎿", keywords: ["ski", "stick", "pole", "snow", "winter", "sport", "slide"] },
+  { emoji: "🖊️", keywords: ["pen", "stick", "write", "thin", "ink", "point", "draw"] },
+
+  // Food additions
+  { emoji: "🥨", keywords: ["pretzel", "bread", "twisted", "baked", "salty", "snack", "german", "knot", "dough"] },
+  { emoji: "🍘", keywords: ["cracker", "rice cracker", "japanese", "thin", "crispy", "snack", "flat"] },
+  { emoji: "🫙", keywords: ["cracker", "jar", "container", "store", "preserve", "glass"] },
 ]
 
 const RESET_MESSAGES = [
@@ -946,14 +969,16 @@ export default function App() {
             // Use difficultyRef so we always get the current difficulty
             const diff = difficultyRef.current || "medium"
             const secs = DIFFICULTIES[diff]?.timerSeconds
-            if (secs) {
+            if (secs && diff !== "easy") {
               setTimer(secs)
               setGuesserTimer(secs)
               setTimerActive(true)
+              timerActiveRef.current = true
               setGuesserActive(true)
             } else {
-              // Easy mode: no timer, just activate guessing
+              // Easy mode: NO timer ever
               setTimerActive(false)
+              timerActiveRef.current = false
               setGuesserActive(true)
             }
             setTimeout(() => searchRef.current?.focus(), 100)
@@ -965,6 +990,9 @@ export default function App() {
 
       if (data.status === "roundend") {
         stopChiptune()
+        timerActiveRef.current = false
+        countdownRef.current = null
+        lastStatusRef.current = "roundend"
         setCorrect(data.correct || false)
         setSentEmojis(data.emojis ? Object.values(data.emojis) : [])
         setScores(data.scores || { "Team 1": 0, "Team 2": 0, "Team 3": 0 })
@@ -1201,6 +1229,7 @@ export default function App() {
       correct: false,
       wrongGuesses: null,
       ready: null,
+      hint: null,
       scores
     })
   }
@@ -1628,7 +1657,7 @@ export default function App() {
             {canSendMore ? `😈 ${maxEmojis - sentEmojis.length} emoji${maxEmojis - sentEmojis.length !== 1 ? "s" : ""} left` : "🚫 Max emojis reached!"}
           </p>
         )}
-        {timerActive && gameMode === "remote" && (
+        {timerActive && (
           <div style={{ background: "#fff8f8", border: "2px solid #ffcccc", borderRadius: "12px", padding: "10px", marginBottom: "12px" }}>
             <p style={{ margin: "0 0 6px", fontSize: "12px", color: "#cc0000", letterSpacing: "1px" }}>THEIR GUESSES SO FAR</p>
             {wrongGuesses.length === 0
@@ -1637,6 +1666,14 @@ export default function App() {
                   {wrongGuesses.map((g, i) => <span key={i} style={{ background: "#ffe0e0", color: "#cc0000", padding: "4px 10px", borderRadius: "20px", fontSize: "14px" }}>❌ {g}</span>)}
                 </div>
             }
+          </div>
+        )}
+        {!timerActive && guesserActive && difficulty === "easy" && wrongGuesses.length > 0 && (
+          <div style={{ background: "#fff8f8", border: "2px solid #ffcccc", borderRadius: "12px", padding: "10px", marginBottom: "12px" }}>
+            <p style={{ margin: "0 0 6px", fontSize: "12px", color: "#cc0000", letterSpacing: "1px" }}>THEIR GUESSES SO FAR</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+              {wrongGuesses.map((g, i) => <span key={i} style={{ background: "#ffe0e0", color: "#cc0000", padding: "4px 10px", borderRadius: "20px", fontSize: "14px" }}>❌ {g}</span>)}
+            </div>
           </div>
         )}
         <input
