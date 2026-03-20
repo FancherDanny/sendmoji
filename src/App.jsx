@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.2.6"
+const VERSION = "v0.2.7"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -640,12 +640,14 @@ function getAudioCtx() {
   return audioCtx
 }
 
-// Chiptune melody — cheerful 8-bit loop
+// Chiptune melody — gritty fast 8-bit arcade beat
 const MELODY = [
-  523, 659, 784, 659, 523, 392, 440, 523,
-  659, 784, 880, 784, 659, 523, 392, 440,
-  523, 659, 784, 880, 784, 659, 523, 440,
-  392, 440, 523, 659, 523, 440, 392, 330,
+  220, 220, 330, 220, 196, 165, 196, 220,
+  220, 330, 440, 330, 220, 165, 196, 220,
+  262, 262, 392, 262, 220, 196, 220, 262,
+  330, 262, 220, 196, 165, 196, 220, 165,
+  220, 294, 330, 294, 262, 220, 247, 262,
+  294, 330, 392, 330, 294, 247, 220, 247,
 ]
 
 function playChiptune() {
@@ -655,7 +657,7 @@ function playChiptune() {
     if (ctx.state === "suspended") ctx.resume()
     musicPlaying = true
     let noteIndex = 0
-    const BPM = 160
+    const BPM = 200
     const noteDur = 60 / BPM
 
     function scheduleNote() {
@@ -665,7 +667,7 @@ function playChiptune() {
       const gain = ctx.createGain()
       osc.connect(gain)
       gain.connect(ctx.destination)
-      osc.type = "square"
+      osc.type = "sawtooth"
       osc.frequency.setValueAtTime(freq, ctx.currentTime)
       gain.gain.setValueAtTime(0.02, ctx.currentTime)
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + noteDur * 0.8)
@@ -801,12 +803,18 @@ function DifficultyBadge({ difficulty, timer }) {
   )
 }
 
-function Footer() {
+function Footer({ nickname }) {
+  const isMamabear = nickname?.toLowerCase() === "mamabear"
   return (
     <div style={{ textAlign: "center", marginTop: "32px", paddingBottom: "16px" }}>
       <span style={{ fontSize: "11px", color: "#bbb", letterSpacing: "0.5px" }}>
         🎯 GuessMoji {VERSION} · Made by {MADE_BY}
       </span>
+      {isMamabear && Math.random() < 0.4 && (
+        <div style={{ fontSize: "11px", color: "#ffaacc", marginTop: "4px" }}>
+          Love you Mom ❤️
+        </div>
+      )}
     </div>
   )
 }
@@ -1263,7 +1271,7 @@ export default function App() {
         <button onClick={() => setShowHowToPlay(false)} style={{ width: "100%", padding: "14px", fontSize: "17px", borderRadius: "12px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", fontWeight: "bold", marginTop: "8px" }}>
           Got it! Let's Play 🎯
         </button>
-        <Footer />
+        <Footer nickname={nickname} />
       </div>
     )
   }
@@ -1357,7 +1365,7 @@ export default function App() {
           </div>
         )}
         {!isHost && <p style={{ color: "#999", marginTop: "20px" }}>⏳ Waiting for host to start...</p>}
-        <Footer />
+        <Footer nickname={nickname} />
       </div>
     )
   }
@@ -1432,7 +1440,7 @@ export default function App() {
             <p style={{ color: "#999", fontSize: "14px", margin: "12px 0" }}>Waiting for host...</p>
           )}
         </div>
-        <Footer />
+        <Footer nickname={nickname} />
       </div>
     )
   }
@@ -1469,7 +1477,7 @@ export default function App() {
           </button>
           <button onClick={confirmReset} style={{ padding: "14px 28px", fontSize: "18px", borderRadius: "12px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}>🔄 Play Again</button>
         </div>
-        <Footer />
+        <Footer nickname={nickname} />
       </div>
     )
   }
@@ -1557,12 +1565,11 @@ export default function App() {
   if (screen === "cluegiver") {
     return (
       <div style={{ fontFamily: "sans-serif", padding: "20px", maxWidth: "400px", margin: "0 auto", minHeight: "100dvh", boxSizing: "border-box" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
           <Logo onTap={handleLogoTap} />
-          <div style={{ fontSize: "22px", fontWeight: "bold", color: timer <= 10 && difficulty !== "easy" ? "red" : teamColor }}>
-            {difficulty === "easy"
-              ? <span style={{ fontSize: "12px", background: "#00aa44", color: "white", borderRadius: "6px", padding: "3px 8px", fontWeight: "bold", letterSpacing: "1px" }}>EASY</span>
-              : `⏱️ ${timer}s`}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <button onClick={toggleMute} style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", padding: "4px" }}>{muted ? "🔇" : "🔊"}</button>
+            <DifficultyBadge difficulty={difficulty} timer={timer} />
           </div>
         </div>
         <div style={{ background: teamColor, color: "white", borderRadius: "12px", padding: "12px 16px", textAlign: "center", margin: "8px 0", position: "sticky", top: "0", zIndex: 9 }}>
@@ -1684,7 +1691,7 @@ export default function App() {
         <button onClick={() => setScreen("lobby")} style={{ padding: "10px 30px", fontSize: "16px", borderRadius: "8px", background: "#ccc", color: "white", border: "none", cursor: "pointer", margin: "5px" }}>← Back</button>
         <button onClick={createGame} style={{ padding: "10px 30px", fontSize: "16px", borderRadius: "8px", background: category ? "#0066ff" : "#aaa", color: "white", border: "none", cursor: category ? "pointer" : "not-allowed", margin: "5px" }}>Create Room →</button>
         {!category && <p style={{ color: "#cc0000", fontSize: "13px" }}>Pick a category first!</p>}
-        <Footer />
+        <Footer nickname={nickname} />
       </div>
     )
   }
@@ -1699,7 +1706,7 @@ export default function App() {
         <br /><br />
         <button onClick={() => setScreen("lobby")} style={{ padding: "10px 30px", fontSize: "16px", borderRadius: "8px", background: "#ccc", color: "white", border: "none", cursor: "pointer", margin: "5px" }}>← Back</button>
         <button onClick={joinGame} style={{ padding: "10px 30px", fontSize: "16px", borderRadius: "8px", background: "#ff6600", color: "white", border: "none", cursor: "pointer", margin: "5px" }}>Join →</button>
-        <Footer />
+        <Footer nickname={nickname} />
       </div>
     )
   }
@@ -1714,7 +1721,7 @@ export default function App() {
         <button onClick={() => setScreen("create")} style={{ padding: "10px 30px", fontSize: "18px", borderRadius: "8px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", margin: "10px" }}>🎮 Create Game</button>
         <br />
         <button onClick={() => setScreen("join")} style={{ padding: "10px 30px", fontSize: "18px", borderRadius: "8px", background: "#ff6600", color: "white", border: "none", cursor: "pointer", margin: "10px" }}>🔗 Join Game</button>
-        <Footer />
+        <Footer nickname={nickname} />
       </div>
     )
   }
@@ -1744,7 +1751,7 @@ export default function App() {
           ❓ How to Play
         </button>
       </div>
-      <Footer />
+      <Footer nickname={nickname} />
     </div>
   )
 }
