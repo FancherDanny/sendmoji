@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.3.0"
+const VERSION = "v0.3.1"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -341,7 +341,7 @@ const EMOJI_LIST = [
   { emoji: "🥜", keywords: ["peanut", "nut", "butter", "allergy", "snack", "shell", "elephant"] },
   { emoji: "🍞", keywords: ["bread", "toast", "bake", "wheat", "loaf", "butter", "sandwich"] },
   { emoji: "🧁", keywords: ["cupcake", "sweet", "frosting", "birthday", "bake", "small", "cake"] },
-  { emoji: "🍰", keywords: ["cake", "slice", "sweet", "dessert", "strawberry", "layer", "birthday"] },
+  { emoji: "🍰", keywords: ["cake", "slice", "sweet", "dessert", "strawberry", "layer", "birthday", "cheesecake", "cheese"] },
   { emoji: "🍭", keywords: ["lollipop", "candy", "sweet", "swirl", "stick", "colorful", "sugar"] },
   { emoji: "🍬", keywords: ["candy", "sweet", "wrapper", "sugar", "halloween", "treat", "colorful"] },
   { emoji: "🍯", keywords: ["honey", "bee", "sweet", "jar", "gold", "bear", "sticky"] },
@@ -524,6 +524,13 @@ const EMOJI_LIST = [
   { emoji: "🏁", keywords: ["checkered flag", "finish", "race", "win", "end", "formula one", "done"] },
   { emoji: "🚩", keywords: ["red flag", "warning", "danger", "mark", "signal", "alert", "flag"] },
   { emoji: "🏳️", keywords: ["white flag", "surrender", "peace", "give up", "truce", "flag"] },
+  { emoji: "‼️", keywords: ["exclamation", "important", "urgent", "double", "warning", "shout", "loud", "emphasis", "wow"] },
+  { emoji: "❓", keywords: ["question", "confused", "unknown", "ask", "wonder", "huh", "what", "mystery"] },
+  { emoji: "❗", keywords: ["exclamation", "important", "alert", "warning", "urgent", "shout", "emphasis"] },
+  { emoji: "⁉️", keywords: ["what", "exclamation", "question", "surprise", "confused", "shocked", "huh"] },
+  { emoji: "💢", keywords: ["anger", "mad", "frustration", "comic", "vein", "annoyed", "rage", "symbol"] },
+  { emoji: "💬", keywords: ["speech", "talk", "say", "chat", "bubble", "message", "word", "conversation"] },
+  { emoji: "💭", keywords: ["thought", "think", "dream", "imagine", "wonder", "bubble", "idea", "cloud"] },
 
   // Craft, sewing, tools
   { emoji: "🧵", keywords: ["thread", "string", "sew", "needle", "stitch", "yarn", "fabric", "craft", "thin"] },
@@ -715,68 +722,94 @@ function stopChiptune() {
 // ============================================================
 // SHARE SCORE CARD (Canvas → Web Share API)
 // ============================================================
-async function shareScoreCard({ scores, topic, sentEmojis, correct, rounds, currentRound, difficulty }) {
+async function shareScoreCard({ scores, topic, sentEmojis, correct, rounds, currentRound, difficulty, wrongGuesses, teamNames, players, cheater }) {
   const canvas = document.createElement("canvas")
   canvas.width = 600
-  canvas.height = 400
+  canvas.height = 480
   const ctx = canvas.getContext("2d")
 
   // Background
   ctx.fillStyle = "#0a0a1a"
-  ctx.fillRect(0, 0, 600, 400)
+  ctx.fillRect(0, 0, 600, 480)
 
   // Title
   ctx.fillStyle = "#0066ff"
-  ctx.font = "bold 36px monospace"
+  ctx.font = "bold 34px monospace"
   ctx.textAlign = "center"
-  ctx.fillText("🎯 GuessMoji", 300, 60)
+  ctx.fillText("🎯 GuessMoji", 300, 52)
 
   // Difficulty pill
   const diffColors = { easy: "#00aa44", medium: "#ff9900", hard: "#cc0000" }
   const diffLabels = { easy: "EASY", medium: "MEDIUM", hard: "HARD" }
   ctx.fillStyle = diffColors[difficulty] || "#ff9900"
   ctx.beginPath()
-  ctx.roundRect(230, 75, 140, 28, 14)
+  ctx.roundRect(230, 62, 140, 26, 13)
   ctx.fill()
   ctx.fillStyle = "white"
-  ctx.font = "bold 14px monospace"
-  ctx.fillText(diffLabels[difficulty] || "MEDIUM", 300, 94)
+  ctx.font = "bold 13px monospace"
+  ctx.fillText(diffLabels[difficulty] || "MEDIUM", 300, 80)
 
-  // Topic reveal
+  // Result
   ctx.fillStyle = correct ? "#00aa44" : "#cc0000"
-  ctx.font = "bold 28px monospace"
-  ctx.fillText(correct ? "✅ Guessed it!" : "❌ Times Up!", 300, 145)
+  ctx.font = "bold 26px monospace"
+  ctx.fillText(correct ? "✅ Guessed it!" : "❌ Time's Up!", 300, 125)
+
+  // Cheater message
+  if (cheater) {
+    ctx.fillStyle = "#ff6600"
+    ctx.font = "bold 14px monospace"
+    ctx.fillText("🤨 Zero emojis?! Cheater cheater!", 300, 148)
+  }
+
+  // Topic
   ctx.fillStyle = "#ffffff"
-  ctx.font = "22px monospace"
-  ctx.fillText(`"${topic}"`, 300, 180)
+  ctx.font = "bold 22px monospace"
+  ctx.fillText(`"${topic}"`, 300, cheater ? 172 : 158)
 
   // Emojis sent
   if (sentEmojis.length > 0) {
-    ctx.font = "32px serif"
-    const startX = 300 - (sentEmojis.length * 22)
+    ctx.font = "28px serif"
+    const totalW = sentEmojis.slice(0, 10).length * 38
+    const startX = 300 - totalW / 2 + 14
     sentEmojis.slice(0, 10).forEach((e, i) => {
-      ctx.fillText(e, startX + i * 44, 230)
+      ctx.fillText(e, startX + i * 38, 210)
     })
   }
 
-  // Scores
+  // Scores — only playing teams, show team name and players
   const teamColors = { "Team 1": "#0066ff", "Team 2": "#ff6600", "Team 3": "#00aa44" }
-  const entries = Object.entries(scores).filter(([, s]) => s > 0 || true)
-  ctx.font = "bold 20px monospace"
-  entries.forEach(([team, score], i) => {
-    const x = 150 + i * 150
-    ctx.fillStyle = teamColors[team] || "#ffffff"
-    ctx.fillText(team, x, 275)
+  const playingTeams = Object.entries(scores).filter(([t]) => {
+    const playersOnTeam = Object.values(players || {}).some(p => p.team === t)
+    return playersOnTeam
+  })
+  const colW = 600 / Math.max(playingTeams.length, 1)
+  playingTeams.forEach(([teamKey, score], i) => {
+    const x = colW * i + colW / 2
+    const displayName = (teamNames || {})[teamKey] || teamKey
+    const teamPlayers = Object.entries(players || {}).filter(([, p]) => p.team === teamKey).map(([n]) => n)
+    ctx.fillStyle = teamColors[teamKey] || "#aaa"
+    ctx.font = "bold 16px monospace"
+    ctx.fillText(displayName, x, 250)
+    ctx.fillStyle = "#aaa"
+    ctx.font = "12px monospace"
+    ctx.fillText(teamPlayers.join(" & "), x, 268)
     ctx.fillStyle = "#ffffff"
-    ctx.font = "bold 32px monospace"
-    ctx.fillText(score, x, 310)
-    ctx.font = "bold 20px monospace"
+    ctx.font = "bold 30px monospace"
+    ctx.fillText(score, x, 304)
   })
 
+  // Wrong guesses
+  if (wrongGuesses && wrongGuesses.length > 0) {
+    ctx.fillStyle = "#cc0000"
+    ctx.font = "12px monospace"
+    const wgText = "❌ " + wrongGuesses.slice(0, 5).join("  ❌ ")
+    ctx.fillText(wgText.length > 60 ? wgText.slice(0, 60) + "..." : wgText, 300, 335)
+  }
+
   // Round info
-  ctx.fillStyle = "#666"
-  ctx.font = "14px monospace"
-  ctx.fillText(`Round ${currentRound} of ${rounds}  •  guessmoji.app`, 300, 370)
+  ctx.fillStyle = "#555"
+  ctx.font = "13px monospace"
+  ctx.fillText(`Round ${currentRound} of ${rounds}  •  GuessMoji`, 300, 462)
 
   // Convert to blob and share
   return new Promise((resolve) => {
@@ -902,6 +935,7 @@ export default function App() {
   const [codeCopied, setCodeCopied] = useState(false)
   const [hintUsed, setHintUsed] = useState(false)
   const [hintText, setHintText] = useState("")
+  const [roundStartTime, setRoundStartTime] = useState(null)
   const [muted, setMuted] = useState(false)
   const [sharing, setSharing] = useState(false)
   const [teamNames, setTeamNames] = useState({ "Team 1": "Team 1", "Team 2": "Team 2", "Team 3": "Team 3" })
@@ -981,6 +1015,7 @@ export default function App() {
               timerActiveRef.current = false
               setGuesserActive(true)
             }
+            setRoundStartTime(Date.now())
             setTimeout(() => searchRef.current?.focus(), 100)
           } else {
             setCountdown(index)
@@ -1259,7 +1294,7 @@ export default function App() {
     searchRef.current?.focus()
   }
 
-  const normalizeGuess = (str) => str.trim().toLowerCase().replace(/^the\s+/, "")
+  const normalizeGuess = (str) => str.trim().toLowerCase().replace(/^the\s+/, "").replace(/\s+/g, " ")
 
   const submitGuess = async () => {
     if (!guess.trim()) return
@@ -1439,7 +1474,11 @@ export default function App() {
             <p style={{ color: "#ff6600", fontSize: "15px", fontWeight: "bold" }}>🤨 Cheater cheater pumpkin eater! Zero emojis?!</p>
           )}
           {gotIt && sentEmojis.length > 0 && (
-            <p style={{ color: "#666", fontSize: "14px" }}>Solved in {60 - guesserTimer}s with {sentEmojis.length} emoji{sentEmojis.length !== 1 ? "s" : ""}</p>
+            <p style={{ color: "#666", fontSize: "14px" }}>
+              {difficulty === "easy" && roundStartTime
+                ? `Solved in ${Math.round((Date.now() - roundStartTime) / 1000)}s`
+                : `Solved in ${60 - guesserTimer}s`} with {sentEmojis.length} emoji{sentEmojis.length !== 1 ? "s" : ""}
+            </p>
           )}
         </div>
         {sentEmojis.length > 0 && (
@@ -1480,7 +1519,7 @@ export default function App() {
           <button
             onClick={async () => {
               setSharing(true)
-              await shareScoreCard({ scores, topic: currentTopic, sentEmojis, correct, rounds, currentRound, difficulty })
+              await shareScoreCard({ scores, topic: currentTopic, sentEmojis, correct, rounds, currentRound, difficulty, wrongGuesses, teamNames, players, cheater: correct && sentEmojis.length === 0 })
               setSharing(false)
             }}
             style={{ padding: "12px 20px", fontSize: "15px", borderRadius: "12px", background: "#6c3fc5", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}
@@ -1523,7 +1562,7 @@ export default function App() {
           <button
             onClick={async () => {
               setSharing(true)
-              await shareScoreCard({ scores, topic: currentTopic, sentEmojis, correct, rounds, currentRound: rounds, difficulty })
+              await shareScoreCard({ scores, topic: currentTopic, sentEmojis, correct, rounds, currentRound: rounds, difficulty, wrongGuesses, teamNames, players, cheater: correct && sentEmojis.length === 0 })
               setSharing(false)
             }}
             style={{ padding: "14px 28px", fontSize: "18px", borderRadius: "12px", background: "#6c3fc5", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}
@@ -1636,7 +1675,7 @@ export default function App() {
             {countdownWords[countdown]}
           </div>
         )}
-        {!timerActive && countdown === null && (
+        {!timerActive && !guesserActive && countdown === null && (
           <>
             <p style={{ color: readyPlayers[teammate] ? "#00aa44" : "#999", fontSize: "14px", textAlign: "center", margin: "0 0 10px", fontWeight: readyPlayers[teammate] ? "bold" : "normal" }}>
               {readyPlayers[teammate] ? `✅ ${teammate} is on the guesser screen!` : `⏳ ${teammate || "Guesser"} is heading over...`}
@@ -1776,7 +1815,7 @@ export default function App() {
   if (screen === "lobby") {
     return (
       <div style={{ textAlign: "center", marginTop: "100px", fontFamily: "sans-serif" }}>
-        <Logo onTap={handleLogoTap} />
+        <Logo onTap={handleLogoTap} center />
         <p style={{ fontSize: "18px" }}>Hey <strong>{nickname}</strong>! 👋</p>
         <br />
         <button onClick={() => setScreen("create")} style={{ padding: "10px 30px", fontSize: "18px", borderRadius: "8px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", margin: "10px" }}>🎮 Create Game</button>
@@ -1790,7 +1829,7 @@ export default function App() {
   // HOME SCREEN
   return (
     <div style={{ textAlign: "center", marginTop: "80px", fontFamily: "sans-serif", padding: "20px" }}>
-      <h1 style={{ fontSize: "36px", margin: "0 0 4px" }}>🎯 GuessMoji</h1>
+      <Logo onTap={null} center />
       <p style={{ color: "#999", fontSize: "14px", margin: "0 0 24px" }}>Send emojis. Guess the word.</p>
       <input
         type="text"
