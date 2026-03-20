@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.2.3"
+const VERSION = "v0.2.4"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -621,6 +621,157 @@ function assignRoles(players, round) {
   return roles
 }
 
+// ============================================================
+// 8-BIT MUSIC ENGINE (Web Audio API, no files needed)
+// ============================================================
+let audioCtx = null
+let musicNodes = []
+let musicPlaying = false
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+  return audioCtx
+}
+
+// Chiptune melody — cheerful 8-bit loop
+const MELODY = [
+  523, 659, 784, 659, 523, 392, 440, 523,
+  659, 784, 880, 784, 659, 523, 392, 440,
+  523, 659, 784, 880, 784, 659, 523, 440,
+  392, 440, 523, 659, 523, 440, 392, 330,
+]
+
+function playChiptune() {
+  if (musicPlaying) return
+  try {
+    const ctx = getAudioCtx()
+    if (ctx.state === "suspended") ctx.resume()
+    musicPlaying = true
+    let noteIndex = 0
+    const BPM = 160
+    const noteDur = 60 / BPM
+
+    function scheduleNote() {
+      if (!musicPlaying) return
+      const freq = MELODY[noteIndex % MELODY.length]
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.type = "square"
+      osc.frequency.setValueAtTime(freq, ctx.currentTime)
+      gain.gain.setValueAtTime(0.06, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + noteDur * 0.8)
+      osc.start(ctx.currentTime)
+      osc.stop(ctx.currentTime + noteDur)
+      musicNodes.push(osc)
+      noteIndex++
+      if (musicPlaying) {
+        setTimeout(scheduleNote, noteDur * 1000)
+      }
+    }
+    scheduleNote()
+  } catch(e) { console.log("Audio error:", e) }
+}
+
+function stopChiptune() {
+  musicPlaying = false
+  musicNodes.forEach(n => { try { n.stop() } catch(e) {} })
+  musicNodes = []
+}
+
+// ============================================================
+// SHARE SCORE CARD (Canvas → Web Share API)
+// ============================================================
+async function shareScoreCard({ scores, topic, sentEmojis, correct, rounds, currentRound, difficulty }) {
+  const canvas = document.createElement("canvas")
+  canvas.width = 600
+  canvas.height = 400
+  const ctx = canvas.getContext("2d")
+
+  // Background
+  ctx.fillStyle = "#0a0a1a"
+  ctx.fillRect(0, 0, 600, 400)
+
+  // Title
+  ctx.fillStyle = "#0066ff"
+  ctx.font = "bold 36px monospace"
+  ctx.textAlign = "center"
+  ctx.fillText("🎯 GuessMoji", 300, 60)
+
+  // Difficulty pill
+  const diffColors = { easy: "#00aa44", medium: "#ff9900", hard: "#cc0000" }
+  const diffLabels = { easy: "EASY", medium: "MEDIUM", hard: "HARD" }
+  ctx.fillStyle = diffColors[difficulty] || "#ff9900"
+  ctx.beginPath()
+  ctx.roundRect(230, 75, 140, 28, 14)
+  ctx.fill()
+  ctx.fillStyle = "white"
+  ctx.font = "bold 14px monospace"
+  ctx.fillText(diffLabels[difficulty] || "MEDIUM", 300, 94)
+
+  // Topic reveal
+  ctx.fillStyle = correct ? "#00aa44" : "#cc0000"
+  ctx.font = "bold 28px monospace"
+  ctx.fillText(correct ? "✅ Guessed it!" : "❌ Times Up!", 300, 145)
+  ctx.fillStyle = "#ffffff"
+  ctx.font = "22px monospace"
+  ctx.fillText(`"${topic}"`, 300, 180)
+
+  // Emojis sent
+  if (sentEmojis.length > 0) {
+    ctx.font = "32px serif"
+    const startX = 300 - (sentEmojis.length * 22)
+    sentEmojis.slice(0, 10).forEach((e, i) => {
+      ctx.fillText(e, startX + i * 44, 230)
+    })
+  }
+
+  // Scores
+  const teamColors = { "Team 1": "#0066ff", "Team 2": "#ff6600", "Team 3": "#00aa44" }
+  const entries = Object.entries(scores).filter(([, s]) => s > 0 || true)
+  ctx.font = "bold 20px monospace"
+  entries.forEach(([team, score], i) => {
+    const x = 150 + i * 150
+    ctx.fillStyle = teamColors[team] || "#ffffff"
+    ctx.fillText(team, x, 275)
+    ctx.fillStyle = "#ffffff"
+    ctx.font = "bold 32px monospace"
+    ctx.fillText(score, x, 310)
+    ctx.font = "bold 20px monospace"
+  })
+
+  // Round info
+  ctx.fillStyle = "#666"
+  ctx.font = "14px monospace"
+  ctx.fillText(`Round ${currentRound} of ${rounds}  •  guessmoji.app`, 300, 370)
+
+  // Convert to blob and share
+  return new Promise((resolve) => {
+    canvas.toBlob(async (blob) => {
+      try {
+        const file = new File([blob], "guessmoji-score.png", { type: "image/png" })
+        if (navigator.share && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: "GuessMoji",
+            text: `We just played GuessMoji! ${correct ? "✅ Guessed it!" : "❌ Ran out of time!"} The word was "${topic}"`,
+            files: [file],
+          })
+        } else {
+          // Fallback: download the image
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement("a")
+          a.href = url
+          a.download = "guessmoji-score.png"
+          a.click()
+          URL.revokeObjectURL(url)
+        }
+      } catch(e) { console.log("Share error:", e) }
+      resolve()
+    }, "image/png")
+  })
+}
+
 const DIFFICULTY_BADGE_COLORS = { easy: "#00aa44", medium: "#ff9900", hard: "#cc0000" }
 const DIFFICULTY_LABELS = { easy: "😌 EASY", medium: "😅 MED", hard: "😈 HARD" }
 
@@ -695,6 +846,8 @@ export default function App() {
   const [codeCopied, setCodeCopied] = useState(false)
   const [hintUsed, setHintUsed] = useState(false)
   const [hintText, setHintText] = useState("")
+  const [muted, setMuted] = useState(false)
+  const [sharing, setSharing] = useState(false)
   const [difficulty, setDifficulty] = useState("medium")
 
   const searchRef = useRef(null)
@@ -743,6 +896,8 @@ export default function App() {
           setScreen(isClue ? "cluegiver" : "guesser")
         }
         setCountdown(0)
+        // Start music on countdown
+        if (!muted) playChiptune()
         let index = 0
         const interval = setInterval(() => {
           index += 1
@@ -770,6 +925,7 @@ export default function App() {
       }
 
       if (data.status === "roundend") {
+        stopChiptune()
         setCorrect(data.correct || false)
         setSentEmojis(data.emojis ? Object.values(data.emojis) : [])
         setScores(data.scores || { "Team 1": 0, "Team 2": 0, "Team 3": 0 })
@@ -849,6 +1005,7 @@ export default function App() {
 
   useEffect(() => {
     if (timerActive && timer <= 0 && difficulty !== "easy") {
+      stopChiptune()
       setTimerActive(false)
       endRound(false)
     }
@@ -862,6 +1019,7 @@ export default function App() {
   }, [guesserTimer, guesserActive])
 
   const resetAllState = () => {
+    stopChiptune()
     setTeam(""); setScreen("home"); setGameMode("sameroom"); setDifficulty("medium")
     setRounds(3); setCurrentRound(1); setScores({ "Team 1": 0, "Team 2": 0, "Team 3": 0 })
     setJoinCode(""); setSearch(""); setSentEmojis([]); setTimer(60)
@@ -1037,6 +1195,16 @@ export default function App() {
     }
   }
 
+  const toggleMute = () => {
+    if (muted) {
+      setMuted(false)
+      if (timerActive || guesserActive) playChiptune()
+    } else {
+      setMuted(true)
+      stopChiptune()
+    }
+  }
+
   const useHint = async () => {
     if (hintUsed) return
     const firstLetter = currentTopic[0].toUpperCase()
@@ -1189,11 +1357,21 @@ export default function App() {
           ))}
         </div>
         <p style={{ color: "#999", fontSize: "14px" }}>Round {currentRound} of {rounds}</p>
-        <div style={{ display: "flex", justifyContent: "center", gap: "12px", marginTop: "8px" }}>
-          <button onClick={confirmReset} style={{ padding: "12px 24px", fontSize: "16px", borderRadius: "12px", background: "#ccc", color: "white", border: "none", cursor: "pointer" }}>🏠 End Game</button>
+        <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "8px", flexWrap: "wrap" }}>
+          <button onClick={confirmReset} style={{ padding: "12px 20px", fontSize: "15px", borderRadius: "12px", background: "#ccc", color: "white", border: "none", cursor: "pointer" }}>🏠 End</button>
+          <button
+            onClick={async () => {
+              setSharing(true)
+              await shareScoreCard({ scores, topic: currentTopic, sentEmojis, correct, rounds, currentRound, difficulty })
+              setSharing(false)
+            }}
+            style={{ padding: "12px 20px", fontSize: "15px", borderRadius: "12px", background: "#6c3fc5", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}
+          >
+            {sharing ? "..." : "📤 Share"}
+          </button>
           {isHost ? (
-            <button onClick={nextRound} style={{ padding: "12px 24px", fontSize: "16px", borderRadius: "12px", background: teamColor, color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}>
-              {currentRound >= rounds ? "🏆 See Results" : "Next Round →"}
+            <button onClick={nextRound} style={{ padding: "12px 20px", fontSize: "15px", borderRadius: "12px", background: teamColor, color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}>
+              {currentRound >= rounds ? "🏆 Results" : "Next →"}
             </button>
           ) : (
             <p style={{ color: "#999", fontSize: "14px", margin: "12px 0" }}>Waiting for host...</p>
@@ -1223,7 +1401,19 @@ export default function App() {
             </div>
           ))}
         </div>
-        <button onClick={confirmReset} style={{ padding: "14px 40px", fontSize: "20px", borderRadius: "12px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}>🔄 Play Again</button>
+        <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+          <button
+            onClick={async () => {
+              setSharing(true)
+              await shareScoreCard({ scores, topic: currentTopic, sentEmojis, correct, rounds, currentRound: rounds, difficulty })
+              setSharing(false)
+            }}
+            style={{ padding: "14px 28px", fontSize: "18px", borderRadius: "12px", background: "#6c3fc5", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}
+          >
+            {sharing ? "..." : "📤 Share Results"}
+          </button>
+          <button onClick={confirmReset} style={{ padding: "14px 28px", fontSize: "18px", borderRadius: "12px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}>🔄 Play Again</button>
+        </div>
         <Footer />
       </div>
     )
@@ -1236,7 +1426,10 @@ export default function App() {
       <div style={{ fontFamily: "sans-serif", padding: "20px", maxWidth: "400px", margin: "0 auto", minHeight: "100dvh", boxSizing: "border-box" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
           <Logo onTap={handleLogoTap} />
-          <DifficultyBadge difficulty={difficulty} timer={guesserTimer} />
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <button onClick={toggleMute} style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", padding: "4px" }}>{muted ? "🔇" : "🔊"}</button>
+            <DifficultyBadge difficulty={difficulty} timer={guesserTimer} />
+          </div>
         </div>
         {countdown !== null && (
           <div style={{ fontSize: "100px", fontWeight: "bold", textAlign: "center", color: teamColor, margin: "20px 0" }}>
