@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.2.0"
+const VERSION = "v0.2.1"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -677,10 +677,12 @@ export default function App() {
   const screenRef = useRef(screen)
   const countdownRef = useRef(null)
   const timerActiveRef = useRef(false)
+  const difficultyRef = useRef("medium")
 
   useEffect(() => { screenRef.current = screen }, [screen])
   useEffect(() => { countdownRef.current = countdown }, [countdown])
   useEffect(() => { timerActiveRef.current = timerActive }, [timerActive])
+  useEffect(() => { difficultyRef.current = difficulty }, [difficulty])
 
   const countdownWords = ["Ready", "Set", "GO!"]
   const teamColor = TEAM_COLORS[team] || "#999"
@@ -722,17 +724,16 @@ export default function App() {
           if (index >= countdownWords.length) {
             clearInterval(interval)
             setCountdown(null)
-            // Apply difficulty timer
-            const diff = data.difficulty || "medium"
+            // Use difficultyRef so we always get the current difficulty
+            const diff = difficultyRef.current || "medium"
             const secs = DIFFICULTIES[diff]?.timerSeconds
             if (secs) {
               setTimer(secs)
               setGuesserTimer(secs)
               setTimerActive(true)
               setGuesserActive(true)
-            }
-            // Easy mode: no timer, just activate guessing
-            if (!secs) {
+            } else {
+              // Easy mode: no timer, just activate guessing
               setTimerActive(false)
               setGuesserActive(true)
             }
@@ -759,22 +760,25 @@ export default function App() {
         const myTeammate = Object.entries(data.players || {}).find(
           ([n, p]) => n !== nickname && p.team === myTeam
         )?.[0] || ""
+        const nextDiff = data.difficulty || "medium"
+        const nextSecs = DIFFICULTIES[nextDiff]?.timerSeconds || 60
         setCurrentTopic(data.topic || "")
         setCurrentRound(newRound)
         setScores(data.scores || { "Team 1": 0, "Team 2": 0, "Team 3": 0 })
         setRole(myRole)
         setTeam(myTeam)
         setTeammate(myTeammate)
+        setDifficulty(nextDiff)
         setSentEmojis([])
         setReceivedEmojis([])
-        setTimer(60)
+        setTimer(nextSecs)
         setTimerActive(false)
         setGuesserActive(false)
         setCountdown(null)
         setGuess("")
         setWrongGuesses([])
         setCorrect(false)
-        setGuesserTimer(60)
+        setGuesserTimer(nextSecs)
         setSearch("")
         setScreen("role")
       }
@@ -956,6 +960,7 @@ export default function App() {
       topic: newTopic,
       currentRound: newRound,
       roles: newRoles,
+      difficulty,
       emojis: null,
       correct: false,
       wrongGuesses: null,
@@ -1188,7 +1193,9 @@ export default function App() {
       <div style={{ fontFamily: "sans-serif", padding: "20px", maxWidth: "400px", margin: "0 auto", minHeight: "100dvh", boxSizing: "border-box" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Logo onTap={handleLogoTap} />
-          <div style={{ fontSize: "28px", fontWeight: "bold", color: guesserTimer <= 10 && difficulty !== "easy" ? "red" : teamColor }}>{difficulty === "easy" ? "😌 Easy" : `⏱️ ${guesserTimer}s`}</div>
+          <div style={{ fontSize: "22px", fontWeight: "bold", color: guesserTimer <= 10 && difficulty !== "easy" ? "red" : teamColor }}>
+            {difficulty === "easy" ? <span style={{ fontSize: "13px", background: "#00aa44", color: "white", borderRadius: "8px", padding: "4px 10px", fontWeight: "bold" }}>😌 EASY</span> : `⏱️ ${guesserTimer}s`}
+          </div>
         </div>
         {countdown !== null && (
           <div style={{ fontSize: "100px", fontWeight: "bold", textAlign: "center", color: teamColor, margin: "20px 0" }}>
@@ -1247,7 +1254,9 @@ export default function App() {
       <div style={{ fontFamily: "sans-serif", padding: "20px", maxWidth: "400px", margin: "0 auto", minHeight: "100dvh", boxSizing: "border-box" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Logo onTap={handleLogoTap} />
-          <div style={{ fontSize: "28px", fontWeight: "bold", color: timer <= 10 && difficulty !== "easy" ? "red" : teamColor }}>{difficulty === "easy" ? "😌 Easy" : `⏱️ ${timer}s`}</div>
+          <div style={{ fontSize: "22px", fontWeight: "bold", color: timer <= 10 && difficulty !== "easy" ? "red" : teamColor }}>
+            {difficulty === "easy" ? <span style={{ fontSize: "13px", background: "#00aa44", color: "white", borderRadius: "8px", padding: "4px 10px", fontWeight: "bold" }}>😌 EASY</span> : `⏱️ ${timer}s`}
+          </div>
         </div>
         <div style={{ background: teamColor, color: "white", borderRadius: "12px", padding: "12px 16px", textAlign: "center", margin: "8px 0", position: "sticky", top: "0", zIndex: 9 }}>
           <p style={{ margin: 0, fontSize: "12px", opacity: 0.8 }}>YOUR TOPIC</p>
