@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.1.6"
+const VERSION = "v0.2.0"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -544,6 +544,27 @@ const TEAM_COLORS = {
   "unassigned": "#999"
 }
 
+const DIFFICULTIES = {
+  easy: {
+    label: "😌 Easy",
+    color: "#00aa44",
+    timerSeconds: null,   // no timer
+    description: "No timer · Hints are free",
+  },
+  medium: {
+    label: "😅 Medium",
+    color: "#ff9900",
+    timerSeconds: 60,
+    description: "60 seconds · Standard rules",
+  },
+  hard: {
+    label: "😈 Hard",
+    color: "#cc0000",
+    timerSeconds: 35,
+    description: "35 seconds · Max 5 emojis",
+  },
+}
+
 const ROOM_WORDS = [
   "MANGO", "TIGER", "DISCO", "PIZZA", "NINJA", "LEMON", "PANDA", "COBRA",
   "HIPPO", "SALSA", "GECKO", "BURRO", "OLIVE", "TANGO", "RHINO", "CACTUS",
@@ -650,6 +671,7 @@ export default function App() {
   const [teammate, setTeammate] = useState("")
   const [readyPlayers, setReadyPlayers] = useState({})
   const [codeCopied, setCodeCopied] = useState(false)
+  const [difficulty, setDifficulty] = useState("medium")
 
   const searchRef = useRef(null)
   const screenRef = useRef(screen)
@@ -700,8 +722,20 @@ export default function App() {
           if (index >= countdownWords.length) {
             clearInterval(interval)
             setCountdown(null)
-            setTimerActive(true)
-            setGuesserActive(true)
+            // Apply difficulty timer
+            const diff = data.difficulty || "medium"
+            const secs = DIFFICULTIES[diff]?.timerSeconds
+            if (secs) {
+              setTimer(secs)
+              setGuesserTimer(secs)
+              setTimerActive(true)
+              setGuesserActive(true)
+            }
+            // Easy mode: no timer, just activate guessing
+            if (!secs) {
+              setTimerActive(false)
+              setGuesserActive(true)
+            }
             setTimeout(() => searchRef.current?.focus(), 100)
           } else {
             setCountdown(index)
@@ -763,6 +797,7 @@ export default function App() {
         setCurrentRound(data.currentRound || 1)
         setRounds(data.rounds || 3)
         setCategory(data.category || "")
+        setDifficulty(data.difficulty || "medium")
         setScreen("role")
       }
     })
@@ -782,11 +817,11 @@ export default function App() {
   }, [guesserActive, guesserTimer])
 
   useEffect(() => {
-    if (timerActive && timer <= 0) {
+    if (timerActive && timer <= 0 && difficulty !== "easy") {
       setTimerActive(false)
       endRound(false)
     }
-  }, [timer, timerActive])
+  }, [timer, timerActive, difficulty])
 
   useEffect(() => {
     if (guesserActive && guesserTimer <= 0) {
@@ -796,7 +831,7 @@ export default function App() {
   }, [guesserTimer, guesserActive])
 
   const resetAllState = () => {
-    setTeam(""); setScreen("home"); setGameMode("sameroom")
+    setTeam(""); setScreen("home"); setGameMode("sameroom"); setDifficulty("medium")
     setRounds(3); setCurrentRound(1); setScores({ "Team 1": 0, "Team 2": 0, "Team 3": 0 })
     setJoinCode(""); setSearch(""); setSentEmojis([]); setTimer(60)
     setTimerActive(false); setCountdown(null); setReceivedEmojis([])
@@ -842,6 +877,7 @@ export default function App() {
       host: nickname,
       category,
       rounds,
+      difficulty,
       currentRound: 1,
       status: "waiting",
       scores: { "Team 1": 0, "Team 2": 0, "Team 3": 0 },
@@ -941,7 +977,11 @@ export default function App() {
         return words.some(w => w === searchLower || w.startsWith(searchLower))
       }))
 
+  const maxEmojis = difficulty === "hard" ? 5 : Infinity
+  const canSendMore = sentEmojis.length < maxEmojis
+
   const sendEmoji = async (emoji) => {
+    if (!canSendMore) return
     setSentEmojis(prev => [...prev, emoji])
     setSearch("")
     if (searchRef.current) searchRef.current.value = ""
@@ -1020,7 +1060,8 @@ export default function App() {
             {codeCopied ? "✅ Copied!" : "👆 tap to copy"}
           </div>
         </div>
-        <p style={{ color: "#999", fontSize: "13px", marginBottom: "20px" }}>{category} · {rounds} rounds</p>
+        <p style={{ color: "#999", fontSize: "13px", marginBottom: "4px" }}>{category} · {rounds} rounds</p>
+        <p style={{ fontSize: "13px", fontWeight: "bold", color: DIFFICULTIES[difficulty]?.color || "#999", marginBottom: "20px" }}>{DIFFICULTIES[difficulty]?.label} · {DIFFICULTIES[difficulty]?.description}</p>
         <p style={{ fontSize: "13px", color: "#999", margin: "0 0 10px", letterSpacing: "1px" }}>PLAYERS</p>
         {playerList.map(([name, info]) => {
           const tc = TEAM_COLORS[info.team] || "#999"
@@ -1147,7 +1188,7 @@ export default function App() {
       <div style={{ fontFamily: "sans-serif", padding: "20px", maxWidth: "400px", margin: "0 auto", minHeight: "100dvh", boxSizing: "border-box" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Logo onTap={handleLogoTap} />
-          <div style={{ fontSize: "28px", fontWeight: "bold", color: guesserTimer <= 10 ? "red" : teamColor }}>⏱️ {guesserTimer}s</div>
+          <div style={{ fontSize: "28px", fontWeight: "bold", color: guesserTimer <= 10 && difficulty !== "easy" ? "red" : teamColor }}>{difficulty === "easy" ? "😌 Easy" : `⏱️ ${guesserTimer}s`}</div>
         </div>
         {countdown !== null && (
           <div style={{ fontSize: "100px", fontWeight: "bold", textAlign: "center", color: teamColor, margin: "20px 0" }}>
@@ -1206,7 +1247,7 @@ export default function App() {
       <div style={{ fontFamily: "sans-serif", padding: "20px", maxWidth: "400px", margin: "0 auto", minHeight: "100dvh", boxSizing: "border-box" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Logo onTap={handleLogoTap} />
-          <div style={{ fontSize: "28px", fontWeight: "bold", color: timer <= 10 ? "red" : teamColor }}>⏱️ {timer}s</div>
+          <div style={{ fontSize: "28px", fontWeight: "bold", color: timer <= 10 && difficulty !== "easy" ? "red" : teamColor }}>{difficulty === "easy" ? "😌 Easy" : `⏱️ ${timer}s`}</div>
         </div>
         <div style={{ background: teamColor, color: "white", borderRadius: "12px", padding: "12px 16px", textAlign: "center", margin: "8px 0", position: "sticky", top: "0", zIndex: 9 }}>
           <p style={{ margin: 0, fontSize: "12px", opacity: 0.8 }}>YOUR TOPIC</p>
@@ -1229,12 +1270,17 @@ export default function App() {
             </button>
           </>
         )}
-        <div style={{ minHeight: "50px", background: "#f5f5f5", borderRadius: "12px", padding: "10px", marginBottom: "16px", display: "flex", flexWrap: "wrap", gap: "6px" }}>
+        <div style={{ minHeight: "50px", background: "#f5f5f5", borderRadius: "12px", padding: "10px", marginBottom: "4px", display: "flex", flexWrap: "wrap", gap: "6px" }}>
           {sentEmojis.length === 0
             ? <p style={{ color: "#999", margin: 0, fontSize: "14px" }}>Sent emojis appear here...</p>
             : sentEmojis.map((e, i) => <span key={i} style={{ fontSize: "28px" }}>{e}</span>)
           }
         </div>
+        {difficulty === "hard" && (
+          <p style={{ fontSize: "12px", color: canSendMore ? "#cc0000" : "#cc0000", fontWeight: "bold", margin: "0 0 12px", textAlign: "right" }}>
+            {canSendMore ? `😈 ${maxEmojis - sentEmojis.length} emoji${maxEmojis - sentEmojis.length !== 1 ? "s" : ""} left` : "🚫 Max emojis reached!"}
+          </p>
+        )}
         {timerActive && gameMode === "remote" && (
           <div style={{ background: "#fff8f8", border: "2px solid #ffcccc", borderRadius: "12px", padding: "10px", marginBottom: "12px" }}>
             <p style={{ margin: "0 0 6px", fontSize: "12px", color: "#cc0000", letterSpacing: "1px" }}>THEIR GUESSES SO FAR</p>
@@ -1273,7 +1319,7 @@ export default function App() {
     return (
       <div style={{ textAlign: "center", marginTop: "80px", fontFamily: "sans-serif", background: teamColor, minHeight: "100dvh", color: "white", padding: "20px", boxSizing: "border-box" }}>
         <p style={{ fontSize: "14px", letterSpacing: "2px", opacity: 0.8 }}>🔒 DON'T SHOW YOUR SCREEN</p>
-        <p style={{ fontSize: "14px", opacity: 0.7 }}>Round {currentRound} of {rounds} · {team}</p>
+        <p style={{ fontSize: "14px", opacity: 0.7 }}>Round {currentRound} of {rounds} · {team} · {DIFFICULTIES[difficulty]?.label || "Medium"}</p>
         <h1 style={{ fontSize: "28px", marginTop: "20px" }}>Hey {nickname}!</h1>
         <p style={{ fontSize: "20px", opacity: 0.9 }}>You are the</p>
         <div style={{ fontSize: "52px", fontWeight: "bold", margin: "20px 0" }}>{isClue ? "👁️ CLUE GIVER" : "👂 GUESSER"}</div>
@@ -1300,6 +1346,15 @@ export default function App() {
         <p>Game Mode:</p>
         <button onClick={() => setGameMode("sameroom")} style={{ padding: "10px 20px", fontSize: "16px", borderRadius: "8px", margin: "5px", background: gameMode === "sameroom" ? "#0066ff" : "#eee", color: gameMode === "sameroom" ? "white" : "black", border: "none", cursor: "pointer" }}>🏠 Same Room</button>
         <button onClick={() => setGameMode("remote")} style={{ padding: "10px 20px", fontSize: "16px", borderRadius: "8px", margin: "5px", background: gameMode === "remote" ? "#0066ff" : "#eee", color: gameMode === "remote" ? "white" : "black", border: "none", cursor: "pointer" }}>🌐 Remote</button>
+        <p>Difficulty:</p>
+        <div style={{ display: "flex", justifyContent: "center", gap: "8px", marginBottom: "8px" }}>
+          {Object.entries(DIFFICULTIES).map(([key, d]) => (
+            <button key={key} onClick={() => setDifficulty(key)} style={{ padding: "10px 16px", fontSize: "15px", borderRadius: "10px", background: difficulty === key ? d.color : "#eee", color: difficulty === key ? "white" : "#333", border: difficulty === key ? `2px solid ${d.color}` : "2px solid #eee", cursor: "pointer", fontWeight: difficulty === key ? "bold" : "normal" }}>
+              {d.label}
+            </button>
+          ))}
+        </div>
+        <p style={{ fontSize: "13px", color: DIFFICULTIES[difficulty].color, margin: "0 0 16px", fontWeight: "bold" }}>{DIFFICULTIES[difficulty].description}</p>
         <p>Number of Rounds:</p>
         <button onClick={() => setRounds(r => Math.max(1, r - 1))} style={{ fontSize: "24px", background: "none", border: "none", cursor: "pointer" }}>➖</button>
         <span style={{ fontSize: "32px", fontWeight: "bold", margin: "0 20px" }}>{rounds}</span>
