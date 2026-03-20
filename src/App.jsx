@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.2.5"
+const VERSION = "v0.2.6"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -1351,16 +1351,9 @@ export default function App() {
         {isHost && (
           <div style={{ marginTop: "16px", display: "flex", gap: "10px", justifyContent: "center" }}>
             <button onClick={randomizeTeams} style={{ padding: "10px 20px", fontSize: "15px", borderRadius: "10px", background: "#888", color: "white", border: "none", cursor: "pointer" }}>🎲 Randomize</button>
-            {(() => {
-              const readyCount = playerList.filter(([n]) => readyPlayers[n]).length
-              const allReady = readyCount >= playerList.length && playerList.length >= 2
-              const canStart = allAssigned && playerList.length >= 2
-              return (
-                <button onClick={startGame} disabled={!canStart} style={{ padding: "10px 24px", fontSize: "15px", borderRadius: "10px", background: !canStart ? "#aaa" : allReady ? "#00aa44" : "#ff9900", color: "white", border: "none", cursor: canStart ? "pointer" : "not-allowed", fontWeight: "bold" }}>
-                  {!canStart ? "Assign teams first" : allReady ? "✅ Start Game!" : `Start Anyway ⚠️ (${readyCount}/${playerList.length})`}
-                </button>
-              )
-            })()}
+            <button onClick={startGame} disabled={!allAssigned || playerList.length < 2} style={{ padding: "10px 24px", fontSize: "15px", borderRadius: "10px", background: allAssigned && playerList.length >= 2 ? "#0066ff" : "#aaa", color: "white", border: "none", cursor: allAssigned && playerList.length >= 2 ? "pointer" : "not-allowed", fontWeight: "bold" }}>
+              Start Game →
+            </button>
           </div>
         )}
         {!isHost && <p style={{ color: "#999", marginTop: "20px" }}>⏳ Waiting for host to start...</p>}
