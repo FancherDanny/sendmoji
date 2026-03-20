@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.2.8"
+const VERSION = "v0.2.9"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -779,6 +779,24 @@ async function shareScoreCard({ scores, topic, sentEmojis, correct, rounds, curr
       resolve()
     }, "image/png")
   })
+}
+
+function GuesserAutoReady({ onReady, teamColor }) {
+  const [countdown, setCountdown] = useState(3)
+  useEffect(() => {
+    if (countdown <= 0) { onReady(); return }
+    const t = setTimeout(() => setCountdown(c => c - 1), 1000)
+    return () => clearTimeout(t)
+  }, [countdown])
+  return (
+    <div style={{ textAlign: "center" }}>
+      <div style={{ fontSize: "48px", fontWeight: "bold", color: "white", opacity: 0.9 }}>{countdown}</div>
+      <p style={{ color: "white", opacity: 0.7, fontSize: "14px", margin: "4px 0 16px" }}>Heading to guesser screen...</p>
+      <button onClick={() => { setCountdown(0) }} style={{ padding: "14px 40px", fontSize: "20px", borderRadius: "12px", background: "white", color: teamColor, border: "none", cursor: "pointer", fontWeight: "bold" }}>
+        Go Now ✊
+      </button>
+    </div>
+  )
 }
 
 const DIFFICULTY_BADGE_COLORS = { easy: "#00aa44", medium: "#ff9900", hard: "#cc0000" }
@@ -1591,11 +1609,9 @@ export default function App() {
         )}
         {!timerActive && countdown === null && (
           <>
-            {readyPlayers[teammate] ? (
-              <p style={{ color: "#00aa44", fontSize: "15px", fontWeight: "bold", textAlign: "center", margin: "0 0 10px" }}>✅ {teammate} is ready!</p>
-            ) : (
-              <p style={{ color: "#999", fontSize: "14px", textAlign: "center", margin: "0 0 10px" }}>👀 Waiting for {teammate || "guesser"} to hit ready...</p>
-            )}
+            <p style={{ color: readyPlayers[teammate] ? "#00aa44" : "#999", fontSize: "14px", textAlign: "center", margin: "0 0 10px", fontWeight: readyPlayers[teammate] ? "bold" : "normal" }}>
+              {readyPlayers[teammate] ? `✅ ${teammate} is on the guesser screen!` : `⏳ ${teammate || "Guesser"} is heading over...`}
+            </p>
             <button onClick={startCountdown} style={{ width: "100%", padding: "14px", fontSize: "18px", borderRadius: "12px", background: teamColor, color: "white", border: "none", cursor: "pointer", marginBottom: "16px", fontWeight: "bold" }}>
               Start Round ▶️
             </button>
