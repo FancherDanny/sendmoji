@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.2.7"
+const VERSION = "v0.2.8"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -985,6 +985,8 @@ export default function App() {
         setHintUsed(false)
         setHintText("")
         lastStatusRef.current = ""
+        countdownRef.current = null
+        timerActiveRef.current = false
         setScreen("role")
       }
 
@@ -1020,10 +1022,10 @@ export default function App() {
   }, [timerActive, timer])
 
   useEffect(() => {
-    if (!guesserActive || guesserTimer <= 0) return
+    if (!guesserActive || guesserTimer <= 0 || difficulty === "easy") return
     const interval = setInterval(() => setGuesserTimer(t => t - 1), 1000)
     return () => clearInterval(interval)
-  }, [guesserActive, guesserTimer])
+  }, [guesserActive, guesserTimer, difficulty])
 
   useEffect(() => {
     if (timerActive && timer <= 0 && difficulty !== "easy") {
@@ -1034,14 +1036,20 @@ export default function App() {
   }, [timer, timerActive, difficulty])
 
   useEffect(() => {
-    if (guesserActive && guesserTimer <= 0) {
+    if (guesserActive && guesserTimer <= 0 && difficulty !== "easy") {
+      stopChiptune()
       setGuesserActive(false)
       setScreen("roundend")
     }
-  }, [guesserTimer, guesserActive])
+  }, [guesserTimer, guesserActive, difficulty])
 
   const resetAllState = () => {
     stopChiptune()
+    // Clear all refs so new game starts clean
+    lastStatusRef.current = ""
+    countdownRef.current = null
+    timerActiveRef.current = false
+    difficultyRef.current = "medium"
     setTeam(""); setScreen("home"); setGameMode("sameroom"); setDifficulty("medium")
     setRounds(3); setCurrentRound(1); setScores({ "Team 1": 0, "Team 2": 0, "Team 3": 0 })
     setJoinCode(""); setSearch(""); setSentEmojis([]); setTimer(60)
