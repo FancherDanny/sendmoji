@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.3.3"
+const VERSION = "v0.3.4"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -1032,6 +1032,7 @@ export default function App() {
   const [muted, setMuted] = useState(false)
   const [sharing, setSharing] = useState(false)
   const [forfeitRequested, setForfeitRequested] = useState(false)
+  const [shufflesLeft, setShufflesLeft] = useState(0)
   const [teamNames, setTeamNames] = useState({ "Team 1": "Team 1", "Team 2": "Team 2", "Team 3": "Team 3" })
   const [editingTeam, setEditingTeam] = useState(null)
   const [editingName, setEditingName] = useState("")
@@ -1064,12 +1065,16 @@ export default function App() {
       if (data.hint) setHintText(data.hint)
       if (data.teamNames) setTeamNames(data.teamNames)
       if (data.ping !== undefined) setPingEmoji(data.ping)
-      // Check if both team members forfeited
-      if (data.forfeit && nickname) {
-        const myTeamPlayers = Object.entries(data.players || {}).filter(([, p]) => p.team === team).map(([n]) => n)
-        const allForfeited = myTeamPlayers.every(n => data.forfeit[n])
-        if (allForfeited && myTeamPlayers.length > 0) {
-          endRound(false)
+      // Check if both team members forfeited — only clue giver triggers endRound
+      if (data.forfeit && nickname && data.roles) {
+        const myTeam = data.players?.[nickname]?.team
+        const myRole = data.roles?.[nickname]
+        if (myTeam && myRole === "clue") {
+          const myTeamPlayers = Object.entries(data.players || {}).filter(([, p]) => p.team === myTeam).map(([n]) => n)
+          const allForfeited = myTeamPlayers.length > 0 && myTeamPlayers.every(n => data.forfeit[n])
+          if (allForfeited && data.status !== "roundend" && data.status !== "nextround") {
+            endRound(false)
+          }
         }
       }
 
@@ -1148,6 +1153,7 @@ export default function App() {
         )?.[0] || ""
         const nextDiff = data.difficulty || "medium"
         const nextSecs = DIFFICULTIES[nextDiff]?.timerSeconds || 60
+        const nextShuffles = nextDiff === "easy" ? 999 : nextDiff === "medium" ? 1 : 0
         setCurrentTopic(data.topic || "")
         setCurrentRound(newRound)
         setScores(data.scores || { "Team 1": 0, "Team 2": 0, "Team 3": 0 })
@@ -1155,6 +1161,7 @@ export default function App() {
         setTeam(myTeam)
         setTeammate(myTeammate)
         setDifficulty(nextDiff)
+        setShufflesLeft(nextShuffles)
         setSentEmojis([])
         setReceivedEmojis([])
         setTimer(nextSecs)
@@ -1192,7 +1199,9 @@ export default function App() {
         setCurrentRound(data.currentRound || 1)
         setRounds(data.rounds || 3)
         setCategory(data.category || "")
-        setDifficulty(data.difficulty || "medium")
+        const d = data.difficulty || "medium"
+        setDifficulty(d)
+        setShufflesLeft(d === "easy" ? 999 : d === "medium" ? 1 : 0)
         setScreen("role")
       }
     })
@@ -1401,6 +1410,14 @@ export default function App() {
     if (searchRef.current) searchRef.current.value = ""
     await push(ref(db, `rooms/${roomCode}/emojis`), emoji)
     searchRef.current?.focus()
+  }
+
+  const shuffleTopic = async () => {
+    if (shufflesLeft <= 0) return
+    const newTopic = getRandomTopic(category)
+    setCurrentTopic(newTopic)
+    if (shufflesLeft !== 999) setShufflesLeft(s => s - 1)
+    await update(ref(db, `rooms/${roomCode}`), { topic: newTopic })
   }
 
   const requestForfeit = async () => {
@@ -1833,6 +1850,11 @@ export default function App() {
         <div style={{ background: teamColor, color: "white", borderRadius: "12px", padding: "12px 16px", textAlign: "center", margin: "8px 0", position: "sticky", top: "0", zIndex: 9 }}>
           <p style={{ margin: 0, fontSize: "12px", opacity: 0.8 }}>YOUR TOPIC</p>
           <h1 style={{ margin: "4px 0 0", fontSize: "28px" }}>{currentTopic}</h1>
+          {difficulty !== "hard" && !timerActive && !guesserActive && (
+            <button onClick={shuffleTopic} style={{ marginTop: "8px", padding: "4px 14px", fontSize: "13px", borderRadius: "8px", background: "rgba(255,255,255,0.2)", color: "white", border: "1px solid rgba(255,255,255,0.4)", cursor: shufflesLeft > 0 ? "pointer" : "not-allowed", opacity: shufflesLeft > 0 ? 1 : 0.5 }}>
+              🔀 Shuffle {difficulty === "easy" ? "∞" : shufflesLeft > 0 ? `(${shufflesLeft} left)` : "(used)"}
+            </button>
+          )}
         </div>
         {countdown !== null && (
           <div style={{ fontSize: "100px", fontWeight: "bold", textAlign: "center", color: teamColor, margin: "20px 0" }}>
