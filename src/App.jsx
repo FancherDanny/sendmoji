@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.2.2"
+const VERSION = "v0.2.3"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -621,6 +621,28 @@ function assignRoles(players, round) {
   return roles
 }
 
+const DIFFICULTY_BADGE_COLORS = { easy: "#00aa44", medium: "#ff9900", hard: "#cc0000" }
+const DIFFICULTY_LABELS = { easy: "😌 EASY", medium: "😅 MED", hard: "😈 HARD" }
+
+function DifficultyBadge({ difficulty, timer }) {
+  const isEasy = difficulty === "easy"
+  const isHard = difficulty === "hard"
+  const color = DIFFICULTY_BADGE_COLORS[difficulty] || "#ff9900"
+  const timerColor = timer <= 10 ? "#cc0000" : color
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
+      {!isEasy && (
+        <span style={{ fontSize: "20px", fontWeight: "bold", color: timerColor, minWidth: "60px", textAlign: "right" }}>
+          ⏱️ {timer}s
+        </span>
+      )}
+      <span style={{ fontSize: "11px", background: color, color: "white", borderRadius: "6px", padding: "3px 7px", fontWeight: "bold", letterSpacing: "0.5px", flexShrink: 0 }}>
+        {DIFFICULTY_LABELS[difficulty] || "😅 MED"}
+      </span>
+    </div>
+  )
+}
+
 function Footer() {
   return (
     <div style={{ textAlign: "center", marginTop: "32px", paddingBottom: "16px" }}>
@@ -631,10 +653,10 @@ function Footer() {
   )
 }
 
-function Logo({ onTap }) {
+function Logo({ onTap, center = false }) {
   return (
-    <div onClick={onTap} style={{ cursor: "pointer", userSelect: "none", margin: "0 0 8px", textAlign: "center", width: "100%" }}>
-      <span style={{ fontSize: "24px", fontWeight: "bold", color: "#0066ff" }}>🎯 GuessMoji</span>
+    <div onClick={onTap} style={{ cursor: "pointer", userSelect: "none", margin: "0 0 8px", textAlign: center ? "center" : "left", width: center ? "100%" : "auto" }}>
+      <span style={{ fontSize: "22px", fontWeight: "bold", color: "#0066ff" }}>🎯 GuessMoji</span>
     </div>
   )
 }
@@ -671,6 +693,8 @@ export default function App() {
   const [teammate, setTeammate] = useState("")
   const [readyPlayers, setReadyPlayers] = useState({})
   const [codeCopied, setCodeCopied] = useState(false)
+  const [hintUsed, setHintUsed] = useState(false)
+  const [hintText, setHintText] = useState("")
   const [difficulty, setDifficulty] = useState("medium")
 
   const searchRef = useRef(null)
@@ -696,6 +720,7 @@ export default function App() {
 
       setPlayers(data.players || {})
       setReadyPlayers(data.ready || {})
+      if (data.hint) setHintText(data.hint)
 
       if (data.emojis) {
         setReceivedEmojis(Object.values(data.emojis))
@@ -780,6 +805,8 @@ export default function App() {
         setCorrect(false)
         setGuesserTimer(nextSecs)
         setSearch("")
+        setHintUsed(false)
+        setHintText("")
         setScreen("role")
       }
 
@@ -843,6 +870,7 @@ export default function App() {
     setGuesserTimer(60); setGuesserActive(false)
     setCategory(""); setCurrentTopic(""); setRoomCode(""); setRole("")
     setIsHost(false); setPlayers({}); setTeammate("")
+    setHintUsed(false); setHintText("")
   }
 
   const endRound = async (won) => {
@@ -1009,6 +1037,20 @@ export default function App() {
     }
   }
 
+  const useHint = async () => {
+    if (hintUsed) return
+    const firstLetter = currentTopic[0].toUpperCase()
+    const hintMsg = `First letter: ${firstLetter}`
+    setHintUsed(true)
+    setHintText(hintMsg)
+    // Deduct time on medium (10s), free on easy, disabled on hard
+    if (difficulty === "medium") {
+      const newTimer = Math.max(1, guesserTimer - 10)
+      setGuesserTimer(newTimer)
+    }
+    await update(ref(db, `rooms/${roomCode}`), { hint: hintMsg })
+  }
+
   // HOW TO PLAY
   if (showHowToPlay) {
     return (
@@ -1055,7 +1097,7 @@ export default function App() {
     const allAssigned = playerList.every(([, p]) => p.team && p.team !== "unassigned")
     return (
       <div style={{ fontFamily: "sans-serif", padding: "20px", maxWidth: "400px", margin: "0 auto", textAlign: "center" }}>
-        <Logo onTap={handleLogoTap} />
+        <Logo onTap={handleLogoTap} center />
         <p style={{ color: "#999", fontSize: "14px" }}>Room Code</p>
         <div
           onClick={() => { navigator.clipboard.writeText(roomCode); setCodeCopied(true); setTimeout(() => setCodeCopied(false), 2000) }}
@@ -1192,11 +1234,9 @@ export default function App() {
     return (
       // FIX: min-height 100dvh + width 100% fills full phone screen, no white border
       <div style={{ fontFamily: "sans-serif", padding: "20px", maxWidth: "400px", margin: "0 auto", minHeight: "100dvh", boxSizing: "border-box" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
           <Logo onTap={handleLogoTap} />
-          <div style={{ fontSize: "22px", fontWeight: "bold", color: guesserTimer <= 10 && difficulty !== "easy" ? "red" : teamColor }}>
-            {difficulty === "easy" ? <span style={{ fontSize: "13px", background: "#00aa44", color: "white", borderRadius: "8px", padding: "4px 10px", fontWeight: "bold" }}>😌 EASY</span> : `⏱️ ${guesserTimer}s`}
-          </div>
+          <DifficultyBadge difficulty={difficulty} timer={guesserTimer} />
         </div>
         {countdown !== null && (
           <div style={{ fontSize: "100px", fontWeight: "bold", textAlign: "center", color: teamColor, margin: "20px 0" }}>
@@ -1204,7 +1244,7 @@ export default function App() {
           </div>
         )}
         <div style={{ background: "#f9f9f9", border: `2px solid ${teamColor}`, borderRadius: "12px", padding: "16px", margin: "16px 0", minHeight: "80px" }}>
-          <p style={{ margin: "0 0 8px", fontSize: "12px", color: teamColor, letterSpacing: "1px" }}>CLUES FROM {teammate.toUpperCase() || "YOUR TEAMMATE"}</p>
+          <p style={{ margin: "0 0 8px", fontSize: "12px", color: teamColor, letterSpacing: "1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>CLUES FROM {teammate.toUpperCase() || "YOUR TEAMMATE"}</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
             {receivedEmojis.length === 0
               ? <p style={{ color: "#ccc", margin: 0 }}>Waiting for clues...</p>
@@ -1225,6 +1265,11 @@ export default function App() {
         )}
         {guesserActive && (
           <>
+            {hintText && (
+              <div style={{ background: "#fff8e1", border: "2px solid #ffcc00", borderRadius: "10px", padding: "8px 14px", marginBottom: "10px", fontSize: "14px", fontWeight: "bold", color: "#aa6600" }}>
+                💡 {hintText}
+              </div>
+            )}
             <input
               autoFocus
               type="text"
@@ -1234,7 +1279,18 @@ export default function App() {
               onKeyDown={(e) => { if (e.key === "Enter") submitGuess() }}
               style={{ width: "100%", padding: "12px", fontSize: "18px", borderRadius: "12px", border: `2px solid ${teamColor}`, boxSizing: "border-box", marginBottom: "10px" }}
             />
-            <button onClick={submitGuess} style={{ width: "100%", padding: "12px", fontSize: "18px", borderRadius: "12px", background: teamColor, color: "white", border: "none", cursor: "pointer" }}>Submit Guess ✊</button>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button onClick={submitGuess} style={{ flex: 1, padding: "12px", fontSize: "18px", borderRadius: "12px", background: teamColor, color: "white", border: "none", cursor: "pointer" }}>Submit Guess ✊</button>
+              {difficulty !== "hard" && (
+                <button
+                  onClick={useHint}
+                  disabled={hintUsed}
+                  style={{ padding: "12px 16px", fontSize: "16px", borderRadius: "12px", background: hintUsed ? "#eee" : "#fff8e1", color: hintUsed ? "#aaa" : "#aa6600", border: `2px solid ${hintUsed ? "#eee" : "#ffcc00"}`, cursor: hintUsed ? "not-allowed" : "pointer", fontWeight: "bold", whiteSpace: "nowrap" }}
+                >
+                  {hintUsed ? "💡 Used" : difficulty === "easy" ? "💡 Hint" : "💡 -10s"}
+                </button>
+              )}
+            </div>
           </>
         )}
         {wrongGuesses.length > 0 && (
@@ -1256,7 +1312,9 @@ export default function App() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Logo onTap={handleLogoTap} />
           <div style={{ fontSize: "22px", fontWeight: "bold", color: timer <= 10 && difficulty !== "easy" ? "red" : teamColor }}>
-            {difficulty === "easy" ? <span style={{ fontSize: "13px", background: "#00aa44", color: "white", borderRadius: "8px", padding: "4px 10px", fontWeight: "bold" }}>😌 EASY</span> : `⏱️ ${timer}s`}
+            {difficulty === "easy"
+              ? <span style={{ fontSize: "12px", background: "#00aa44", color: "white", borderRadius: "6px", padding: "3px 8px", fontWeight: "bold", letterSpacing: "1px" }}>EASY</span>
+              : `⏱️ ${timer}s`}
           </div>
         </div>
         <div style={{ background: teamColor, color: "white", borderRadius: "12px", padding: "12px 16px", textAlign: "center", margin: "8px 0", position: "sticky", top: "0", zIndex: 9 }}>
