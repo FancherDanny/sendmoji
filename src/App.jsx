@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.3.1"
+const VERSION = "v0.3.3"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -554,6 +554,96 @@ const EMOJI_LIST = [
   { emoji: "🥨", keywords: ["pretzel", "bread", "twisted", "baked", "salty", "snack", "german", "knot", "dough"] },
   { emoji: "🍘", keywords: ["cracker", "rice cracker", "japanese", "thin", "crispy", "snack", "flat"] },
   { emoji: "🫙", keywords: ["cracker", "jar", "container", "store", "preserve", "glass"] },
+
+  // Colors — squares and circles
+  { emoji: "🟥", keywords: ["red", "square", "color", "block", "bright", "stop", "danger"] },
+  { emoji: "🟧", keywords: ["orange", "square", "color", "block", "warm", "bright"] },
+  { emoji: "🟨", keywords: ["yellow", "square", "color", "block", "bright", "sun", "gold"] },
+  { emoji: "🟩", keywords: ["green", "square", "color", "block", "nature", "go", "safe"] },
+  { emoji: "🟦", keywords: ["blue", "square", "color", "block", "sky", "ocean", "cool"] },
+  { emoji: "🟪", keywords: ["purple", "square", "color", "block", "violet", "royal", "grape"] },
+  { emoji: "🟫", keywords: ["brown", "square", "color", "block", "earth", "wood", "chocolate"] },
+  { emoji: "⬛", keywords: ["black", "square", "color", "block", "dark", "night", "void"] },
+  { emoji: "⬜", keywords: ["white", "square", "color", "block", "blank", "empty", "clean", "snow", "pure"] },
+  { emoji: "🔴", keywords: ["red", "circle", "color", "round", "stop", "danger", "dot"] },
+  { emoji: "🟠", keywords: ["orange", "circle", "color", "round", "warm", "bright"] },
+  { emoji: "🟡", keywords: ["yellow", "circle", "color", "round", "sun", "bright", "gold"] },
+  { emoji: "🟢", keywords: ["green", "circle", "color", "round", "go", "nature", "safe"] },
+  { emoji: "🔵", keywords: ["blue", "circle", "color", "round", "sky", "ocean", "cool"] },
+  { emoji: "🟣", keywords: ["purple", "circle", "color", "round", "violet", "royal"] },
+  { emoji: "🟤", keywords: ["brown", "circle", "color", "round", "earth", "wood", "chocolate"] },
+  { emoji: "⚫", keywords: ["black", "circle", "color", "round", "dark", "night", "dot"] },
+  { emoji: "⚪", keywords: ["white", "circle", "color", "round", "blank", "empty", "clean", "snow"] },
+  { emoji: "🔶", keywords: ["orange", "diamond", "color", "shape", "bright", "large"] },
+  { emoji: "🔷", keywords: ["blue", "diamond", "color", "shape", "cool", "large"] },
+  { emoji: "🔸", keywords: ["orange", "diamond", "color", "shape", "small", "bright"] },
+  { emoji: "🔹", keywords: ["blue", "diamond", "color", "shape", "small", "cool"] },
+
+  // Olive / food colors
+  { emoji: "🫒", keywords: ["olive", "green", "food", "mediterranean", "italian", "oil", "small", "salty", "branch"] },
+  { emoji: "🌿", keywords: ["olive", "green", "herb", "branch", "leaf", "plant", "nature", "fresh"] },
+
+  // Country flags
+  { emoji: "🇺🇸", keywords: ["usa", "america", "united states", "american", "flag", "stars", "stripes"] },
+  { emoji: "🇬🇧", keywords: ["uk", "britain", "england", "british", "flag", "union jack", "london"] },
+  { emoji: "🇫🇷", keywords: ["france", "french", "paris", "flag", "europe"] },
+  { emoji: "🇩🇪", keywords: ["germany", "german", "deutschland", "flag", "europe"] },
+  { emoji: "🇯🇵", keywords: ["japan", "japanese", "tokyo", "flag", "asia", "rising sun"] },
+  { emoji: "🇨🇳", keywords: ["china", "chinese", "beijing", "flag", "asia"] },
+  { emoji: "🇰🇷", keywords: ["korea", "south korea", "korean", "flag", "asia", "seoul"] },
+  { emoji: "🇧🇷", keywords: ["brazil", "brazilian", "flag", "south america", "amazon"] },
+  { emoji: "🇲🇽", keywords: ["mexico", "mexican", "flag", "latin america", "spanish"] },
+  { emoji: "🇨🇦", keywords: ["canada", "canadian", "maple leaf", "flag", "north america"] },
+  { emoji: "🇦🇺", keywords: ["australia", "australian", "flag", "down under", "sydney"] },
+  { emoji: "🇮🇳", keywords: ["india", "indian", "flag", "asia", "mumbai", "delhi"] },
+  { emoji: "🇮🇹", keywords: ["italy", "italian", "rome", "flag", "europe", "pizza", "pasta"] },
+  { emoji: "🇪🇸", keywords: ["spain", "spanish", "madrid", "flag", "europe", "barcelona"] },
+  { emoji: "🇵🇹", keywords: ["portugal", "portuguese", "lisbon", "flag", "europe"] },
+  { emoji: "🇷🇺", keywords: ["russia", "russian", "moscow", "flag", "europe", "asia"] },
+  { emoji: "🇳🇱", keywords: ["netherlands", "dutch", "holland", "amsterdam", "flag", "europe"] },
+  { emoji: "🇧🇪", keywords: ["belgium", "belgian", "brussels", "flag", "europe", "chocolate", "waffles"] },
+  { emoji: "🇨🇭", keywords: ["switzerland", "swiss", "zurich", "flag", "europe", "chocolate", "alps"] },
+  { emoji: "🇦🇹", keywords: ["austria", "austrian", "vienna", "flag", "europe", "alps"] },
+  { emoji: "🇸🇪", keywords: ["sweden", "swedish", "stockholm", "flag", "scandinavia", "europe"] },
+  { emoji: "🇳🇴", keywords: ["norway", "norwegian", "oslo", "flag", "scandinavia", "europe"] },
+  { emoji: "🇩🇰", keywords: ["denmark", "danish", "copenhagen", "flag", "scandinavia", "europe"] },
+  { emoji: "🇫🇮", keywords: ["finland", "finnish", "helsinki", "flag", "scandinavia", "europe"] },
+  { emoji: "🇵🇱", keywords: ["poland", "polish", "warsaw", "flag", "europe"] },
+  { emoji: "🇬🇷", keywords: ["greece", "greek", "athens", "flag", "europe", "mediterranean"] },
+  { emoji: "🇹🇷", keywords: ["turkey", "turkish", "istanbul", "flag", "europe", "asia"] },
+  { emoji: "🇸🇦", keywords: ["saudi arabia", "saudi", "riyadh", "flag", "middle east", "arabic"] },
+  { emoji: "🇦🇪", keywords: ["uae", "dubai", "emirates", "arab", "flag", "middle east"] },
+  { emoji: "🇮🇱", keywords: ["israel", "israeli", "jerusalem", "flag", "middle east"] },
+  { emoji: "🇪🇬", keywords: ["egypt", "egyptian", "cairo", "pyramids", "flag", "africa"] },
+  { emoji: "🇿🇦", keywords: ["south africa", "flag", "africa", "cape town"] },
+  { emoji: "🇳🇬", keywords: ["nigeria", "nigerian", "lagos", "flag", "africa"] },
+  { emoji: "🇰🇪", keywords: ["kenya", "kenyan", "nairobi", "flag", "africa"] },
+  { emoji: "🇦🇷", keywords: ["argentina", "argentinian", "buenos aires", "flag", "south america"] },
+  { emoji: "🇨🇴", keywords: ["colombia", "colombian", "bogota", "flag", "south america"] },
+  { emoji: "🇨🇱", keywords: ["chile", "chilean", "santiago", "flag", "south america"] },
+  { emoji: "🇵🇪", keywords: ["peru", "peruvian", "lima", "flag", "south america", "machu picchu"] },
+  { emoji: "🇹🇭", keywords: ["thailand", "thai", "bangkok", "flag", "asia", "southeast asia"] },
+  { emoji: "🇻🇳", keywords: ["vietnam", "vietnamese", "hanoi", "flag", "asia", "southeast asia"] },
+  { emoji: "🇵🇭", keywords: ["philippines", "filipino", "manila", "flag", "asia", "southeast asia"] },
+  { emoji: "🇮🇩", keywords: ["indonesia", "indonesian", "jakarta", "bali", "flag", "asia"] },
+  { emoji: "🇲🇾", keywords: ["malaysia", "malaysian", "kuala lumpur", "flag", "asia"] },
+  { emoji: "🇸🇬", keywords: ["singapore", "singaporean", "flag", "asia", "southeast asia"] },
+  { emoji: "🇳🇿", keywords: ["new zealand", "kiwi", "flag", "pacific", "auckland"] },
+  { emoji: "🇮🇪", keywords: ["ireland", "irish", "dublin", "flag", "europe", "shamrock"] },
+  { emoji: "🇨🇿", keywords: ["czech republic", "czechia", "prague", "flag", "europe"] },
+  { emoji: "🇭🇺", keywords: ["hungary", "hungarian", "budapest", "flag", "europe"] },
+  { emoji: "🇷🇴", keywords: ["romania", "romanian", "bucharest", "flag", "europe"] },
+  { emoji: "🇺🇦", keywords: ["ukraine", "ukrainian", "kyiv", "flag", "europe"] },
+  { emoji: "🇵🇰", keywords: ["pakistan", "pakistani", "islamabad", "flag", "asia"] },
+  { emoji: "🇧🇩", keywords: ["bangladesh", "bangladeshi", "dhaka", "flag", "asia"] },
+  { emoji: "🇲🇦", keywords: ["morocco", "moroccan", "marrakech", "flag", "africa", "north africa"] },
+  { emoji: "🇨🇺", keywords: ["cuba", "cuban", "havana", "flag", "caribbean", "latin america"] },
+  { emoji: "🇯🇲", keywords: ["jamaica", "jamaican", "kingston", "flag", "caribbean", "reggae"] },
+  { emoji: "🇮🇸", keywords: ["iceland", "icelandic", "reykjavik", "flag", "europe", "nordic"] },
+  { emoji: "🇵🇦", keywords: ["panama", "panamanian", "flag", "central america", "canal"] },
+  { emoji: "🎌", keywords: ["japan", "flag", "crossed", "country", "asian", "tokyo", "red"] },
+  { emoji: "🏴‍☠️", keywords: ["pirate", "flag", "skull", "ship", "treasure", "jolly roger"] },
+  { emoji: "🚩", keywords: ["red flag", "warning", "danger", "mark", "signal", "alert"] },
 ]
 
 const RESET_MESSAGES = [
@@ -935,9 +1025,13 @@ export default function App() {
   const [codeCopied, setCodeCopied] = useState(false)
   const [hintUsed, setHintUsed] = useState(false)
   const [hintText, setHintText] = useState("")
+  const [hintCount, setHintCount] = useState(0)
   const [roundStartTime, setRoundStartTime] = useState(null)
+  const [pingEmoji, setPingEmoji] = useState(null)
+  const [emojiGroups, setEmojiGroups] = useState([[]])
   const [muted, setMuted] = useState(false)
   const [sharing, setSharing] = useState(false)
+  const [forfeitRequested, setForfeitRequested] = useState(false)
   const [teamNames, setTeamNames] = useState({ "Team 1": "Team 1", "Team 2": "Team 2", "Team 3": "Team 3" })
   const [editingTeam, setEditingTeam] = useState(null)
   const [editingName, setEditingName] = useState("")
@@ -969,6 +1063,15 @@ export default function App() {
       setReadyPlayers(data.ready || {})
       if (data.hint) setHintText(data.hint)
       if (data.teamNames) setTeamNames(data.teamNames)
+      if (data.ping !== undefined) setPingEmoji(data.ping)
+      // Check if both team members forfeited
+      if (data.forfeit && nickname) {
+        const myTeamPlayers = Object.entries(data.players || {}).filter(([, p]) => p.team === team).map(([n]) => n)
+        const allForfeited = myTeamPlayers.every(n => data.forfeit[n])
+        if (allForfeited && myTeamPlayers.length > 0) {
+          endRound(false)
+        }
+      }
 
       if (data.emojis) {
         setReceivedEmojis(Object.values(data.emojis))
@@ -1265,6 +1368,7 @@ export default function App() {
       wrongGuesses: null,
       ready: null,
       hint: null,
+      forfeit: null,
       scores
     })
   }
@@ -1288,10 +1392,36 @@ export default function App() {
   const sendEmoji = async (emoji) => {
     if (!canSendMore) return
     setSentEmojis(prev => [...prev, emoji])
+    setEmojiGroups(prev => {
+      const groups = [...prev]
+      groups[groups.length - 1] = [...groups[groups.length - 1], emoji]
+      return groups
+    })
     setSearch("")
     if (searchRef.current) searchRef.current.value = ""
     await push(ref(db, `rooms/${roomCode}/emojis`), emoji)
     searchRef.current?.focus()
+  }
+
+  const requestForfeit = async () => {
+    setForfeitRequested(true)
+    await update(ref(db, `rooms/${roomCode}/forfeit`), { [nickname]: true })
+  }
+
+  const addNewLine = async () => {
+    setEmojiGroups(prev => [...prev, []])
+    await push(ref(db, `rooms/${roomCode}/emojis`), "↵")
+    searchRef.current?.focus()
+  }
+
+  const pingEmojiToGuesser = async (emoji) => {
+    setPingEmoji(emoji)
+    await update(ref(db, `rooms/${roomCode}`), { ping: emoji })
+    // Clear ping after 2s
+    setTimeout(async () => {
+      setPingEmoji(null)
+      await update(ref(db, `rooms/${roomCode}`), { ping: null })
+    }, 2000)
   }
 
   const normalizeGuess = (str) => str.trim().toLowerCase().replace(/^the\s+/, "").replace(/\s+/g, " ")
@@ -1326,13 +1456,25 @@ export default function App() {
     await update(ref(db, `rooms/${roomCode}`), { teamNames: updated })
   }
 
+  const maxHints = difficulty === "easy" ? 2 : 1
+  const hintsLeft = maxHints - hintCount
+
   const useHint = async () => {
-    if (hintUsed) return
-    const firstLetter = currentTopic[0].toUpperCase()
-    const hintMsg = `First letter: ${firstLetter}`
-    setHintUsed(true)
+    if (hintCount >= maxHints) return
+    const newCount = hintCount + 1
+    setHintCount(newCount)
+    let hintMsg = ""
+    if (newCount === 1) {
+      hintMsg = `Hint 1: First letter is "${currentTopic[0].toUpperCase()}"`
+    } else if (newCount === 2) {
+      // Second hint: word count
+      const words = currentTopic.split(" ")
+      hintMsg = words.length === 1
+        ? `Hint 2: ${currentTopic.length} letters`
+        : `Hint 2: ${words.length} words`
+    }
+    if (newCount >= maxHints) setHintUsed(true)
     setHintText(hintMsg)
-    // Deduct time on medium (10s), free on easy, disabled on hard
     if (difficulty === "medium") {
       const newTimer = Math.max(1, guesserTimer - 10)
       setGuesserTimer(newTimer)
@@ -1598,7 +1740,22 @@ export default function App() {
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
             {receivedEmojis.length === 0
               ? <p style={{ color: "#ccc", margin: 0 }}>Waiting for clues...</p>
-              : receivedEmojis.map((e, i) => <span key={i} style={{ fontSize: "40px" }}>{e}</span>)
+              : (() => {
+                  const groups = [[]]
+                  receivedEmojis.forEach(e => {
+                    if (e === "↵") groups.push([])
+                    else groups[groups.length - 1].push(e)
+                  })
+                  return groups.filter(g => g.length > 0).map((group, gi) => (
+                    <div key={gi} style={{ display: "flex", flexWrap: "wrap", gap: "6px", width: "100%", paddingBottom: gi < groups.length - 1 ? "8px" : "0", marginBottom: gi < groups.length - 1 ? "8px" : "0", borderBottom: gi < groups.length - 1 ? "1px dashed #ddd" : "none" }}>
+                      {group.map((e, i) => (
+                        <span key={i} style={{ fontSize: "40px", display: "inline-block", transform: pingEmoji === e ? "scale(1.4)" : "scale(1)", transition: "transform 0.2s", filter: pingEmoji === e ? "drop-shadow(0 0 8px gold)" : "none" }}>
+                          {e}
+                        </span>
+                      ))}
+                    </div>
+                  ))
+                })()
             }
           </div>
         </div>
@@ -1634,13 +1791,20 @@ export default function App() {
               {difficulty !== "hard" && (
                 <button
                   onClick={useHint}
-                  disabled={hintUsed}
-                  style={{ padding: "12px 16px", fontSize: "16px", borderRadius: "12px", background: hintUsed ? "#eee" : "#fff8e1", color: hintUsed ? "#aaa" : "#aa6600", border: `2px solid ${hintUsed ? "#eee" : "#ffcc00"}`, cursor: hintUsed ? "not-allowed" : "pointer", fontWeight: "bold", whiteSpace: "nowrap" }}
+                  disabled={hintCount >= maxHints}
+                  style={{ padding: "12px 16px", fontSize: "16px", borderRadius: "12px", background: hintCount >= maxHints ? "#eee" : "#fff8e1", color: hintCount >= maxHints ? "#aaa" : "#aa6600", border: `2px solid ${hintCount >= maxHints ? "#eee" : "#ffcc00"}`, cursor: hintCount >= maxHints ? "not-allowed" : "pointer", fontWeight: "bold", whiteSpace: "nowrap" }}
                 >
-                  {hintUsed ? "💡 Used" : difficulty === "easy" ? "💡 Hint" : "💡 -10s"}
+                  {hintsLeft === 0 ? "💡 Used" : difficulty === "easy" ? `💡 Hint (${hintsLeft} left)` : "💡 -10s"}
                 </button>
               )}
             </div>
+            <button
+              onClick={requestForfeit}
+              disabled={forfeitRequested}
+              style={{ width: "100%", padding: "8px", fontSize: "14px", borderRadius: "10px", background: "none", border: `1px solid ${forfeitRequested ? "#ccc" : "#cc0000"}`, color: forfeitRequested ? "#ccc" : "#cc0000", cursor: forfeitRequested ? "not-allowed" : "pointer", marginTop: "8px" }}
+            >
+              {forfeitRequested ? "🏳️ Forfeit requested... waiting for teammate" : "🏳️ Forfeit round"}
+            </button>
           </>
         )}
         {wrongGuesses.length > 0 && (
@@ -1685,16 +1849,39 @@ export default function App() {
             </button>
           </>
         )}
-        <div style={{ minHeight: "50px", background: "#f5f5f5", borderRadius: "12px", padding: "10px", marginBottom: "4px", display: "flex", flexWrap: "wrap", gap: "6px" }}>
+        <div style={{ minHeight: "50px", background: "#f5f5f5", borderRadius: "12px", padding: "10px", marginBottom: "4px" }}>
           {sentEmojis.length === 0
-            ? <p style={{ color: "#999", margin: 0, fontSize: "14px" }}>Sent emojis appear here...</p>
-            : sentEmojis.map((e, i) => <span key={i} style={{ fontSize: "28px" }}>{e}</span>)
+            ? <p style={{ color: "#999", margin: 0, fontSize: "14px" }}>Sent emojis appear here... Tap to ping 👆</p>
+            : emojiGroups.map((group, gi) => (
+                <div key={gi} style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: gi < emojiGroups.length - 1 ? "6px" : "0", paddingBottom: gi < emojiGroups.length - 1 ? "6px" : "0", borderBottom: gi < emojiGroups.length - 1 ? "1px dashed #ddd" : "none" }}>
+                  {group.map((e, i) => (
+                    <button key={i} onClick={() => pingEmojiToGuesser(e)}
+                      style={{ fontSize: "26px", background: pingEmoji === e ? teamColor : "white", border: `2px solid ${pingEmoji === e ? teamColor : "#ddd"}`, borderRadius: "8px", padding: "4px 6px", cursor: "pointer", transform: pingEmoji === e ? "scale(1.2)" : "scale(1)", transition: "all 0.15s" }}>
+                      {e}
+                    </button>
+                  ))}
+                </div>
+              ))
           }
         </div>
+        {(timerActive || (difficulty === "easy" && guesserActive)) && sentEmojis.length > 0 && (
+          <button onClick={addNewLine} style={{ width: "100%", padding: "6px", fontSize: "13px", borderRadius: "8px", background: "none", border: `1px dashed ${teamColor}`, color: teamColor, cursor: "pointer", marginBottom: "4px" }}>
+            ↵ New Line
+          </button>
+        )}
         {difficulty === "hard" && (
           <p style={{ fontSize: "12px", color: canSendMore ? "#cc0000" : "#cc0000", fontWeight: "bold", margin: "0 0 12px", textAlign: "right" }}>
             {canSendMore ? `😈 ${maxEmojis - sentEmojis.length} emoji${maxEmojis - sentEmojis.length !== 1 ? "s" : ""} left` : "🚫 Max emojis reached!"}
           </p>
+        )}
+        {(timerActive || (difficulty === "easy" && guesserActive)) && (
+          <button
+            onClick={requestForfeit}
+            disabled={forfeitRequested}
+            style={{ width: "100%", padding: "8px", fontSize: "14px", borderRadius: "10px", background: "none", border: `1px solid ${forfeitRequested ? "#ccc" : "#cc0000"}`, color: forfeitRequested ? "#ccc" : "#cc0000", cursor: forfeitRequested ? "not-allowed" : "pointer", marginBottom: "8px" }}
+          >
+            {forfeitRequested ? "🏳️ Forfeit requested... waiting for teammate" : "🏳️ Forfeit round"}
+          </button>
         )}
         {timerActive && (
           <div style={{ background: "#fff8f8", border: "2px solid #ffcccc", borderRadius: "12px", padding: "10px", marginBottom: "12px" }}>
