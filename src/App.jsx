@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.2.1"
+const VERSION = "v0.2.2"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -898,6 +898,7 @@ export default function App() {
       setRoomCode(joinCode)
       setRounds(data.rounds)
       setCategory(data.category)
+      setDifficulty(data.difficulty || "medium")
       setIsHost(false)
       await update(ref(db, `rooms/${joinCode}/players`), {
         [nickname]: { team: "unassigned" }
