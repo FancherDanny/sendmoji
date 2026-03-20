@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.3.4"
+const VERSION = "v0.3.5"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -1028,6 +1028,7 @@ export default function App() {
   const [hintCount, setHintCount] = useState(0)
   const [roundStartTime, setRoundStartTime] = useState(null)
   const [pingEmoji, setPingEmoji] = useState(null)
+  const [tappedEmoji, setTappedEmoji] = useState(null)
   const [emojiGroups, setEmojiGroups] = useState([[]])
   const [muted, setMuted] = useState(false)
   const [sharing, setSharing] = useState(false)
@@ -1164,6 +1165,7 @@ export default function App() {
         setShufflesLeft(nextShuffles)
         setSentEmojis([])
         setReceivedEmojis([])
+        setEmojiGroups([[]])
         setTimer(nextSecs)
         setTimerActive(false)
         setGuesserActive(false)
@@ -1443,6 +1445,13 @@ export default function App() {
 
   const normalizeGuess = (str) => str.trim().toLowerCase().replace(/^the\s+/, "").replace(/\s+/g, " ")
 
+  const formatTime = (seconds) => {
+    if (seconds < 60) return `${seconds}s`
+    const m = Math.floor(seconds / 60)
+    const s = seconds % 60
+    return s === 0 ? `${m}m` : `${m}m ${s}s`
+  }
+
   const submitGuess = async () => {
     if (!guess.trim()) return
     if (normalizeGuess(guess) === normalizeGuess(currentTopic)) {
@@ -1635,8 +1644,8 @@ export default function App() {
           {gotIt && sentEmojis.length > 0 && (
             <p style={{ color: "#666", fontSize: "14px" }}>
               {difficulty === "easy" && roundStartTime
-                ? `Solved in ${Math.round((Date.now() - roundStartTime) / 1000)}s`
-                : `Solved in ${60 - guesserTimer}s`} with {sentEmojis.length} emoji{sentEmojis.length !== 1 ? "s" : ""}
+                ? `Solved in ${formatTime(Math.round((Date.now() - roundStartTime) / 1000))}`
+                : `Solved in ${formatTime(DIFFICULTIES[difficulty]?.timerSeconds - guesserTimer || 0)}`} with {sentEmojis.length} emoji{sentEmojis.length !== 1 ? "s" : ""}
             </p>
           )}
         </div>
@@ -1753,25 +1762,50 @@ export default function App() {
           </div>
         )}
         <div style={{ background: "#f9f9f9", border: `2px solid ${teamColor}`, borderRadius: "12px", padding: "16px", margin: "16px 0", minHeight: "80px" }}>
-          <p style={{ margin: "0 0 8px", fontSize: "12px", color: teamColor, letterSpacing: "1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>CLUES FROM {teammate.toUpperCase() || "YOUR TEAMMATE"}</p>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+            <p style={{ margin: 0, fontSize: "12px", color: teamColor, letterSpacing: "1px" }}>CLUES FROM {teammate.toUpperCase() || "YOUR TEAMMATE"}</p>
+            <p style={{ margin: 0, fontSize: "11px", color: "#aaa" }}>{category}</p>
+          </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
             {receivedEmojis.length === 0
-              ? <p style={{ color: "#ccc", margin: 0 }}>Waiting for clues...</p>
+              ? <p style={{ color: "#ccc", margin: 0 }}>
+                  Waiting for clues...
+                  {nickname?.toLowerCase() === "fanch" && currentTopic && (
+                    <span style={{ fontSize: "10px", color: "rgba(0,0,0,0.08)", userSelect: "none", marginLeft: "8px" }}>{currentTopic}</span>
+                  )}
+                </p>
               : (() => {
+                  const isFanch = nickname?.toLowerCase() === "fanch"
                   const groups = [[]]
                   receivedEmojis.forEach(e => {
                     if (e === "↵") groups.push([])
                     else groups[groups.length - 1].push(e)
                   })
-                  return groups.filter(g => g.length > 0).map((group, gi) => (
+                  return (<>
+                    {isFanch && currentTopic && <p style={{ fontSize: "10px", color: "rgba(0,0,0,0.07)", margin: "0 0 4px", userSelect: "none" }}>{currentTopic}</p>}
+                    {groups.filter(g => g.length > 0).map((group, gi) => (
                     <div key={gi} style={{ display: "flex", flexWrap: "wrap", gap: "6px", width: "100%", paddingBottom: gi < groups.length - 1 ? "8px" : "0", marginBottom: gi < groups.length - 1 ? "8px" : "0", borderBottom: gi < groups.length - 1 ? "1px dashed #ddd" : "none" }}>
                       {group.map((e, i) => (
-                        <span key={i} style={{ fontSize: "40px", display: "inline-block", transform: pingEmoji === e ? "scale(1.4)" : "scale(1)", transition: "transform 0.2s", filter: pingEmoji === e ? "drop-shadow(0 0 8px gold)" : "none" }}>
+                        <span
+                          key={i}
+                          onClick={() => {
+                            setTappedEmoji(e + i + gi)
+                            setTimeout(() => setTappedEmoji(null), 600)
+                          }}
+                          style={{
+                            fontSize: "40px",
+                            display: "inline-block",
+                            cursor: "pointer",
+                            transform: pingEmoji === e ? "scale(1.5)" : tappedEmoji === e + i + gi ? "scale(1.6)" : "scale(1)",
+                            transition: "transform 0.15s",
+                            filter: pingEmoji === e ? "drop-shadow(0 0 8px gold)" : tappedEmoji === e + i + gi ? "drop-shadow(0 0 6px #0066ff)" : "none"
+                          }}>
                           {e}
                         </span>
                       ))}
                     </div>
-                  ))
+                  ))}
+                  </>)
                 })()
             }
           </div>
@@ -1848,6 +1882,7 @@ export default function App() {
           </div>
         </div>
         <div style={{ background: teamColor, color: "white", borderRadius: "12px", padding: "12px 16px", textAlign: "center", margin: "8px 0", position: "sticky", top: "0", zIndex: 9 }}>
+          <p style={{ margin: 0, fontSize: "11px", opacity: 0.6 }}>{category}</p>
           <p style={{ margin: 0, fontSize: "12px", opacity: 0.8 }}>YOUR TOPIC</p>
           <h1 style={{ margin: "4px 0 0", fontSize: "28px" }}>{currentTopic}</h1>
           {difficulty !== "hard" && !timerActive && !guesserActive && (
@@ -1953,6 +1988,11 @@ export default function App() {
         <p style={{ fontSize: "14px", letterSpacing: "2px", opacity: 0.8 }}>🔒 DON'T SHOW YOUR SCREEN</p>
         <p style={{ fontSize: "14px", opacity: 0.7 }}>Round {currentRound} of {rounds} · {team} · {DIFFICULTIES[difficulty]?.label || "Medium"}</p>
         <h1 style={{ fontSize: "28px", marginTop: "20px" }}>Hey {nickname}!</h1>
+        {nickname?.toLowerCase() === "hayden" && (
+          <div style={{ fontSize: "22px", fontWeight: "bold", color: "white", background: "rgba(0,0,0,0.3)", borderRadius: "10px", padding: "8px 16px", margin: "8px auto", maxWidth: "300px" }}>
+            ⚡ FINISH HIM, RAIDEN! ⚡
+          </div>
+        )}
         <p style={{ fontSize: "20px", opacity: 0.9 }}>You are the</p>
         <div style={{ fontSize: "52px", fontWeight: "bold", margin: "20px 0" }}>{isClue ? "👁️ CLUE GIVER" : "👂 GUESSER"}</div>
         <p style={{ fontSize: "18px", opacity: 0.85, maxWidth: "300px", margin: "0 auto" }}>
