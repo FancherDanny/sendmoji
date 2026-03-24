@@ -1119,6 +1119,7 @@ export default function App() {
   const [cheatVisible, setCheatVisible] = useState(false)
   const [suggestedEmoji, setSuggestedEmoji] = useState(null)
   const [suggestionUsed, setSuggestionUsed] = useState(false)
+  const [timerPaused, setTimerPaused] = useState(false)
 
   const searchRef = useRef(null)
   const screenRef = useRef(screen)
@@ -1544,8 +1545,6 @@ export default function App() {
       await update(ref(db, `rooms/${roomCode}`), { wrongGuesses: newWrong })
     }
   }
-
-  const [timerPaused, setTimerPaused] = useState(false)
 
   const togglePauseTimer = () => {
     if (!isBert) return
