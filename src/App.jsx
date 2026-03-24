@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.3.9"
+const VERSION = "v0.4.0"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -1107,6 +1107,7 @@ export default function App() {
   const [muted, setMuted] = useState(false)
   const [sharing, setSharing] = useState(false)
   const [forfeitRequested, setForfeitRequested] = useState(false)
+  const [teammateForfeit, setTeammateForfeit] = useState(false)
   const [shufflesLeft, setShufflesLeft] = useState(0)
   const [teamNames, setTeamNames] = useState({ "Team 1": "Team 1", "Team 2": "Team 2", "Team 3": "Team 3" })
   const [editingTeam, setEditingTeam] = useState(null)
@@ -1115,6 +1116,7 @@ export default function App() {
   const [showCredits, setShowCredits] = useState(false)
   const [suggestion, setSuggestion] = useState("")
   const [suggestionSent, setSuggestionSent] = useState(false)
+  const [showSuggest, setShowSuggest] = useState(false)
   const [cheatMessage, setCheatMessage] = useState("")
   const [cheatVisible, setCheatVisible] = useState(false)
   const [suggestedEmoji, setSuggestedEmoji] = useState(null)
@@ -1146,19 +1148,30 @@ export default function App() {
       setPlayers(data.players || {})
       setReadyPlayers(data.ready || {})
       if (data.hint) setHintText(data.hint)
+      else setHintText("")
       if (data.teamNames) setTeamNames(data.teamNames)
       if (data.ping !== undefined) setPingEmoji(data.ping)
-      // Check if both team members forfeited — only clue giver triggers endRound
-      if (data.forfeit && nickname && data.roles) {
+      // Sync forfeit states
+      if (data.forfeit && nickname && data.players) {
         const myTeam = data.players?.[nickname]?.team
-        const myRole = data.roles?.[nickname]
-        if (myTeam && myRole === "clue") {
-          const myTeamPlayers = Object.entries(data.players || {}).filter(([, p]) => p.team === myTeam).map(([n]) => n)
-          const allForfeited = myTeamPlayers.length > 0 && myTeamPlayers.every(n => data.forfeit[n])
-          if (allForfeited && data.status !== "roundend" && data.status !== "nextround") {
-            endRound(false)
+        // Find teammate forfeit status
+        const teammateEntry = Object.entries(data.players || {}).find(([n, p]) => n !== nickname && p.team === myTeam)
+        if (teammateEntry) {
+          setTeammateForfeit(data.forfeit[teammateEntry[0]] === true)
+        }
+        // Check if both forfeited — only clue giver triggers endRound
+        if (data.roles) {
+          const myRole = data.roles?.[nickname]
+          if (myTeam && myRole === "clue") {
+            const myTeamPlayers = Object.entries(data.players || {}).filter(([, p]) => p.team === myTeam).map(([n]) => n)
+            const allForfeited = myTeamPlayers.length > 0 && myTeamPlayers.every(n => data.forfeit[n] === true)
+            if (allForfeited && data.status !== "roundend" && data.status !== "nextround") {
+              endRound(false)
+            }
           }
         }
+      } else {
+        setTeammateForfeit(false)
       }
 
       if (data.emojis) {
@@ -1480,6 +1493,7 @@ export default function App() {
       }))
 
   const maxEmojis = difficulty === "hard" ? 5 : Infinity
+  // Check if teammate has requested forfeit
   const canSendMore = sentEmojis.length < maxEmojis
 
   const sendEmoji = async (emoji) => {
@@ -1505,8 +1519,15 @@ export default function App() {
   }
 
   const requestForfeit = async () => {
-    setForfeitRequested(true)
-    await update(ref(db, `rooms/${roomCode}/forfeit`), { [nickname]: true })
+    if (forfeitRequested) {
+      // Cancel forfeit
+      setForfeitRequested(false)
+      await update(ref(db, `rooms/${roomCode}/forfeit`), { [nickname]: false })
+    } else {
+      // Request forfeit
+      setForfeitRequested(true)
+      await update(ref(db, `rooms/${roomCode}/forfeit`), { [nickname]: true })
+    }
   }
 
   const addNewLine = async () => {
@@ -1679,7 +1700,7 @@ export default function App() {
             </div>
           </div>
         ))}
-        <button onClick={() => { setShowHowToPlay(false); setSuggestionSent(false); setSuggestion("") }} style={{ width: "100%", padding: "14px", fontSize: "17px", borderRadius: "12px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", fontWeight: "bold", marginTop: "8px" }}>
+        <button onClick={() => { setShowHowToPlay(false); setSuggestionSent(false); setSuggestion(""); setShowSuggest(false) }} style={{ width: "100%", padding: "14px", fontSize: "17px", borderRadius: "12px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", fontWeight: "bold", marginTop: "8px" }}>
           Got it! Let's Play 🎯
         </button>
         <div style={{ marginTop: "16px", background: "#f9f9f9", borderRadius: "12px", padding: "16px" }}>
@@ -1829,7 +1850,7 @@ ${suggestion}
     const gotIt = correct
     return (
       <div style={{ fontFamily: "sans-serif", padding: "20px", maxWidth: "400px", margin: "0 auto", textAlign: "center" }}>
-        <Logo onTap={handleLogoTap} />
+        <Logo onTap={handleLogoTap} center />
         <div style={{ background: gotIt ? "#e6ffe6" : "#ffe6e6", border: `2px solid ${gotIt ? "#00aa44" : "#cc0000"}`, borderRadius: "16px", padding: "24px", margin: "16px 0" }}>
           <div style={{ fontSize: "60px" }}>{gotIt ? "🎉" : "⏰"}</div>
           <h2 style={{ color: gotIt ? "#00aa44" : "#cc0000", margin: "8px 0" }}>{gotIt ? "Got it!" : "Time's Up!"}</h2>
@@ -1872,7 +1893,7 @@ ${suggestion}
             return teamsInGame.includes(t)
           }).map(([t, s]) => (
             <div key={t} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 16px", borderRadius: "10px", marginBottom: "8px", background: t === team ? TEAM_COLORS[t] : "#333", border: `2px solid ${t === team ? TEAM_COLORS[t] : "#555"}` }}>
-              <span style={{ fontWeight: "bold", color: "white", fontSize: "16px" }}>{t}</span>
+              <span style={{ fontWeight: "bold", color: "white", fontSize: "16px" }}>{teamNames[t] || t}</span>
               <span style={{ fontSize: "26px", fontWeight: "bold", color: "white" }}>{s}</span>
             </div>
           ))}
@@ -2051,10 +2072,9 @@ ${suggestion}
             </div>
             <button
               onClick={requestForfeit}
-              disabled={forfeitRequested}
-              style={{ width: "100%", padding: "8px", fontSize: "14px", borderRadius: "10px", background: "none", border: `1px solid ${forfeitRequested ? "#ccc" : "#cc0000"}`, color: forfeitRequested ? "#ccc" : "#cc0000", cursor: forfeitRequested ? "not-allowed" : "pointer", marginTop: "8px" }}
+              style={{ width: "100%", padding: "8px", fontSize: "14px", borderRadius: "10px", background: "none", border: `2px solid ${teammateForfeit ? "#ff6600" : forfeitRequested ? "#cc0000" : "#eee"}`, color: teammateForfeit ? "#ff6600" : forfeitRequested ? "#cc0000" : "#aaa", cursor: "pointer", marginTop: "8px", fontWeight: forfeitRequested || teammateForfeit ? "bold" : "normal" }}
             >
-              {forfeitRequested ? "🏳️ Forfeit requested... waiting for teammate" : "🏳️ Forfeit round"}
+              {teammateForfeit && !forfeitRequested ? "⚠️ Teammate wants to forfeit! Tap to confirm" : forfeitRequested ? "🏳️ Forfeit requested — tap to cancel" : "🏳️ Forfeit round"}
             </button>
           </>
         )}
@@ -2139,10 +2159,9 @@ ${suggestion}
         {(timerActive || (difficulty === "easy" && guesserActive)) && (
           <button
             onClick={requestForfeit}
-            disabled={forfeitRequested}
-            style={{ width: "100%", padding: "8px", fontSize: "14px", borderRadius: "10px", background: "none", border: `1px solid ${forfeitRequested ? "#ccc" : "#cc0000"}`, color: forfeitRequested ? "#ccc" : "#cc0000", cursor: forfeitRequested ? "not-allowed" : "pointer", marginBottom: "8px" }}
+            style={{ width: "100%", padding: "8px", fontSize: "14px", borderRadius: "10px", background: "none", border: `2px solid ${teammateForfeit ? "#ff6600" : forfeitRequested ? "#cc0000" : "#eee"}`, color: teammateForfeit ? "#ff6600" : forfeitRequested ? "#cc0000" : "#aaa", cursor: "pointer", marginBottom: "8px", fontWeight: forfeitRequested || teammateForfeit ? "bold" : "normal" }}
           >
-            {forfeitRequested ? "🏳️ Forfeit requested... waiting for teammate" : "🏳️ Forfeit round"}
+            {teammateForfeit && !forfeitRequested ? "⚠️ Teammate wants to forfeit! Tap to confirm" : forfeitRequested ? "🏳️ Forfeit requested — tap to cancel" : "🏳️ Forfeit round"}
           </button>
         )}
         {timerActive && (
