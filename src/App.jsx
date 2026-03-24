@@ -1117,6 +1117,8 @@ export default function App() {
   const [suggestionSent, setSuggestionSent] = useState(false)
   const [cheatMessage, setCheatMessage] = useState("")
   const [cheatVisible, setCheatVisible] = useState(false)
+  const [suggestedEmoji, setSuggestedEmoji] = useState(null)
+  const [suggestionUsed, setSuggestionUsed] = useState(false)
 
   const searchRef = useRef(null)
   const screenRef = useRef(screen)
@@ -1611,10 +1613,7 @@ export default function App() {
     await update(ref(db, `rooms/${roomCode}`), { hint: hintMsg })
   }
 
-  // Suggest an emoji for Easy mode — costs 5s on medium if ever added there
-  const [suggestedEmoji, setSuggestedEmoji] = useState(null)
-  const [suggestionUsed, setSuggestionUsed] = useState(false)
-
+  // Suggest an emoji for Easy mode
   const suggestEmoji = () => {
     if (suggestionUsed) return
     // Find emojis relevant to the current topic
