@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.3.7"
+const VERSION = "v0.3.9"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -728,6 +728,16 @@ const CREDITS = [
   { role: "Code Master", name: "Claude.AI", emoji: "🤖" },
 ]
 
+const CHEAT_MESSAGES = {
+  mamabear: "🐻 Welcome back Mom! Your bonus hints are ready...",
+  hayden:   "⚡ Rayden has entered the arena...",
+  bert:     "⏸️ Timer freeze unlocked. Use it wisely.",
+  justin:   "🚀 MrSpacemanGuy is online. Extra hints loaded.",
+  carrie:   "💖 CFanch1 activated. Tap the footer for a secret hint...",
+  chey:     "💍 Something sparkly is waiting... Tap it for a hint.",
+  delicia:  "🎲 The Dungeon Master has arrived. Tap the footer for a secret hint.",
+}
+
 const HOW_TO_PLAY_STEPS = [
   { emoji: "👥", title: "Form Teams", desc: "Split into 2 teams. Each team has a Clue Giver and a Guesser." },
   { emoji: "🎯", title: "Get a Topic", desc: "The Clue Giver sees a secret word — don't show your screen!" },
@@ -1103,6 +1113,10 @@ export default function App() {
   const [editingName, setEditingName] = useState("")
   const [difficulty, setDifficulty] = useState("medium")
   const [showCredits, setShowCredits] = useState(false)
+  const [suggestion, setSuggestion] = useState("")
+  const [suggestionSent, setSuggestionSent] = useState(false)
+  const [cheatMessage, setCheatMessage] = useState("")
+  const [cheatVisible, setCheatVisible] = useState(false)
 
   const searchRef = useRef(null)
   const screenRef = useRef(screen)
@@ -1667,9 +1681,49 @@ export default function App() {
             </div>
           </div>
         ))}
-        <button onClick={() => setShowHowToPlay(false)} style={{ width: "100%", padding: "14px", fontSize: "17px", borderRadius: "12px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", fontWeight: "bold", marginTop: "8px" }}>
+        <button onClick={() => { setShowHowToPlay(false); setSuggestionSent(false); setSuggestion("") }} style={{ width: "100%", padding: "14px", fontSize: "17px", borderRadius: "12px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", fontWeight: "bold", marginTop: "8px" }}>
           Got it! Let's Play 🎯
         </button>
+        <div style={{ marginTop: "16px", background: "#f9f9f9", borderRadius: "12px", padding: "16px" }}>
+          <p style={{ fontSize: "13px", fontWeight: "bold", color: "#333", margin: "0 0 8px" }}>💡 Suggest a Feature</p>
+          <p style={{ fontSize: "12px", color: "#999", margin: "0 0 10px" }}>Got an idea? We'd love to hear it!</p>
+          {suggestionSent ? (
+            <div style={{ textAlign: "center", padding: "10px" }}>
+              <div style={{ fontSize: "32px" }}>🎉</div>
+              <p style={{ fontSize: "14px", color: "#00aa44", fontWeight: "bold", margin: "6px 0 0" }}>Thanks! We got it.</p>
+            </div>
+          ) : (
+            <>
+              <textarea
+                placeholder="What would make GuessMoji better?"
+                value={suggestion}
+                onChange={e => setSuggestion(e.target.value)}
+                rows={3}
+                style={{ width: "100%", padding: "10px", fontSize: "14px", borderRadius: "8px", border: "1px solid #ddd", boxSizing: "border-box", resize: "none", fontFamily: "sans-serif" }}
+              />
+              <button
+                onClick={() => {
+                  if (!suggestion.trim()) return
+                  const subject = encodeURIComponent("GuessMoji Feature Suggestion")
+                  const body = encodeURIComponent(`Hey Fanch!
+
+Here's my GuessMoji suggestion:
+
+${suggestion}
+
+— Sent from GuessMoji ${VERSION}`)
+                  window.location.href = `mailto:fancher.danny@gmail.com?subject=${subject}&body=${body}`
+                  setSuggestionSent(true)
+                  setSuggestion("")
+                }}
+                disabled={!suggestion.trim()}
+                style={{ width: "100%", marginTop: "8px", padding: "10px", fontSize: "15px", borderRadius: "10px", background: suggestion.trim() ? "#0066ff" : "#ccc", color: "white", border: "none", cursor: suggestion.trim() ? "pointer" : "not-allowed", fontWeight: "bold" }}
+              >
+                Send Suggestion 📬
+              </button>
+            </>
+          )}
+        </div>
         <button onClick={() => { setShowHowToPlay(false); setShowCredits(true) }} style={{ width: "100%", padding: "10px", fontSize: "14px", borderRadius: "10px", background: "none", border: "1px solid #eee", color: "#999", cursor: "pointer", marginTop: "8px" }}>
           🎬 Credits
         </button>
@@ -2162,7 +2216,7 @@ export default function App() {
         <h1 style={{ fontSize: "28px", marginTop: "20px" }}>Hey {displayNickname}!</h1>
         {isHayden && (
           <div style={{ fontSize: "22px", fontWeight: "bold", color: "white", background: "rgba(0,0,0,0.3)", borderRadius: "10px", padding: "8px 16px", margin: "8px auto", maxWidth: "300px" }}>
-            ⚡ FINISH HIM, RAIDEN! ⚡
+            ⚡ FINISH HIM, RAYDEN! ⚡
           </div>
         )}
         <p style={{ fontSize: "20px", opacity: 0.9 }}>You are the</p>
@@ -2250,16 +2304,45 @@ export default function App() {
   // HOME SCREEN
   return (
     <div style={{ textAlign: "center", marginTop: "80px", fontFamily: "sans-serif", padding: "20px" }}>
+      <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
       <Logo onTap={null} center />
       <p style={{ color: "#999", fontSize: "14px", margin: "0 0 24px" }}>Send emojis. Guess the word.</p>
       <input
         type="text"
         placeholder="Your nickname..."
         value={nickname}
-        onChange={(e) => setNickname(e.target.value)}
+        onChange={(e) => {
+          const val = e.target.value
+          setNickname(val)
+          const msg = CHEAT_MESSAGES[val.toLowerCase().trim()]
+          if (msg) {
+            setCheatMessage(msg)
+            setCheatVisible(true)
+          } else {
+            setCheatVisible(false)
+            setCheatMessage("")
+          }
+        }}
         onKeyDown={(e) => { if (e.key === "Enter" && nickname.trim()) setScreen("lobby") }}
         style={{ padding: "10px", fontSize: "18px", borderRadius: "8px", border: "1px solid #ccc", width: "100%", boxSizing: "border-box", maxWidth: "300px" }}
       />
+      {cheatVisible && cheatMessage && (
+        <div style={{
+          marginTop: "12px",
+          padding: "10px 16px",
+          background: "#fff8e1",
+          border: "1px solid #ffcc00",
+          borderRadius: "10px",
+          fontSize: "14px",
+          color: "#aa6600",
+          fontWeight: "bold",
+          maxWidth: "300px",
+          margin: "12px auto 0",
+          animation: "fadeIn 0.4s ease"
+        }}>
+          {cheatMessage}
+        </div>
+      )}
       {nickname.trim() && (
         <div style={{ marginTop: "20px" }}>
           <button onClick={() => setScreen("lobby")} style={{ padding: "14px 40px", fontSize: "20px", borderRadius: "12px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}>
