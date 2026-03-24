@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.3.5"
+const VERSION = "v0.3.6"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -83,7 +83,7 @@ const TOPICS = {
 
 const EMOJI_LIST = [
   // Nature & Weather
-  { emoji: "🌊", keywords: ["water", "wave", "ocean", "sea", "surf", "flood", "tide", "blue", "beach"] },
+  { emoji: "🌊", keywords: ["water", "wave", "ocean", "sea", "surf", "flood", "tide", "blue", "beach", "shallow", "deep", "lady gaga", "a star is born"] },
   { emoji: "🧊", keywords: ["ice", "cold", "freeze", "iceberg", "frozen", "chill", "arctic", "cube"] },
   { emoji: "🔥", keywords: ["fire", "hot", "burn", "flame", "heat", "blaze", "inferno", "campfire"] },
   { emoji: "⛈️", keywords: ["storm", "thunder", "lightning", "rain", "cloud", "weather", "dark"] },
@@ -93,13 +93,13 @@ const EMOJI_LIST = [
   { emoji: "🌙", keywords: ["moon", "night", "dark", "sky", "lunar", "crescent", "sleep", "dream"] },
   { emoji: "⭐", keywords: ["star", "night", "sky", "shine", "famous", "celebrity", "wish"] },
   { emoji: "🌋", keywords: ["volcano", "lava", "fire", "eruption", "mountain", "explosion", "hawaii"] },
-  { emoji: "🏜️", keywords: ["desert", "sand", "sahara", "hot", "dry", "camel", "cactus", "empty"] },
+  { emoji: "🏜️", keywords: ["desert", "sand", "sahara", "hot", "dry", "camel", "cactus", "empty", "dune", "spice", "arrakis", "monument valley", "arizona", "uluru", "outback", "red rock"] },
   { emoji: "🌲", keywords: ["tree", "forest", "nature", "green", "wood", "jungle", "pine", "tall"] },
   { emoji: "🌺", keywords: ["flower", "bloom", "hawaii", "tropical", "pretty", "garden", "pink"] },
   { emoji: "🍄", keywords: ["mushroom", "fungi", "forest", "mario", "super", "toadstool", "red"] },
-  { emoji: "🌍", keywords: ["world", "earth", "globe", "planet", "travel", "international", "global"] },
+  { emoji: "🌍", keywords: ["world", "earth", "globe", "planet", "travel", "international", "global", "avatar", "pandora", "alien planet"] },
   { emoji: "🏔️", keywords: ["mountain", "everest", "peak", "snow", "climb", "high", "alps", "rocky"] },
-  { emoji: "🏝️", keywords: ["island", "beach", "tropical", "hawaii", "paradise", "palm", "castaway"] },
+  { emoji: "🏝️", keywords: ["island", "beach", "tropical", "hawaii", "paradise", "palm", "castaway", "bora bora", "fiji", "polynesia", "tahiti", "pacific"] },
   { emoji: "🌅", keywords: ["sunset", "sunrise", "horizon", "sky", "ocean", "dawn", "dusk", "morning"] },
   { emoji: "❄️", keywords: ["snow", "cold", "winter", "freeze", "flake", "ice", "frozen", "blizzard"] },
   { emoji: "🌬️", keywords: ["wind", "cold", "blow", "air", "freeze", "breeze", "gust", "breath"] },
@@ -112,7 +112,7 @@ const EMOJI_LIST = [
   { emoji: "🌻", keywords: ["sunflower", "yellow", "sun", "flower", "summer", "bright", "field"] },
   { emoji: "🍁", keywords: ["maple", "leaf", "canada", "fall", "autumn", "red", "orange", "change"] },
   { emoji: "🌾", keywords: ["wheat", "grain", "farm", "harvest", "field", "gold", "bread", "grass"] },
-  { emoji: "🪨", keywords: ["rock", "stone", "hard", "heavy", "solid", "mountain", "throw"] },
+  { emoji: "🪨", keywords: ["rock", "stone", "hard", "heavy", "solid", "mountain", "throw", "uluru", "ayers rock", "sacred", "red", "monument"] },
   { emoji: "🌑", keywords: ["dark", "night", "moon", "black", "shadow", "eclipse", "space"] },
   { emoji: "💧", keywords: ["drop", "water", "rain", "tear", "drip", "blue", "wet", "cry"] },
   { emoji: "⚡", keywords: ["lightning", "electric", "power", "fast", "quick", "speed", "bolt", "thunder", "energy", "zeus", "time"] },
@@ -197,7 +197,7 @@ const EMOJI_LIST = [
 
   // People & Emotions
   { emoji: "👨", keywords: ["man", "male", "guy", "person", "adult", "father", "dad", "him", "he", "dude", "brother"] },
-  { emoji: "👩", keywords: ["woman", "female", "girl", "person", "adult", "mother", "mom", "her", "she", "lady", "sister"] },
+  { emoji: "👩", keywords: ["woman", "female", "girl", "person", "adult", "mother", "mom", "her", "she", "lady", "sister", "legally blonde", "elle woods", "clueless", "valley girl", "blonde", "jolene", "matilda"] },
   { emoji: "👶", keywords: ["baby", "infant", "newborn", "small", "child", "cute", "young", "tiny"] },
   { emoji: "👦", keywords: ["boy", "child", "kid", "young", "son", "male", "little", "school"] },
   { emoji: "👧", keywords: ["girl", "child", "kid", "young", "daughter", "female", "little", "school"] },
@@ -205,21 +205,21 @@ const EMOJI_LIST = [
   { emoji: "👵", keywords: ["old woman", "grandmother", "grandma", "elderly", "senior", "aged", "wise"] },
   { emoji: "👸", keywords: ["queen", "princess", "girl", "woman", "lady", "royal", "crown", "fairy tale"] },
   { emoji: "🤴", keywords: ["king", "prince", "man", "guy", "boy", "royal", "crown", "charming"] },
-  { emoji: "🧙", keywords: ["wizard", "magic", "harry", "witch", "spell", "wand", "old", "sorcerer"] },
+  { emoji: "🧙", keywords: ["wizard", "magic", "harry", "witch", "spell", "wand", "old", "sorcerer", "matilda", "telekinesis", "power", "roald dahl"] },
   { emoji: "🦸", keywords: ["hero", "super", "power", "cape", "save", "strong", "superman", "marvel"] },
   { emoji: "🦹", keywords: ["villain", "evil", "bad", "super", "dark", "enemy", "sinister"] },
   { emoji: "🧛", keywords: ["vampire", "dracula", "blood", "dark", "night", "bite", "cape", "immortal"] },
-  { emoji: "🧟", keywords: ["zombie", "dead", "brain", "horror", "walk", "undead", "apocalypse"] },
+  { emoji: "🧟", keywords: ["zombie", "dead", "brain", "horror", "walk", "undead", "apocalypse", "thriller", "michael jackson", "dance"] },
   { emoji: "👨‍🚀", keywords: ["astronaut", "space", "moon", "rocket", "nasa", "gravity", "orbit"] },
   { emoji: "👮", keywords: ["police", "cop", "law", "badge", "arrest", "crime", "officer"] },
-  { emoji: "💃", keywords: ["dance", "woman", "salsa", "move", "music", "spin", "tango", "flamenco"] },
-  { emoji: "🕺", keywords: ["dance", "man", "groove", "move", "music", "disco", "saturday", "night"] },
+  { emoji: "💃", keywords: ["dance", "woman", "salsa", "move", "music", "spin", "tango", "flamenco", "dirty dancing", "lift", "watermelon", "grease", "sandy"] },
+  { emoji: "🕺", keywords: ["dance", "man", "groove", "move", "music", "disco", "saturday", "night", "grease", "danny", "pulp fiction", "tarantino", "twist"] },
   { emoji: "😢", keywords: ["sad", "cry", "tears", "emotional", "upset", "weep", "heartbreak"] },
   { emoji: "😂", keywords: ["laugh", "funny", "joke", "happy", "lol", "hilarious", "comedy"] },
   { emoji: "😱", keywords: ["scared", "shock", "horror", "scream", "fear", "panic", "surprised"] },
   { emoji: "😍", keywords: ["love", "heart eyes", "crush", "adore", "beautiful", "smitten"] },
   { emoji: "🤔", keywords: ["think", "wonder", "question", "hmm", "ponder", "curious", "idea"] },
-  { emoji: "😴", keywords: ["sleep", "tired", "dream", "night", "rest", "snore", "bed", "lazy"] },
+  { emoji: "😴", keywords: ["sleep", "tired", "dream", "night", "rest", "snore", "bed", "lazy", "inception", "layers", "subconscious"] },
   { emoji: "👀", keywords: ["look", "see", "watch", "eyes", "stare", "spy", "observe", "peek"] },
   { emoji: "💪", keywords: ["strong", "muscle", "power", "flex", "gym", "force", "workout"] },
   { emoji: "🙌", keywords: ["celebrate", "cheer", "praise", "win", "clap", "yay", "high five"] },
@@ -238,9 +238,9 @@ const EMOJI_LIST = [
   { emoji: "🫡", keywords: ["salute", "respect", "yes sir", "military", "honor", "soldier"] },
   { emoji: "👻", keywords: ["ghost", "haunted", "spooky", "halloween", "spirit", "scary", "boo"] },
   { emoji: "💀", keywords: ["death", "dead", "skull", "die", "bones", "scary", "halloween", "crossbones"] },
-  { emoji: "👽", keywords: ["alien", "space", "ufo", "green", "extraterrestrial", "weird", "martian"] },
+  { emoji: "👽", keywords: ["alien", "space", "ufo", "green", "extraterrestrial", "weird", "martian", "et", "phone", "home", "roswell", "spielberg", "bicycle", "finger", "glowing"] },
   { emoji: "🤖", keywords: ["robot", "machine", "ai", "tech", "future", "metal", "beep", "android"] },
-  { emoji: "👹", keywords: ["demon", "monster", "evil", "red", "horns", "oni", "japan", "scary"] },
+  { emoji: "👹", keywords: ["demon", "monster", "evil", "red", "horns", "oni", "japan", "scary", "unholy", "sinful", "forbidden", "dark"] },
   { emoji: "🎃", keywords: ["pumpkin", "halloween", "jack", "lantern", "october", "carve", "orange"] },
   { emoji: "🧑‍🤝‍🧑", keywords: ["couple", "friends", "together", "pair", "people", "hold hands", "walk"] },
   { emoji: "👨‍👩‍👧‍👦", keywords: ["family", "parents", "kids", "children", "home", "together", "love"] },
@@ -300,14 +300,14 @@ const EMOJI_LIST = [
   { emoji: "🍕", keywords: ["pizza", "food", "italian", "cheese", "slice", "pepperoni", "dough"] },
   { emoji: "🍟", keywords: ["french fries", "fries", "fast food", "potato", "crispy", "salty", "mcdonalds", "ketchup", "chips"] },
   { emoji: "🍣", keywords: ["sushi", "japanese", "fish", "rice", "roll", "raw", "salmon", "tuna"] },
-  { emoji: "🌮", keywords: ["taco", "mexican", "food", "wrap", "shell", "salsa", "tuesday"] },
+  { emoji: "🌮", keywords: ["taco", "mexican", "food", "wrap", "shell", "salsa", "tuesday", "nachos", "chips", "jalapeno", "tortilla"] },
   { emoji: "🍔", keywords: ["burger", "hamburger", "food", "beef", "grill", "fast food", "bun"] },
-  { emoji: "🍦", keywords: ["ice cream", "cold", "sweet", "dessert", "cone", "summer", "vanilla"] },
+  { emoji: "🍦", keywords: ["ice cream", "cold", "sweet", "dessert", "cone", "summer", "vanilla", "gelato", "italian", "scoop", "creamy", "flavor"] },
   { emoji: "🍩", keywords: ["donut", "sweet", "dessert", "ring", "glaze", "dough", "sprinkles"] },
   { emoji: "🎂", keywords: ["cake", "birthday", "sweet", "celebrate", "candle", "party", "slice"] },
   { emoji: "🍫", keywords: ["chocolate", "sweet", "candy", "brown", "dessert", "cocoa", "bar"] },
   { emoji: "🍿", keywords: ["popcorn", "movie", "cinema", "snack", "butter", "corn", "salt"] },
-  { emoji: "☕", keywords: ["coffee", "hot", "drink", "morning", "cafe", "espresso", "latte"] },
+  { emoji: "☕", keywords: ["coffee", "hot", "drink", "morning", "cafe", "espresso", "latte", "tiramisu", "italian dessert", "mascarpone", "ladyfinger"] },
   { emoji: "🍷", keywords: ["wine", "drink", "red", "grape", "fancy", "glass", "vineyard"] },
   { emoji: "🥂", keywords: ["champagne", "celebrate", "toast", "party", "wedding", "new year", "clink"] },
   { emoji: "🍺", keywords: ["beer", "drink", "pub", "cold", "brew", "glass", "foam", "bar"] },
@@ -319,7 +319,7 @@ const EMOJI_LIST = [
   { emoji: "🥐", keywords: ["croissant", "french", "bread", "breakfast", "butter", "pastry", "paris"] },
   { emoji: "🍝", keywords: ["spaghetti", "pasta", "italian", "noodles", "sauce", "meatball", "bolognese"] },
   { emoji: "🌯", keywords: ["burrito", "wrap", "mexican", "food", "roll", "tortilla", "bean"] },
-  { emoji: "🧀", keywords: ["cheese", "dairy", "yellow", "pizza", "mouse", "swiss", "cheddar"] },
+  { emoji: "🧀", keywords: ["cheese", "dairy", "yellow", "pizza", "mouse", "swiss", "cheddar", "nachos", "melted", "topping"] },
   { emoji: "🍓", keywords: ["strawberry", "red", "fruit", "sweet", "berry", "fresh", "summer"] },
   { emoji: "🍌", keywords: ["banana", "yellow", "fruit", "monkey", "slip", "tropical", "peel"] },
   { emoji: "🍎", keywords: ["apple", "red", "fruit", "teacher", "newton", "snow white", "juice"] },
@@ -336,7 +336,7 @@ const EMOJI_LIST = [
   { emoji: "🥦", keywords: ["broccoli", "green", "vegetable", "healthy", "tree", "vitamin", "chef"] },
   { emoji: "🌽", keywords: ["corn", "yellow", "vegetable", "farm", "pop", "summer", "barbecue"] },
   { emoji: "🧄", keywords: ["garlic", "cooking", "italian", "vampire", "smell", "flavor", "herb"] },
-  { emoji: "🧅", keywords: ["onion", "cooking", "cry", "layers", "flavor", "peel", "ogre"] },
+  { emoji: "🧅", keywords: ["onion", "cooking", "cry", "layers", "flavor", "peel", "ogre", "shrek", "swamp", "donkey", "fiona"] },
   { emoji: "🥕", keywords: ["carrot", "orange", "vegetable", "rabbit", "healthy", "crunch", "bugs bunny"] },
   { emoji: "🥜", keywords: ["peanut", "nut", "butter", "allergy", "snack", "shell", "elephant"] },
   { emoji: "🍞", keywords: ["bread", "toast", "bake", "wheat", "loaf", "butter", "sandwich"] },
@@ -404,12 +404,12 @@ const EMOJI_LIST = [
   { emoji: "🛕", keywords: ["temple", "india", "religion", "ancient", "worship", "asia", "hindu"] },
   { emoji: "⛩️", keywords: ["shrine", "japan", "tokyo", "gate", "red", "torii", "shinto"] },
   { emoji: "🗿", keywords: ["moai", "easter island", "statue", "stone", "ancient", "mystery", "head"] },
-  { emoji: "🏟️", keywords: ["stadium", "arena", "sports", "crowd", "game", "concert", "colosseum"] },
+  { emoji: "🏟️", keywords: ["stadium", "arena", "sports", "crowd", "game", "concert", "colosseum", "gladiator", "rome", "maximus", "fight", "ancient"] },
   { emoji: "🌉", keywords: ["bridge", "night", "city", "golden gate", "river", "lights", "san francisco"] },
-  { emoji: "🏙️", keywords: ["city", "skyline", "buildings", "urban", "night", "downtown", "metropolis"] },
+  { emoji: "🏙️", keywords: ["city", "skyline", "buildings", "urban", "night", "downtown", "metropolis", "divergent", "faction", "dystopia", "future", "chicago"] },
   { emoji: "✈️", keywords: ["plane", "fly", "travel", "airport", "trip", "jet", "vacation"] },
-  { emoji: "🚀", keywords: ["rocket", "space", "launch", "nasa", "moon", "fast", "blast", "spacex"] },
-  { emoji: "🛸", keywords: ["ufo", "alien", "space", "fly", "mystery", "extraterrestrial", "area 51"] },
+  { emoji: "🚀", keywords: ["rocket", "space", "launch", "nasa", "moon", "fast", "blast", "spacex", "interstellar", "wormhole", "blackhole", "nolan"] },
+  { emoji: "🛸", keywords: ["ufo", "alien", "space", "fly", "mystery", "extraterrestrial", "area 51", "roswell", "new mexico", "crash", "conspiracy"] },
   { emoji: "⛵", keywords: ["sailboat", "ocean", "wind", "water", "sail", "boat", "cruise"] },
   { emoji: "🚂", keywords: ["train", "rail", "steam", "travel", "fast", "locomotive", "track"] },
   { emoji: "🚁", keywords: ["helicopter", "fly", "rotor", "blade", "rescue", "military", "hover"] },
@@ -423,7 +423,7 @@ const EMOJI_LIST = [
   { emoji: "🏴‍☠️", keywords: ["pirate", "flag", "skull", "ship", "treasure", "sea", "jolly roger", "hook"] },
   { emoji: "🏖️", keywords: ["beach", "sand", "sun", "ocean", "summer", "vacation", "waves", "relax"] },
   { emoji: "🌃", keywords: ["night", "city", "stars", "dark", "lights", "skyline", "moon", "urban"] },
-  { emoji: "🏠", keywords: ["house", "home", "building", "live", "inside", "shelter", "roof", "family"] },
+  { emoji: "🏠", keywords: ["house", "home", "building", "live", "inside", "shelter", "roof", "family", "parasite", "rich", "mansion", "class"] },
   { emoji: "🏢", keywords: ["office", "building", "work", "city", "corporate", "business", "tall"] },
   { emoji: "🏦", keywords: ["bank", "money", "finance", "save", "rich", "vault", "institution"] },
   { emoji: "🏥", keywords: ["hospital", "doctor", "medical", "sick", "health", "nurse", "emergency"] },
@@ -431,7 +431,7 @@ const EMOJI_LIST = [
   { emoji: "🏪", keywords: ["store", "shop", "buy", "mall", "retail", "market", "front", "convenience"] },
   { emoji: "🏩", keywords: ["love hotel", "romance", "hearts", "pink", "couples", "intimate"] },
   { emoji: "🏨", keywords: ["hotel", "stay", "room", "travel", "bed", "lobby", "resort", "night"] },
-  { emoji: "⛪", keywords: ["church", "religion", "pray", "cross", "worship", "christian", "steeple"] },
+  { emoji: "⛪", keywords: ["church", "religion", "pray", "cross", "worship", "christian", "steeple", "unholy", "sam smith", "forbidden", "sacred"] },
   { emoji: "🕌", keywords: ["mosque", "islam", "pray", "religion", "dome", "crescent", "worship"] },
   { emoji: "🕍", keywords: ["synagogue", "jewish", "religion", "pray", "worship", "star of david"] },
 
@@ -439,20 +439,20 @@ const EMOJI_LIST = [
   { emoji: "💎", keywords: ["diamond", "jewel", "necklace", "gem", "ring", "sparkle", "precious", "shine"] },
   { emoji: "👑", keywords: ["crown", "king", "queen", "royal", "winner", "champion", "gold"] },
   { emoji: "🗡️", keywords: ["sword", "fight", "knight", "battle", "weapon", "sharp", "duel", "excalibur"] },
-  { emoji: "⚔️", keywords: ["swords", "fight", "battle", "war", "cross", "duel", "knight", "clash", "weapon"] },
+  { emoji: "⚔️", keywords: ["swords", "fight", "battle", "war", "cross", "duel", "knight", "clash", "weapon", "gladiator", "arena", "roman", "maximus"] },
   { emoji: "🛡️", keywords: ["shield", "protect", "knight", "defense", "armor", "guard", "block"] },
   { emoji: "🔮", keywords: ["crystal ball", "magic", "future", "predict", "witch", "fortune", "see"] },
-  { emoji: "💣", keywords: ["bomb", "explode", "danger", "blast", "tick", "destroy", "countdown", "war"] },
-  { emoji: "🔫", keywords: ["gun", "pistol", "shoot", "weapon", "bang", "bullet", "wild west", "cop", "fire", "armed", "cowboy", "crime", "war", "police", "revolver", "shot"] },
+  { emoji: "💣", keywords: ["bomb", "explode", "danger", "blast", "tick", "destroy", "countdown", "war", "dynamite", "tnt", "explosive", "fuse"] },
+  { emoji: "🔫", keywords: ["gun", "pistol", "shoot", "weapon", "bang", "bullet", "wild west", "cop", "fire", "armed", "cowboy", "crime", "war", "police", "revolver", "shot", "pulp fiction", "tarantino", "gangster"] },
   { emoji: "🪃", keywords: ["boomerang", "australia", "throw", "return", "curved", "outback", "come back"] },
   { emoji: "🪖", keywords: ["helmet", "military", "soldier", "army", "war", "protect", "camouflage"] },
   { emoji: "🎖️", keywords: ["medal", "military", "honor", "award", "soldier", "war", "brave"] },
   { emoji: "🚨", keywords: ["alarm", "police", "emergency", "siren", "red", "alert", "danger", "crime"] },
   { emoji: "🔑", keywords: ["key", "lock", "open", "secret", "door", "unlock", "access"] },
-  { emoji: "📚", keywords: ["book", "read", "library", "school", "study", "learn", "knowledge"] },
+  { emoji: "📚", keywords: ["book", "read", "library", "school", "study", "learn", "knowledge", "matilda", "roald dahl", "1984", "orwell", "dystopia"] },
   { emoji: "🎭", keywords: ["drama", "theatre", "act", "play", "mask", "performance", "stage"] },
   { emoji: "🎬", keywords: ["movie", "film", "cinema", "action", "director", "cut", "scene", "clapboard"] },
-  { emoji: "🎵", keywords: ["music", "note", "song", "melody", "tune", "sing", "sound"] },
+  { emoji: "🎵", keywords: ["music", "note", "song", "melody", "tune", "sing", "sound", "jolene", "dolly parton", "country", "levitating", "dua lipa", "float"] },
   { emoji: "🎸", keywords: ["guitar", "music", "rock", "band", "string", "electric", "strum"] },
   { emoji: "🎻", keywords: ["violin", "music", "orchestra", "strings", "bow", "classical", "concert"] },
   { emoji: "🥁", keywords: ["drum", "music", "beat", "rhythm", "band", "percussion", "rock"] },
@@ -469,7 +469,7 @@ const EMOJI_LIST = [
   { emoji: "💡", keywords: ["idea", "light", "bright", "invention", "think", "bulb", "eureka"] },
   { emoji: "📱", keywords: ["phone", "mobile", "call", "text", "app", "screen", "iphone"] },
   { emoji: "🖥️", keywords: ["computer", "screen", "tech", "digital", "work", "monitor", "pc"] },
-  { emoji: "🎮", keywords: ["game", "video game", "controller", "play", "fun", "console", "ps5", "xbox"] },
+  { emoji: "🎮", keywords: ["game", "video game", "controller", "play", "fun", "console", "ps5", "xbox", "halo", "master chief", "spartan", "shooter"] },
   { emoji: "🧪", keywords: ["test tube", "science", "chemistry", "lab", "experiment", "liquid", "research"] },
   { emoji: "🔬", keywords: ["microscope", "science", "tiny", "lab", "biology", "cell", "research"] },
   { emoji: "🧬", keywords: ["dna", "genetics", "science", "biology", "helix", "code", "life"] },
@@ -487,13 +487,13 @@ const EMOJI_LIST = [
   { emoji: "📜", keywords: ["scroll", "map", "old", "document", "ancient", "letter", "parchment"] },
   { emoji: "📷", keywords: ["camera", "photo", "picture", "shoot", "snap", "lens", "photography"] },
   { emoji: "🎥", keywords: ["camera", "movie", "film", "record", "video", "director", "shoot"] },
-  { emoji: "📺", keywords: ["tv", "television", "watch", "show", "screen", "remote", "channel"] },
+  { emoji: "📺", keywords: ["tv", "television", "watch", "show", "screen", "remote", "channel", "1984", "orwell", "big brother", "surveillance", "dystopia"] },
   { emoji: "🎙️", keywords: ["microphone", "sing", "record", "podcast", "radio", "voice", "speak"] },
   { emoji: "🧸", keywords: ["teddy bear", "toy", "soft", "cute", "child", "hug", "stuffed", "comfort"] },
   { emoji: "🎁", keywords: ["gift", "present", "wrap", "birthday", "surprise", "box", "ribbon"] },
   { emoji: "🎉", keywords: ["party", "celebrate", "fun", "confetti", "birthday", "cheer", "pop"] },
   { emoji: "🎈", keywords: ["balloon", "party", "float", "red", "celebrate", "birthday", "air"] },
-  { emoji: "✨", keywords: ["sparkle", "magic", "shine", "glitter", "star", "special", "fairy"] },
+  { emoji: "✨", keywords: ["sparkle", "magic", "shine", "glitter", "star", "special", "fairy", "levitating", "float", "hover", "halo", "glow"] },
   { emoji: "🧩", keywords: ["puzzle", "piece", "solve", "mystery", "fit", "game", "jigsaw"] },
   { emoji: "♟️", keywords: ["chess", "strategy", "game", "king", "queen", "pawn", "think", "checkmate"] },
   { emoji: "🎲", keywords: ["dice", "random", "game", "luck", "roll", "chance", "board game"] },
@@ -508,7 +508,7 @@ const EMOJI_LIST = [
   { emoji: "❤️", keywords: ["love", "heart", "romance", "valentines", "care", "red", "passion"] },
   { emoji: "💔", keywords: ["heartbreak", "sad", "loss", "broken", "hurt", "split", "end"] },
   { emoji: "💥", keywords: ["explosion", "bang", "pow", "comic", "crash", "impact", "boom"] },
-  { emoji: "🌀", keywords: ["spiral", "cyclone", "dizzy", "spin", "tornado", "swirl", "hypnotic"] },
+  { emoji: "🌀", keywords: ["spiral", "cyclone", "dizzy", "spin", "tornado", "swirl", "hypnotic", "inception", "spinning", "top", "dream"] },
   { emoji: "👍", keywords: ["yes", "good", "approve", "agree", "like", "thumbs up", "ok", "correct"] },
   { emoji: "👎", keywords: ["no", "bad", "disagree", "dislike", "thumbs down", "wrong", "reject"] },
   { emoji: "✅", keywords: ["yes", "check", "correct", "done", "complete", "right", "confirm", "true"] },
@@ -532,6 +532,15 @@ const EMOJI_LIST = [
   { emoji: "💬", keywords: ["speech", "talk", "say", "chat", "bubble", "message", "word", "conversation"] },
   { emoji: "💭", keywords: ["thought", "think", "dream", "imagine", "wonder", "bubble", "idea", "cloud"] },
 
+  // Misc additions for topic coverage
+  { emoji: "🪱", keywords: ["worm", "parasite", "crawl", "underground", "dune", "sandworm", "bug", "soil", "gross", "dig"] },
+  { emoji: "🌐", keywords: ["avatar", "pandora", "global", "planet", "world", "alien", "blue", "network", "web", "sphere"] },
+  { emoji: "⭕", keywords: ["halo", "ring", "circle", "round", "zero", "loop", "orbit", "glow", "sacred"] },
+  { emoji: "💼", keywords: ["briefcase", "business", "work", "lawyer", "pulp fiction", "carry", "suit", "office", "professional"] },
+  { emoji: "⚖️", keywords: ["law", "justice", "balance", "legally blonde", "court", "judge", "lawyer", "fair", "scales"] },
+  { emoji: "💅", keywords: ["nails", "fashion", "beauty", "salon", "clueless", "valley girl", "pink", "manicure", "feminine", "glamour"] },
+  { emoji: "🏛️", keywords: ["santorini", "greece", "columns", "ancient", "architecture", "marble", "monument", "classic", "white", "temple"] },
+
   // Craft, sewing, tools
   { emoji: "🧵", keywords: ["thread", "string", "sew", "needle", "stitch", "yarn", "fabric", "craft", "thin"] },
   { emoji: "🪡", keywords: ["spool", "thread", "string", "sew", "craft", "wind", "yarn", "needle"] },
@@ -554,13 +563,22 @@ const EMOJI_LIST = [
   { emoji: "🥨", keywords: ["pretzel", "bread", "twisted", "baked", "salty", "snack", "german", "knot", "dough"] },
   { emoji: "🍘", keywords: ["cracker", "rice cracker", "japanese", "thin", "crispy", "snack", "flat"] },
   { emoji: "🫙", keywords: ["cracker", "jar", "container", "store", "preserve", "glass"] },
+  { emoji: "🥟", keywords: ["dumpling", "dumplings", "chinese", "japanese", "gyoza", "potsticker", "steam", "fold", "asian", "dim sum"] },
+  { emoji: "🧆", keywords: ["falafel", "chickpea", "middle eastern", "fried", "ball", "pita", "hummus", "crispy", "israeli"] },
+  { emoji: "🍅", keywords: ["tomato", "red", "vegetable", "fruit", "blt", "salad", "sauce", "ketchup", "fresh", "garden"] },
+  { emoji: "🥬", keywords: ["lettuce", "green", "salad", "leaf", "blt", "wrap", "fresh", "crispy", "vegetable"] },
+  { emoji: "🫘", keywords: ["beans", "chickpea", "hummus", "legume", "protein", "brown", "kidney", "black bean"] },
+  { emoji: "🧇", keywords: ["churro", "waffle", "fried", "dough", "sweet", "crispy", "cinnamon", "spanish", "fair", "snack"] },
+  { emoji: "🍮", keywords: ["custard", "creme brulee", "flan", "pudding", "dessert", "caramel", "french", "sweet", "brulee"] },
+  { emoji: "🥙", keywords: ["kebab", "wrap", "pita", "middle eastern", "grilled", "meat", "falafel", "turkish", "shawarma"] },
+  { emoji: "🧋", keywords: ["tiramisu", "boba", "bubble tea", "coffee", "creamy", "italian", "layered", "mascarpone"] },
 
   // Colors — squares and circles
   { emoji: "🟥", keywords: ["red", "square", "color", "block", "bright", "stop", "danger"] },
   { emoji: "🟧", keywords: ["orange", "square", "color", "block", "warm", "bright"] },
   { emoji: "🟨", keywords: ["yellow", "square", "color", "block", "bright", "sun", "gold"] },
   { emoji: "🟩", keywords: ["green", "square", "color", "block", "nature", "go", "safe"] },
-  { emoji: "🟦", keywords: ["blue", "square", "color", "block", "sky", "ocean", "cool"] },
+  { emoji: "🟦", keywords: ["blue", "square", "color", "block", "sky", "ocean", "cool", "avatar", "pandora", "navi"] },
   { emoji: "🟪", keywords: ["purple", "square", "color", "block", "violet", "royal", "grape"] },
   { emoji: "🟫", keywords: ["brown", "square", "color", "block", "earth", "wood", "chocolate"] },
   { emoji: "⬛", keywords: ["black", "square", "color", "block", "dark", "night", "void"] },
@@ -581,7 +599,7 @@ const EMOJI_LIST = [
 
   // Olive / food colors
   { emoji: "🫒", keywords: ["olive", "green", "food", "mediterranean", "italian", "oil", "small", "salty", "branch"] },
-  { emoji: "🌿", keywords: ["olive", "green", "herb", "branch", "leaf", "plant", "nature", "fresh"] },
+  { emoji: "🌿", keywords: ["olive", "green", "herb", "branch", "leaf", "plant", "nature", "fresh", "natural", "organic", "raw", "born"] },
 
   // Country flags
   { emoji: "🇺🇸", keywords: ["usa", "america", "united states", "american", "flag", "stars", "stripes"] },
@@ -609,7 +627,7 @@ const EMOJI_LIST = [
   { emoji: "🇩🇰", keywords: ["denmark", "danish", "copenhagen", "flag", "scandinavia", "europe"] },
   { emoji: "🇫🇮", keywords: ["finland", "finnish", "helsinki", "flag", "scandinavia", "europe"] },
   { emoji: "🇵🇱", keywords: ["poland", "polish", "warsaw", "flag", "europe"] },
-  { emoji: "🇬🇷", keywords: ["greece", "greek", "athens", "flag", "europe", "mediterranean"] },
+  { emoji: "🇬🇷", keywords: ["greece", "greek", "athens", "flag", "europe", "mediterranean", "santorini", "island", "white", "blue dome"] },
   { emoji: "🇹🇷", keywords: ["turkey", "turkish", "istanbul", "flag", "europe", "asia"] },
   { emoji: "🇸🇦", keywords: ["saudi arabia", "saudi", "riyadh", "flag", "middle east", "arabic"] },
   { emoji: "🇦🇪", keywords: ["uae", "dubai", "emirates", "arab", "flag", "middle east"] },
@@ -1508,6 +1526,23 @@ export default function App() {
     await update(ref(db, `rooms/${roomCode}`), { hint: hintMsg })
   }
 
+  // Suggest an emoji for Easy mode — costs 5s on medium if ever added there
+  const [suggestedEmoji, setSuggestedEmoji] = useState(null)
+  const [suggestionUsed, setSuggestionUsed] = useState(false)
+
+  const suggestEmoji = () => {
+    if (suggestionUsed) return
+    // Find emojis relevant to the current topic
+    const topicWords = currentTopic.toLowerCase().replace(/[^a-z ]/g, "").split(" ").filter(w => w.length > 2)
+    const relevant = EMOJI_LIST.filter(e =>
+      e.keywords.some(k => topicWords.some(w => k.includes(w) || w.includes(k)))
+    )
+    const pool = relevant.length > 0 ? relevant : EMOJI_LIST
+    const pick = pool[Math.floor(Math.random() * pool.length)]
+    setSuggestedEmoji(pick.emoji)
+    setSuggestionUsed(true)
+  }
+
   // HOW TO PLAY
   if (showHowToPlay) {
     return (
@@ -1970,6 +2005,25 @@ export default function App() {
         />
         {search.trim() !== "" && filteredEmojis.length === 0 && (
           <p style={{ color: "#999", textAlign: "center" }}>No emojis found. Try another word.</p>
+        )}
+        {difficulty === "easy" && (timerActive || guesserActive) && (
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+            <button
+              onClick={suggestEmoji}
+              disabled={suggestionUsed}
+              style={{ padding: "8px 16px", fontSize: "14px", borderRadius: "10px", background: suggestionUsed ? "#f0f0f0" : "#e8f4ff", color: suggestionUsed ? "#aaa" : "#0066ff", border: `1px solid ${suggestionUsed ? "#ddd" : "#0066ff"}`, cursor: suggestionUsed ? "not-allowed" : "pointer", fontWeight: "bold", whiteSpace: "nowrap" }}
+            >
+              {suggestionUsed ? "✨ Suggested!" : "✨ Suggest Emoji"}
+            </button>
+            {suggestedEmoji && (
+              <button
+                onClick={() => sendEmoji(suggestedEmoji)}
+                style={{ fontSize: "32px", background: "#fffbe6", border: "2px solid #ffcc00", borderRadius: "10px", padding: "6px 10px", cursor: "pointer", animation: "pulse 0.5s ease" }}
+              >
+                {suggestedEmoji}
+              </button>
+            )}
+          </div>
         )}
         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center", paddingBottom: "120px" }}>
           {filteredEmojis.map((e, i) => (
