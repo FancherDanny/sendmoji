@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.3.6"
+const VERSION = "v0.3.7"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -721,6 +721,13 @@ const TEAM_NAME_PRESETS = [
   ["🎯 Bulls", "🎲 Dice", "♟️ Kings", "🃏 Jokers", "🎰 Aces", "🎳 Strikers"],
 ]
 
+const CREDITS = [
+  { role: "Creator", name: "Danny Fancher", emoji: "🎯" },
+  { role: "Inspiration", name: "Tietje Sisters — Chey & Delicia", emoji: "💍" },
+  { role: "#1 Beta Tester", name: "MamaBear (Sue)", emoji: "🐻" },
+  { role: "Code Master", name: "Claude.AI", emoji: "🤖" },
+]
+
 const HOW_TO_PLAY_STEPS = [
   { emoji: "👥", title: "Form Teams", desc: "Split into 2 teams. Each team has a Clue Giver and a Guesser." },
   { emoji: "🎯", title: "Get a Topic", desc: "The Clue Giver sees a secret word — don't show your screen!" },
@@ -985,16 +992,55 @@ function DifficultyBadge({ difficulty, timer }) {
   )
 }
 
-function Footer({ nickname }) {
-  const isMamabear = nickname?.toLowerCase() === "mamabear"
+function Footer({ nickname, onHint, onShowCredits }) {
+  const nl = nickname?.toLowerCase() || ""
+  const isMamabear = nl === "mamabear"
+  const isHayden = nl === "hayden"
+  const isCarrie = nl === "carrie"
+  const isChey = nl === "chey"
+  const isDelicia = nl === "delicia"
+
   return (
     <div style={{ textAlign: "center", marginTop: "32px", paddingBottom: "16px" }}>
-      <span style={{ fontSize: "11px", color: "#bbb", letterSpacing: "0.5px" }}>
+      <span
+        onClick={onShowCredits}
+        style={{ fontSize: "11px", color: "#bbb", letterSpacing: "0.5px", cursor: "pointer" }}
+      >
         🎯 GuessMoji {VERSION} · Made by {MADE_BY}
       </span>
       {isMamabear && Math.random() < 0.4 && (
         <div style={{ fontSize: "11px", color: "#ffaacc", marginTop: "4px" }}>
           Love you Mom ❤️
+        </div>
+      )}
+      {isHayden && (
+        <div style={{ fontSize: "11px", color: "#aaa", marginTop: "4px" }}>
+          🇩🇪 Guten Tag
+        </div>
+      )}
+      {isCarrie && (
+        <div
+          onClick={onHint}
+          style={{ fontSize: "11px", color: "#ff69b4", marginTop: "4px", cursor: "pointer", textDecoration: "underline" }}
+        >
+          💖 CFanch1
+        </div>
+      )}
+      {isChey && (
+        <div
+          onClick={onHint}
+          style={{ fontSize: "13px", marginTop: "4px", cursor: "pointer" }}
+          title="Click for a hint..."
+        >
+          💍
+        </div>
+      )}
+      {isDelicia && (
+        <div
+          onClick={onHint}
+          style={{ fontSize: "11px", color: "#9b59b6", marginTop: "4px", cursor: "pointer", textDecoration: "underline" }}
+        >
+          🎲 Dungeon Master
         </div>
       )}
     </div>
@@ -1056,6 +1102,7 @@ export default function App() {
   const [editingTeam, setEditingTeam] = useState(null)
   const [editingName, setEditingName] = useState("")
   const [difficulty, setDifficulty] = useState("medium")
+  const [showCredits, setShowCredits] = useState(false)
 
   const searchRef = useRef(null)
   const screenRef = useRef(screen)
@@ -1229,16 +1276,16 @@ export default function App() {
   }, [roomCode, nickname])
 
   useEffect(() => {
-    if (!timerActive || timer <= 0) return
+    if (!timerActive || timer <= 0 || timerPaused) return
     const interval = setInterval(() => setTimer(t => t - 1), 1000)
     return () => clearInterval(interval)
-  }, [timerActive, timer])
+  }, [timerActive, timer, timerPaused])
 
   useEffect(() => {
-    if (!guesserActive || guesserTimer <= 0 || difficulty === "easy") return
+    if (!guesserActive || guesserTimer <= 0 || difficulty === "easy" || timerPaused) return
     const interval = setInterval(() => setGuesserTimer(t => t - 1), 1000)
     return () => clearInterval(interval)
-  }, [guesserActive, guesserTimer, difficulty])
+  }, [guesserActive, guesserTimer, difficulty, timerPaused])
 
   useEffect(() => {
     if (timerActive && timer <= 0 && difficulty !== "easy") {
@@ -1482,6 +1529,13 @@ export default function App() {
     }
   }
 
+  const [timerPaused, setTimerPaused] = useState(false)
+
+  const togglePauseTimer = () => {
+    if (!isBert) return
+    setTimerPaused(p => !p)
+  }
+
   const toggleMute = () => {
     if (muted) {
       setMuted(false)
@@ -1500,7 +1554,24 @@ export default function App() {
     await update(ref(db, `rooms/${roomCode}`), { teamNames: updated })
   }
 
-  const maxHints = difficulty === "easy" ? 2 : 1
+  // Easter egg nickname checks
+  const nickLower = nickname?.toLowerCase() || ""
+  const isMamabear = nickLower === "mamabear"
+  const isHayden = nickLower === "hayden"
+  const isBert = nickLower === "bert"
+  const isJustin = nickLower === "justin"
+  const isCarrie = nickLower === "carrie"
+  const isChey = nickLower === "chey"
+  const isDelicia = nickLower === "delicia"
+  const isFanch = nickLower === "fanch"
+
+  // Justin gets display name override
+  const displayNickname = isJustin ? "🚀 MrSpacemanGuy" : nickname
+
+  // Hint count max — Mamabear +5, Justin +2, others get easter egg hints via footer
+  const maxHints = difficulty === "easy"
+    ? (isMamabear ? 7 : isJustin ? 4 : 2)
+    : (isMamabear ? 6 : isJustin ? 3 : 1)
   const hintsLeft = maxHints - hintCount
 
   const useHint = async () => {
@@ -1543,6 +1614,41 @@ export default function App() {
     setSuggestionUsed(true)
   }
 
+  // CREDITS SCREEN
+  if (showCredits) {
+    return (
+      <div style={{ fontFamily: "sans-serif", padding: "24px", maxWidth: "400px", margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: "24px" }}>
+          <div style={{ fontSize: "48px" }}>🎯</div>
+          <h2 style={{ fontSize: "28px", color: "#0066ff", margin: "8px 0 4px" }}>GuessMoji</h2>
+          <p style={{ color: "#999", fontSize: "13px", margin: 0 }}>{VERSION}</p>
+        </div>
+
+        {CREDITS.map((c, i) => (
+          <div key={i} style={{ background: "#f9f9f9", borderRadius: "12px", padding: "16px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "14px" }}>
+            <span style={{ fontSize: "32px", flexShrink: 0 }}>{c.emoji}</span>
+            <div style={{ textAlign: "left" }}>
+              <p style={{ fontSize: "11px", color: "#999", letterSpacing: "1px", margin: "0 0 2px", textTransform: "uppercase" }}>{c.role}</p>
+              <p style={{ fontSize: "16px", fontWeight: "bold", color: "#111", margin: 0 }}>{c.name}</p>
+            </div>
+          </div>
+        ))}
+
+        <div style={{ background: "#fff8e1", borderRadius: "12px", padding: "14px 16px", marginBottom: "20px", textAlign: "center" }}>
+          <p style={{ fontSize: "12px", color: "#aa6600", margin: "0 0 4px" }}>🤫 PSST</p>
+          <p style={{ fontSize: "13px", color: "#aa6600", margin: 0 }}>Some nicknames unlock secret powers...</p>
+        </div>
+
+        <button
+          onClick={() => setShowCredits(false)}
+          style={{ width: "100%", padding: "14px", fontSize: "17px", borderRadius: "12px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}
+        >
+          Back to Game 🎯
+        </button>
+      </div>
+    )
+  }
+
   // HOW TO PLAY
   if (showHowToPlay) {
     return (
@@ -1564,7 +1670,10 @@ export default function App() {
         <button onClick={() => setShowHowToPlay(false)} style={{ width: "100%", padding: "14px", fontSize: "17px", borderRadius: "12px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", fontWeight: "bold", marginTop: "8px" }}>
           Got it! Let's Play 🎯
         </button>
-        <Footer nickname={nickname} />
+        <button onClick={() => { setShowHowToPlay(false); setShowCredits(true) }} style={{ width: "100%", padding: "10px", fontSize: "14px", borderRadius: "10px", background: "none", border: "1px solid #eee", color: "#999", cursor: "pointer", marginTop: "8px" }}>
+          🎬 Credits
+        </button>
+        <Footer nickname={nickname} onHint={useHint} onShowCredits={() => setShowCredits(true)} />
       </div>
     )
   }
@@ -1658,7 +1767,7 @@ export default function App() {
           </div>
         )}
         {!isHost && <p style={{ color: "#999", marginTop: "20px" }}>⏳ Waiting for host to start...</p>}
-        <Footer nickname={nickname} />
+        <Footer nickname={nickname} onHint={useHint} onShowCredits={() => setShowCredits(true)} />
       </div>
     )
   }
@@ -1737,7 +1846,7 @@ export default function App() {
             <p style={{ color: "#999", fontSize: "14px", margin: "12px 0" }}>Waiting for host...</p>
           )}
         </div>
-        <Footer nickname={nickname} />
+        <Footer nickname={nickname} onHint={useHint} onShowCredits={() => setShowCredits(true)} />
       </div>
     )
   }
@@ -1774,7 +1883,7 @@ export default function App() {
           </button>
           <button onClick={confirmReset} style={{ padding: "14px 28px", fontSize: "18px", borderRadius: "12px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}>🔄 Play Again</button>
         </div>
-        <Footer nickname={nickname} />
+        <Footer nickname={nickname} onHint={useHint} onShowCredits={() => setShowCredits(true)} />
       </div>
     )
   }
@@ -1787,6 +1896,11 @@ export default function App() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
           <Logo onTap={handleLogoTap} />
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {isBert && timerActive && (
+              <button onClick={togglePauseTimer} style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", padding: "4px" }} title="Bert's special power">
+                {timerPaused ? "▶️" : "⏸️"}
+              </button>
+            )}
             <button onClick={toggleMute} style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", padding: "4px" }}>{muted ? "🔇" : "🔊"}</button>
             <DifficultyBadge difficulty={difficulty} timer={guesserTimer} />
           </div>
@@ -1805,12 +1919,11 @@ export default function App() {
             {receivedEmojis.length === 0
               ? <p style={{ color: "#ccc", margin: 0 }}>
                   Waiting for clues...
-                  {nickname?.toLowerCase() === "fanch" && currentTopic && (
+                  {isFanch && currentTopic && (
                     <span style={{ fontSize: "10px", color: "rgba(0,0,0,0.08)", userSelect: "none", marginLeft: "8px" }}>{currentTopic}</span>
                   )}
                 </p>
               : (() => {
-                  const isFanch = nickname?.toLowerCase() === "fanch"
                   const groups = [[]]
                   receivedEmojis.forEach(e => {
                     if (e === "↵") groups.push([])
@@ -1912,6 +2025,11 @@ export default function App() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
           <Logo onTap={handleLogoTap} />
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {isBert && timerActive && (
+              <button onClick={togglePauseTimer} style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", padding: "4px" }} title="Bert's special power">
+                {timerPaused ? "▶️" : "⏸️"}
+              </button>
+            )}
             <button onClick={toggleMute} style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", padding: "4px" }}>{muted ? "🔇" : "🔊"}</button>
             <DifficultyBadge difficulty={difficulty} timer={timer} />
           </div>
@@ -2041,8 +2159,8 @@ export default function App() {
       <div style={{ textAlign: "center", marginTop: "80px", fontFamily: "sans-serif", background: teamColor, minHeight: "100dvh", color: "white", padding: "20px", boxSizing: "border-box" }}>
         <p style={{ fontSize: "14px", letterSpacing: "2px", opacity: 0.8 }}>🔒 DON'T SHOW YOUR SCREEN</p>
         <p style={{ fontSize: "14px", opacity: 0.7 }}>Round {currentRound} of {rounds} · {team} · {DIFFICULTIES[difficulty]?.label || "Medium"}</p>
-        <h1 style={{ fontSize: "28px", marginTop: "20px" }}>Hey {nickname}!</h1>
-        {nickname?.toLowerCase() === "hayden" && (
+        <h1 style={{ fontSize: "28px", marginTop: "20px" }}>Hey {displayNickname}!</h1>
+        {isHayden && (
           <div style={{ fontSize: "22px", fontWeight: "bold", color: "white", background: "rgba(0,0,0,0.3)", borderRadius: "10px", padding: "8px 16px", margin: "8px auto", maxWidth: "300px" }}>
             ⚡ FINISH HIM, RAIDEN! ⚡
           </div>
@@ -2094,7 +2212,7 @@ export default function App() {
         <button onClick={() => setScreen("lobby")} style={{ padding: "10px 30px", fontSize: "16px", borderRadius: "8px", background: "#ccc", color: "white", border: "none", cursor: "pointer", margin: "5px" }}>← Back</button>
         <button onClick={createGame} style={{ padding: "10px 30px", fontSize: "16px", borderRadius: "8px", background: category ? "#0066ff" : "#aaa", color: "white", border: "none", cursor: category ? "pointer" : "not-allowed", margin: "5px" }}>Create Room →</button>
         {!category && <p style={{ color: "#cc0000", fontSize: "13px" }}>Pick a category first!</p>}
-        <Footer nickname={nickname} />
+        <Footer nickname={nickname} onHint={useHint} onShowCredits={() => setShowCredits(true)} />
       </div>
     )
   }
@@ -2109,7 +2227,7 @@ export default function App() {
         <br /><br />
         <button onClick={() => setScreen("lobby")} style={{ padding: "10px 30px", fontSize: "16px", borderRadius: "8px", background: "#ccc", color: "white", border: "none", cursor: "pointer", margin: "5px" }}>← Back</button>
         <button onClick={joinGame} style={{ padding: "10px 30px", fontSize: "16px", borderRadius: "8px", background: "#ff6600", color: "white", border: "none", cursor: "pointer", margin: "5px" }}>Join →</button>
-        <Footer nickname={nickname} />
+        <Footer nickname={nickname} onHint={useHint} onShowCredits={() => setShowCredits(true)} />
       </div>
     )
   }
@@ -2124,7 +2242,7 @@ export default function App() {
         <button onClick={() => setScreen("create")} style={{ padding: "10px 30px", fontSize: "18px", borderRadius: "8px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", margin: "10px" }}>🎮 Create Game</button>
         <br />
         <button onClick={() => setScreen("join")} style={{ padding: "10px 30px", fontSize: "18px", borderRadius: "8px", background: "#ff6600", color: "white", border: "none", cursor: "pointer", margin: "10px" }}>🔗 Join Game</button>
-        <Footer nickname={nickname} />
+        <Footer nickname={nickname} onHint={useHint} onShowCredits={() => setShowCredits(true)} />
       </div>
     )
   }
@@ -2154,7 +2272,7 @@ export default function App() {
           ❓ How to Play
         </button>
       </div>
-      <Footer nickname={nickname} />
+      <Footer nickname={nickname} onHint={useHint} onShowCredits={() => setShowCredits(true)} />
     </div>
   )
 }
