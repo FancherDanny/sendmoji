@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.4.4"
+const VERSION = "v0.4.5"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -1778,7 +1778,12 @@ export default function App() {
     }, 2000)
   }
 
-  const normalizeGuess = (str) => str.trim().toLowerCase().replace(/^the\s+/, "").replace(/\s+/g, " ").replace(/['']/g, "'")
+  const normalizeGuess = (str) => {
+    const base = str.trim().toLowerCase().replace(/^the\s+/, "").replace(/['']/g, "'").replace(/\s+/g, " ")
+    return base
+  }
+  // Also check spaceless version for compound words like hummingbird/humming bird
+  const normalizeNoSpaces = (str) => normalizeGuess(str).replace(/\s/g, "")
 
   const formatTime = (seconds) => {
     if (seconds < 60) return `${seconds}s`
@@ -1789,7 +1794,8 @@ export default function App() {
 
   const submitGuess = async () => {
     if (!guess.trim()) return
-    if (normalizeGuess(guess) === normalizeGuess(currentTopic)) {
+    if (normalizeGuess(guess) === normalizeGuess(currentTopic) ||
+        normalizeNoSpaces(guess) === normalizeNoSpaces(currentTopic)) {
       endRound(true)
     } else {
       const newWrong = [...wrongGuesses, guess.trim()]
@@ -2037,7 +2043,7 @@ ${suggestion}
   // RESET CONFIRM
   if (showResetConfirm) {
     return (
-      <div style={{ textAlign: "center", marginTop: "120px", fontFamily: "sans-serif", padding: "20px" }}>
+      <div style={{ fontFamily: "sans-serif", padding: "20px", minHeight: "100dvh", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
         <div style={{ fontSize: "48px" }}>😬</div>
         <h2 style={{ fontSize: "24px", margin: "16px 0" }}>{resetMessage}</h2>
         <div style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "24px" }}>
@@ -2517,7 +2523,7 @@ ${suggestion}
   if (screen === "role") {
     const isClue = role === "clue"
     return (
-      <div style={{ textAlign: "center", marginTop: "80px", fontFamily: "sans-serif", background: teamColor, minHeight: "100dvh", color: "white", padding: "20px", boxSizing: "border-box" }}>
+      <div style={{ fontFamily: "sans-serif", background: teamColor, minHeight: "100dvh", color: "white", padding: "20px 20px 40px", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
         <p style={{ fontSize: "14px", letterSpacing: "2px", opacity: 0.8 }}>🔒 DON'T SHOW YOUR SCREEN</p>
         <p style={{ fontSize: "14px", opacity: 0.7 }}>Round {currentRound} of {rounds} · {team} · {DIFFICULTIES[difficulty]?.label || "Medium"}</p>
         <h1 style={{ fontSize: "28px", marginTop: "20px" }}>Hey {displayNickname}!</h1>
@@ -2546,7 +2552,7 @@ ${suggestion}
   // CREATE SCREEN
   if (screen === "create") {
     return (
-      <div style={{ textAlign: "center", marginTop: "40px", fontFamily: "sans-serif", padding: "20px" }}>
+      <div style={{ fontFamily: "sans-serif", padding: "20px 20px 40px", minHeight: "100dvh", boxSizing: "border-box", textAlign: "center", overflowY: "auto" }}>
         <Logo onTap={handleLogoTap} center />
         <p>Game Mode:</p>
         <button onClick={() => setGameMode("sameroom")} style={{ padding: "10px 20px", fontSize: "16px", borderRadius: "8px", margin: "5px", background: gameMode === "sameroom" ? "#0066ff" : "#eee", color: gameMode === "sameroom" ? "white" : "black", border: "none", cursor: "pointer" }}>🏠 Same Room</button>
@@ -2581,7 +2587,7 @@ ${suggestion}
   // JOIN SCREEN
   if (screen === "join") {
     return (
-      <div style={{ textAlign: "center", marginTop: "100px", fontFamily: "sans-serif", padding: "20px" }}>
+      <div style={{ fontFamily: "sans-serif", padding: "20px", minHeight: "100dvh", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
         <Logo onTap={handleLogoTap} center />
         <p>Enter the room code:</p>
         <input type="text" placeholder="Room code..." value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase())} maxLength={8} style={{ padding: "10px", fontSize: "32px", borderRadius: "8px", border: "2px solid #ff6600", textAlign: "center", letterSpacing: "6px", width: "100%", maxWidth: "260px", boxSizing: "border-box" }} />
@@ -2596,7 +2602,7 @@ ${suggestion}
   // LOBBY SCREEN
   if (screen === "lobby") {
     return (
-      <div style={{ textAlign: "center", marginTop: "100px", fontFamily: "sans-serif" }}>
+      <div style={{ fontFamily: "sans-serif", padding: "20px", minHeight: "100dvh", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
         <Logo onTap={handleLogoTap} center />
         <p style={{ fontSize: "18px" }}>Hey <strong>{nickname}</strong>! 👋</p>
         <br />
@@ -2610,7 +2616,7 @@ ${suggestion}
 
   // HOME SCREEN
   return (
-    <div style={{ textAlign: "center", marginTop: "80px", fontFamily: "sans-serif", padding: "20px" }}>
+    <div style={{ fontFamily: "sans-serif", padding: "20px", minHeight: "100dvh", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
       <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
       <Logo onTap={null} center />
       <p style={{ color: "#999", fontSize: "14px", margin: "0 0 24px" }}>Send emojis. Guess the word.</p>
