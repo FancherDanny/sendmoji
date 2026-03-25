@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.4.3"
+const VERSION = "v0.4.4"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -93,6 +93,18 @@ const TOPICS = {
     "Loki", "Venom", "Green Goblin", "Two-Face", "Bane",
     "Catwoman", "Harley Quinn", "Poison Ivy", "Mystique", "Ultron",
     "Daredevil", "Punisher", "Ghost Rider", "Silver Surfer", "Galactus",
+  ],
+  "🐾 Animals": [
+    "Lion", "Elephant", "Giraffe", "Penguin", "Dolphin",
+    "Cheetah", "Gorilla", "Panda", "Kangaroo", "Crocodile",
+    "Flamingo", "Peacock", "Octopus", "Shark", "Eagle",
+    "Wolf", "Fox", "Koala", "Polar Bear", "Grizzly Bear",
+    "Chimpanzee", "Orangutan", "Gorilla", "Baboon", "Lemur",
+    "Zebra", "Rhinoceros", "Hippopotamus", "Camel", "Llama",
+    "Platypus", "Komodo Dragon", "Snow Leopard", "Narwhal", "Axolotl",
+    "Bald Eagle", "Hummingbird", "Toucan", "Parrot", "Flamingo",
+    "Great White Shark", "Blue Whale", "Orca", "Manta Ray", "Jellyfish",
+    "Tarantula", "Scorpion", "Monarch Butterfly", "Firefly", "Praying Mantis",
   ],
   "🍕 Food": [
     "Pizza", "Sushi", "Tacos", "Hamburger", "Ice Cream",
@@ -1444,7 +1456,7 @@ export default function App() {
         }, 800)
       }
 
-      if (data.status === "roundend") {
+      if (data.status === "roundend" && lastStatusRef.current !== "nextround") {
         stopChiptune()
         timerActiveRef.current = false
         countdownRef.current = null
@@ -1458,6 +1470,7 @@ export default function App() {
       }
 
       if (data.status === "nextround") {
+        lastStatusRef.current = "nextround"
         const newRound = data.currentRound || 1
         const myRole = data.roles?.[nickname] || "guesser"
         const myTeam = data.players?.[nickname]?.team || ""
@@ -1470,6 +1483,7 @@ export default function App() {
         setCurrentTopic(data.topic || "")
         setCurrentRound(newRound)
         setScores(data.scores || { "Team 1": 0, "Team 2": 0, "Team 3": 0 })
+        if (data.teamNames) setTeamNames(data.teamNames)
         setRole(myRole)
         setTeam(myTeam)
         setTeammate(myTeammate)
@@ -1488,7 +1502,7 @@ export default function App() {
         setGuesserTimer(nextSecs)
         setSearch("")
         setHintUsed(false)
-        setHintText("")
+        setHintTexts([])
         lastStatusRef.current = ""
         countdownRef.current = null
         timerActiveRef.current = false
@@ -1516,6 +1530,7 @@ export default function App() {
         const d = data.difficulty || "medium"
         setDifficulty(d)
         setShufflesLeft(d === "easy" ? 999 : d === "medium" ? 1 : 0)
+        if (data.teamNames) setTeamNames(data.teamNames)
         setScreen("role")
       }
     })
@@ -1565,7 +1580,7 @@ export default function App() {
     setGuesserTimer(60); setGuesserActive(false)
     setCategory(""); setCurrentTopic(""); setRoomCode(""); setRole("")
     setIsHost(false); setPlayers({}); setTeammate("")
-    setHintUsed(false); setHintText("")
+    setHintUsed(false); setHintTexts([])
     setTeamNames({ "Team 1": "Team 1", "Team 2": "Team 2", "Team 3": "Team 3" }); setEditingTeam(null)
   }
 
