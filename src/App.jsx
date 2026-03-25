@@ -1832,7 +1832,10 @@ export default function App() {
     const finishOnboarding = () => {
       localStorage.setItem("guessmoji_seen_onboarding", "true")
       setShowOnboarding(false)
-      setScreen("lobby")
+      // If they came from Let's Play, go to lobby. If from How to Play link, stay on home.
+      if (nickname.trim() && screen === "home") {
+        setScreen("lobby")
+      }
     }
     return (
       <div style={{ fontFamily: "sans-serif", minHeight: "100dvh", background: card.bg, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "40px 24px 32px", boxSizing: "border-box", textAlign: "center", color: "white" }}>
@@ -2569,7 +2572,7 @@ ${suggestion}
         </div>
       )}
       <div style={{ marginTop: "24px" }}>
-        <button onClick={() => setShowHowToPlay(true)} style={{ background: "none", border: "none", color: "#0066ff", fontSize: "15px", cursor: "pointer", textDecoration: "underline" }}>
+        <button onClick={() => { setShowOnboarding(true); setOnboardingCard(0) }} style={{ background: "none", border: "none", color: "#0066ff", fontSize: "15px", cursor: "pointer", textDecoration: "underline" }}>
           ❓ How to Play
         </button>
       </div>
