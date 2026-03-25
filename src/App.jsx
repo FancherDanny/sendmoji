@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.4.1"
+const VERSION = "v0.4.3"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -776,6 +776,70 @@ const EMOJI_LIST = [
   { emoji: "🦶", keywords: ["pele", "brazil", "soccer", "kick", "foot", "football", "legend", "goal", "brazil"] },
   { emoji: "🌌", keywords: ["galactus", "space", "universe", "cosmos", "stars", "galaxy", "infinite", "vast", "silver surfer"] },
   { emoji: "🏔️", keywords: ["bane", "mountain", "strong", "villain", "batman", "rise", "dark knight", "mask", "breaks"] },
+
+  // Animals — expanded
+  { emoji: "🐒", keywords: ["monkey", "primate", "jungle", "banana", "swing", "ape", "climb", "zoo", "silly"] },
+  { emoji: "🦍", keywords: ["gorilla", "ape", "kong", "donkey kong", "donkey", "strong", "jungle", "big", "pound", "chest", "nintendo", "mario", "barrel"] },
+  { emoji: "🐴", keywords: ["donkey", "mule", "bray", "stubborn", "farm", "kick", "horse", "grey", "beast"] },
+  { emoji: "🦄", keywords: ["unicorn", "magic", "rare", "horn", "rainbow", "fantasy", "horse", "mythical"] },
+  { emoji: "🐊", keywords: ["crocodile", "snap", "swamp", "reptile", "teeth", "green", "danger", "croc"] },
+  { emoji: "🦋", keywords: ["butterfly", "transform", "wings", "colorful", "flutter", "change", "cocoon"] },
+  { emoji: "🐌", keywords: ["snail", "slow", "shell", "garden", "slime", "trail", "pace", "crawl"] },
+  { emoji: "🦗", keywords: ["cricket", "bug", "chirp", "jump", "insect", "grass", "night", "sound"] },
+  { emoji: "🦠", keywords: ["virus", "bacteria", "germ", "micro", "sick", "tiny", "spread", "infection", "covid"] },
+  { emoji: "🐾", keywords: ["paw", "animal", "tracks", "dog", "cat", "footprint", "pet", "clue"] },
+  { emoji: "🦴", keywords: ["bone", "dog", "skeleton", "chew", "fossil", "dinosaur", "fetch", "treat"] },
+
+  // Nintendo / Gaming items
+  { emoji: "🍄", keywords: ["mario", "mushroom", "power up", "1up", "super mario", "nintendo", "grow", "toadstool"] },
+  { emoji: "⭐", keywords: ["star", "mario", "invincible", "collect", "shine", "nintendo", "zelda", "wish", "power"] },
+  { emoji: "🔴", keywords: ["nintendo", "mario", "red", "circle", "stop", "button", "dot", "color"] },
+  { emoji: "🎮", keywords: ["nintendo", "switch", "controller", "gaming", "play", "console", "handheld", "game"] },
+  { emoji: "👾", keywords: ["nintendo", "retro", "arcade", "8 bit", "pixel", "space invaders", "old school", "classic"] },
+  { emoji: "🟡", keywords: ["pac-man", "pacman", "yellow", "circle", "dot", "chomp", "ghost", "arcade", "gold"] },
+
+  // Objects — ladder, tools, misc
+  { emoji: "🪜", keywords: ["ladder", "climb", "steps", "reach", "rung", "fire escape", "donkey kong", "donkey", "kong", "ascend", "tall", "nintendo"] },
+  { emoji: "🔩", keywords: ["bolt", "screw", "metal", "fix", "tight", "nut", "fasten", "mechanical", "tool"] },
+  { emoji: "🪝", keywords: ["hook", "hang", "catch", "crane", "pirate", "captain hook", "latch", "attach"] },
+  { emoji: "🧲", keywords: ["magnet", "attract", "pull", "metal", "stick", "force", "north", "south", "mario"] },
+  { emoji: "📦", keywords: ["box", "package", "crate", "ship", "minecraft", "item", "storage", "cargo", "present"] },
+  { emoji: "🪣", keywords: ["bucket", "water", "carry", "pail", "spill", "paint", "list", "kick the bucket"] },
+  { emoji: "🔑", keywords: ["key", "unlock", "door", "zelda", "dungeon", "secret", "access", "open", "lock"] },
+  { emoji: "🗝️", keywords: ["old key", "antique", "unlock", "dungeon", "zelda", "secret", "castle", "treasure", "ancient"] },
+  { emoji: "💰", keywords: ["coin", "mario", "money", "gold", "collect", "rich", "treasure", "bag", "dollar"] },
+  { emoji: "🪙", keywords: ["coin", "mario", "gold", "collect", "metal", "flip", "currency", "treasure", "shiny"] },
+
+  // Law, crime, justice
+  { emoji: "⛓️", keywords: ["chain", "handcuffs", "arrest", "prisoner", "bound", "jail", "metal", "link", "shackle", "captive"] },
+  { emoji: "🔒", keywords: ["lock", "jail", "prison", "secure", "locked", "padlock", "closed", "trapped", "cell"] },
+  { emoji: "🚔", keywords: ["police car", "cop", "arrest", "siren", "law", "crime", "chase", "blue light"] },
+  { emoji: "👮", keywords: ["police", "officer", "cop", "law", "badge", "arrest", "jail", "handcuff", "authority"] },
+  { emoji: "🏛️", keywords: ["court", "justice", "law", "judge", "trial", "government", "columns", "senate", "building"] },
+  { emoji: "⚖️", keywords: ["justice", "law", "balance", "court", "judge", "fair", "scales", "trial", "verdict"] },
+  { emoji: "🔐", keywords: ["locked", "secure", "prison", "cell", "key", "padlock", "closed", "trap", "jail"] },
+  { emoji: "🚨", keywords: ["siren", "alarm", "police", "emergency", "arrest", "crime", "red light", "alert"] },
+  { emoji: "📋", keywords: ["clipboard", "list", "record", "evidence", "document", "report", "checklist", "case"] },
+  { emoji: "🕵️", keywords: ["detective", "spy", "investigate", "clue", "mystery", "case", "solve", "undercover", "magnify"] },
+  { emoji: "🔍", keywords: ["magnify", "search", "investigate", "detective", "clue", "find", "look", "evidence", "zoom"] },
+
+  // US States (searchable by name)
+  { emoji: "🌵", keywords: ["arizona", "texas", "new mexico", "nevada", "desert", "southwest", "cactus", "dry", "west"] },
+  { emoji: "🎰", keywords: ["nevada", "las vegas", "casino", "gamble", "slot", "bet", "luck", "jackpot", "gambler"] },
+  { emoji: "🌽", keywords: ["iowa", "illinois", "indiana", "corn belt", "midwest", "farm", "field", "harvest", "yellow"] },
+  { emoji: "🦞", keywords: ["maine", "boston", "new england", "lobster", "seafood", "ocean", "northeast", "coast"] },
+  { emoji: "🍑", keywords: ["georgia", "peach", "south", "sweet", "fruit", "southern", "state"] },
+  { emoji: "🌲", keywords: ["oregon", "washington", "pacific northwest", "forest", "evergreen", "tree", "woods", "rain"] },
+  { emoji: "🌊", keywords: ["hawaii", "california", "florida", "ocean", "surf", "beach", "coast", "waves"] },
+  { emoji: "❄️", keywords: ["alaska", "minnesota", "michigan", "wisconsin", "cold", "snow", "winter", "north", "frozen"] },
+  { emoji: "🏔️", keywords: ["colorado", "montana", "wyoming", "rocky mountains", "peak", "climb", "altitude", "ski"] },
+  { emoji: "🎸", keywords: ["tennessee", "nashville", "country music", "memphis", "blues", "music", "guitar", "twang"] },
+  { emoji: "🌶️", keywords: ["new mexico", "louisiana", "texas", "spicy", "hot", "pepper", "cajun", "south", "heat"] },
+  { emoji: "🎷", keywords: ["louisiana", "new orleans", "jazz", "saxophone", "blues", "music", "creole", "bayou"] },
+  { emoji: "🏈", keywords: ["texas", "ohio", "florida", "football", "nfl", "friday night", "gridiron", "tailgate"] },
+  { emoji: "🦅", keywords: ["pennsylvania", "new york", "america", "eagle", "freedom", "bald", "soar", "patriot"] },
+  { emoji: "🍎", keywords: ["new york", "apple", "big apple", "red", "teacher", "juice", "orchard", "newton"] },
+  { emoji: "🎭", keywords: ["new york", "broadway", "theatre", "drama", "performance", "show", "stage", "act"] },
 ]
 
 const RESET_MESSAGES = [
@@ -1239,7 +1303,7 @@ export default function App() {
   const [readyPlayers, setReadyPlayers] = useState({})
   const [codeCopied, setCodeCopied] = useState(false)
   const [hintUsed, setHintUsed] = useState(false)
-  const [hintText, setHintText] = useState("")
+  const [hintTexts, setHintTexts] = useState([])
   const [hintCount, setHintCount] = useState(0)
   const [roundStartTime, setRoundStartTime] = useState(null)
   const [pingEmoji, setPingEmoji] = useState(null)
@@ -1290,8 +1354,9 @@ export default function App() {
 
       setPlayers(data.players || {})
       setReadyPlayers(data.ready || {})
-      if (data.hint) setHintText(data.hint)
-      else setHintText("")
+      if (data.hints) setHintTexts(Array.isArray(data.hints) ? data.hints : [data.hints])
+      else if (data.hint) setHintTexts([data.hint])
+      else setHintTexts([])
       if (data.teamNames) setTeamNames(data.teamNames)
       if (data.ping !== undefined) setPingEmoji(data.ping)
       // Sync forfeit states
@@ -1317,10 +1382,19 @@ export default function App() {
         setTeammateForfeit(false)
       }
 
-      if (data.emojis) {
-        setReceivedEmojis(Object.values(data.emojis))
+      // Clear emojis immediately on nextround — don't wait for Firebase null propagation
+      if (data.status === "nextround") {
+        setReceivedEmojis([])
+        setSentEmojis([])
+        setEmojiGroups([[]])
+      } else if (data.emojis) {
+        setReceivedEmojis(Object.values(data.emojis).filter(e => e !== null))
       } else {
         setReceivedEmojis([])
+      }
+      // Always sync topic from Firebase to prevent stale topic display
+      if (data.topic && data.status !== "nextround") {
+        setCurrentTopic(data.topic)
       }
 
       if (data.status === "ended") {
@@ -1689,7 +1763,7 @@ export default function App() {
     }, 2000)
   }
 
-  const normalizeGuess = (str) => str.trim().toLowerCase().replace(/^the\s+/, "").replace(/\s+/g, " ")
+  const normalizeGuess = (str) => str.trim().toLowerCase().replace(/^the\s+/, "").replace(/\s+/g, " ").replace(/['']/g, "'")
 
   const formatTime = (seconds) => {
     if (seconds < 60) return `${seconds}s`
@@ -1768,12 +1842,13 @@ export default function App() {
         : `Hint 2: ${words.length} words`
     }
     if (newCount >= maxHints) setHintUsed(true)
-    setHintText(hintMsg)
+    const newHints = [...hintTexts, hintMsg]
+    setHintTexts(newHints)
     if (difficulty === "medium") {
       const newTimer = Math.max(1, guesserTimer - 10)
       setGuesserTimer(newTimer)
     }
-    await update(ref(db, `rooms/${roomCode}`), { hint: hintMsg })
+    await update(ref(db, `rooms/${roomCode}`), { hints: newHints, hint: hintMsg })
   }
 
   // Suggest an emoji for Easy mode
@@ -2123,7 +2198,7 @@ ${suggestion}
     const sorted = teamsInGame.map(t => [t, scores[t] || 0]).sort((a, b) => b[1] - a[1])
     return (
       <div style={{ fontFamily: "sans-serif", padding: "20px", maxWidth: "400px", margin: "0 auto", textAlign: "center" }}>
-        <Logo onTap={handleLogoTap} />
+        <Logo onTap={handleLogoTap} center />
         <div style={{ fontSize: "72px", margin: "20px 0" }}>🏆</div>
         <h1 style={{ fontSize: "32px", color: "#0066ff" }}>Game Over!</h1>
         <p style={{ fontSize: "20px" }}>Winner: <strong style={{ color: TEAM_COLORS[sorted[0][0]] }}>{sorted[0][0]}</strong></p>
@@ -2237,9 +2312,13 @@ ${suggestion}
         )}
         {guesserActive && (
           <>
-            {hintText && (
-              <div style={{ background: "#fff8e1", border: "2px solid #ffcc00", borderRadius: "10px", padding: "8px 14px", marginBottom: "10px", fontSize: "14px", fontWeight: "bold", color: "#aa6600" }}>
-                💡 {hintText}
+            {hintTexts.length > 0 && (
+              <div style={{ background: "#fff8e1", border: "2px solid #ffcc00", borderRadius: "10px", padding: "8px 14px", marginBottom: "10px" }}>
+                {hintTexts.map((h, i) => (
+                  <div key={i} style={{ fontSize: "14px", fontWeight: "bold", color: "#aa6600", marginBottom: i < hintTexts.length - 1 ? "4px" : "0" }}>
+                    💡 {h}
+                  </div>
+                ))}
               </div>
             )}
             {wrongGuesses.length === 0 && receivedEmojis.length > 0 && (
@@ -2453,7 +2532,7 @@ ${suggestion}
   if (screen === "create") {
     return (
       <div style={{ textAlign: "center", marginTop: "40px", fontFamily: "sans-serif", padding: "20px" }}>
-        <Logo onTap={handleLogoTap} />
+        <Logo onTap={handleLogoTap} center />
         <p>Game Mode:</p>
         <button onClick={() => setGameMode("sameroom")} style={{ padding: "10px 20px", fontSize: "16px", borderRadius: "8px", margin: "5px", background: gameMode === "sameroom" ? "#0066ff" : "#eee", color: gameMode === "sameroom" ? "white" : "black", border: "none", cursor: "pointer" }}>🏠 Same Room</button>
         <button onClick={() => setGameMode("remote")} style={{ padding: "10px 20px", fontSize: "16px", borderRadius: "8px", margin: "5px", background: gameMode === "remote" ? "#0066ff" : "#eee", color: gameMode === "remote" ? "white" : "black", border: "none", cursor: "pointer" }}>🌐 Remote</button>
@@ -2488,7 +2567,7 @@ ${suggestion}
   if (screen === "join") {
     return (
       <div style={{ textAlign: "center", marginTop: "100px", fontFamily: "sans-serif", padding: "20px" }}>
-        <Logo onTap={handleLogoTap} />
+        <Logo onTap={handleLogoTap} center />
         <p>Enter the room code:</p>
         <input type="text" placeholder="Room code..." value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase())} maxLength={8} style={{ padding: "10px", fontSize: "32px", borderRadius: "8px", border: "2px solid #ff6600", textAlign: "center", letterSpacing: "6px", width: "100%", maxWidth: "260px", boxSizing: "border-box" }} />
         <br /><br />
