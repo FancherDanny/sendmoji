@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.4.0"
+const VERSION = "v0.4.1"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -64,6 +64,36 @@ const TOPICS = {
     "Iceland", "Patagonia", "The Dead Sea", "The Galapagos", "Easter Island",
     "The Black Forest", "The Swiss Alps", "Death Valley", "Monument Valley", "Roswell",
   ],
+  "🎮 Video Games": [
+    "Mario", "Minecraft", "Fortnite", "Zelda", "Pokemon",
+    "Call of Duty", "Grand Theft Auto", "The Sims", "Halo", "Tetris",
+    "Among Us", "Roblox", "Pac-Man", "Sonic the Hedgehog", "Street Fighter",
+    "Mortal Kombat", "Final Fantasy", "World of Warcraft", "Overwatch", "League of Legends",
+    "Donkey Kong", "Space Invaders", "Super Smash Bros", "Animal Crossing", "Stardew Valley",
+    "Red Dead Redemption", "The Last of Us", "God of War", "Elden Ring", "Cyberpunk 2077",
+    "Portal", "Half-Life", "Doom", "Tomb Raider", "Resident Evil",
+    "Metal Gear Solid", "Bioshock", "Borderlands", "Fallout", "Skyrim",
+  ],
+  "🏆 Sports & Athletes": [
+    "LeBron James", "Michael Jordan", "Serena Williams", "Tiger Woods", "Muhammad Ali",
+    "Usain Bolt", "Michael Phelps", "Simone Biles", "Wayne Gretzky", "Tom Brady",
+    "Cristiano Ronaldo", "Lionel Messi", "Roger Federer", "Rafael Nadal", "Novak Djokovic",
+    "Mike Tyson", "Babe Ruth", "Michael Schumacher", "Pelé", "Kobe Bryant",
+    "Super Bowl", "World Cup", "Olympics", "Tour de France", "Wimbledon",
+    "NBA Finals", "World Series", "The Masters", "Stanley Cup", "Grand Prix",
+    "Slam Dunk", "Home Run", "Touchdown", "Hat Trick", "Hole in One",
+    "Marathon", "Relay Race", "Penalty Kick", "Free Throw", "Grand Slam",
+  ],
+  "🦸 Superheroes & Villains": [
+    "Superman", "Batman", "Spider-Man", "Wonder Woman", "Iron Man",
+    "Captain America", "Thor", "Black Panther", "The Hulk", "Wolverine",
+    "Aquaman", "The Flash", "Green Lantern", "Hawkeye", "Black Widow",
+    "Thanos", "The Joker", "Lex Luthor", "Magneto", "Doctor Doom",
+    "Deadpool", "Doctor Strange", "Ant-Man", "Scarlet Witch", "Vision",
+    "Loki", "Venom", "Green Goblin", "Two-Face", "Bane",
+    "Catwoman", "Harley Quinn", "Poison Ivy", "Mystique", "Ultron",
+    "Daredevil", "Punisher", "Ghost Rider", "Silver Surfer", "Galactus",
+  ],
   "🍕 Food": [
     "Pizza", "Sushi", "Tacos", "Hamburger", "Ice Cream",
     "Spaghetti", "Hot Dog", "Fried Chicken", "Pancakes", "Lobster",
@@ -83,7 +113,7 @@ const TOPICS = {
 
 const EMOJI_LIST = [
   // Nature & Weather
-  { emoji: "🌊", keywords: ["water", "wave", "ocean", "sea", "surf", "flood", "tide", "blue", "beach", "shallow", "deep", "lady gaga", "a star is born"] },
+  { emoji: "🌊", keywords: ["water", "wave", "ocean", "sea", "surf", "flood", "tide", "blue", "beach", "shallow", "deep", "lady gaga", "a star is born", "bradley cooper"] },
   { emoji: "🧊", keywords: ["ice", "cold", "freeze", "iceberg", "frozen", "chill", "arctic", "cube"] },
   { emoji: "🔥", keywords: ["fire", "hot", "burn", "flame", "heat", "blaze", "inferno", "campfire"] },
   { emoji: "⛈️", keywords: ["storm", "thunder", "lightning", "rain", "cloud", "weather", "dark"] },
@@ -99,7 +129,7 @@ const EMOJI_LIST = [
   { emoji: "🍄", keywords: ["mushroom", "fungi", "forest", "mario", "super", "toadstool", "red"] },
   { emoji: "🌍", keywords: ["world", "earth", "globe", "planet", "travel", "international", "global", "avatar", "pandora", "alien planet"] },
   { emoji: "🏔️", keywords: ["mountain", "everest", "peak", "snow", "climb", "high", "alps", "rocky"] },
-  { emoji: "🏝️", keywords: ["island", "beach", "tropical", "hawaii", "paradise", "palm", "castaway", "bora bora", "fiji", "polynesia", "tahiti", "pacific"] },
+  { emoji: "🏝️", keywords: ["island", "beach", "tropical", "hawaii", "paradise", "palm", "castaway", "bora bora", "fiji", "polynesia", "tahiti", "pacific", "south sea", "resort", "lagoon"] },
   { emoji: "🌅", keywords: ["sunset", "sunrise", "horizon", "sky", "ocean", "dawn", "dusk", "morning"] },
   { emoji: "❄️", keywords: ["snow", "cold", "winter", "freeze", "flake", "ice", "frozen", "blizzard"] },
   { emoji: "🌬️", keywords: ["wind", "cold", "blow", "air", "freeze", "breeze", "gust", "breath"] },
@@ -209,7 +239,7 @@ const EMOJI_LIST = [
   { emoji: "🦸", keywords: ["hero", "super", "power", "cape", "save", "strong", "superman", "marvel"] },
   { emoji: "🦹", keywords: ["villain", "evil", "bad", "super", "dark", "enemy", "sinister"] },
   { emoji: "🧛", keywords: ["vampire", "dracula", "blood", "dark", "night", "bite", "cape", "immortal"] },
-  { emoji: "🧟", keywords: ["zombie", "dead", "brain", "horror", "walk", "undead", "apocalypse", "thriller", "michael jackson", "dance"] },
+  { emoji: "🧟", keywords: ["zombie", "dead", "brain", "horror", "walk", "undead", "apocalypse", "thriller", "michael jackson", "dance", "night", "vincent price"] },
   { emoji: "👨‍🚀", keywords: ["astronaut", "space", "moon", "rocket", "nasa", "gravity", "orbit"] },
   { emoji: "👮", keywords: ["police", "cop", "law", "badge", "arrest", "crime", "officer"] },
   { emoji: "💃", keywords: ["dance", "woman", "salsa", "move", "music", "spin", "tango", "flamenco", "dirty dancing", "lift", "watermelon", "grease", "sandy"] },
@@ -238,7 +268,7 @@ const EMOJI_LIST = [
   { emoji: "🫡", keywords: ["salute", "respect", "yes sir", "military", "honor", "soldier"] },
   { emoji: "👻", keywords: ["ghost", "haunted", "spooky", "halloween", "spirit", "scary", "boo"] },
   { emoji: "💀", keywords: ["death", "dead", "skull", "die", "bones", "scary", "halloween", "crossbones"] },
-  { emoji: "👽", keywords: ["alien", "space", "ufo", "green", "extraterrestrial", "weird", "martian", "et", "phone", "home", "roswell", "spielberg", "bicycle", "finger", "glowing"] },
+  { emoji: "👽", keywords: ["alien", "space", "ufo", "green", "extraterrestrial", "weird", "martian", "et", "phone", "home", "roswell", "spielberg", "bicycle", "finger", "glowing", "elliot"] },
   { emoji: "🤖", keywords: ["robot", "machine", "ai", "tech", "future", "metal", "beep", "android"] },
   { emoji: "👹", keywords: ["demon", "monster", "evil", "red", "horns", "oni", "japan", "scary", "unholy", "sinful", "forbidden", "dark"] },
   { emoji: "🎃", keywords: ["pumpkin", "halloween", "jack", "lantern", "october", "carve", "orange"] },
@@ -406,7 +436,7 @@ const EMOJI_LIST = [
   { emoji: "🗿", keywords: ["moai", "easter island", "statue", "stone", "ancient", "mystery", "head"] },
   { emoji: "🏟️", keywords: ["stadium", "arena", "sports", "crowd", "game", "concert", "colosseum", "gladiator", "rome", "maximus", "fight", "ancient"] },
   { emoji: "🌉", keywords: ["bridge", "night", "city", "golden gate", "river", "lights", "san francisco"] },
-  { emoji: "🏙️", keywords: ["city", "skyline", "buildings", "urban", "night", "downtown", "metropolis", "divergent", "faction", "dystopia", "future", "chicago"] },
+  { emoji: "🏙️", keywords: ["city", "skyline", "buildings", "urban", "night", "downtown", "metropolis", "divergent", "faction", "dystopia", "future", "chicago", "tris", "dauntless"] },
   { emoji: "✈️", keywords: ["plane", "fly", "travel", "airport", "trip", "jet", "vacation"] },
   { emoji: "🚀", keywords: ["rocket", "space", "launch", "nasa", "moon", "fast", "blast", "spacex", "interstellar", "wormhole", "blackhole", "nolan"] },
   { emoji: "🛸", keywords: ["ufo", "alien", "space", "fly", "mystery", "extraterrestrial", "area 51", "roswell", "new mexico", "crash", "conspiracy"] },
@@ -442,7 +472,7 @@ const EMOJI_LIST = [
   { emoji: "⚔️", keywords: ["swords", "fight", "battle", "war", "cross", "duel", "knight", "clash", "weapon", "gladiator", "arena", "roman", "maximus"] },
   { emoji: "🛡️", keywords: ["shield", "protect", "knight", "defense", "armor", "guard", "block"] },
   { emoji: "🔮", keywords: ["crystal ball", "magic", "future", "predict", "witch", "fortune", "see"] },
-  { emoji: "💣", keywords: ["bomb", "explode", "danger", "blast", "tick", "destroy", "countdown", "war", "dynamite", "tnt", "explosive", "fuse"] },
+  { emoji: "💣", keywords: ["bomb", "explode", "danger", "blast", "tick", "destroy", "countdown", "war", "dynamite", "tnt", "explosive", "fuse", "bts", "bang"] },
   { emoji: "🔫", keywords: ["gun", "pistol", "shoot", "weapon", "bang", "bullet", "wild west", "cop", "fire", "armed", "cowboy", "crime", "war", "police", "revolver", "shot", "pulp fiction", "tarantino", "gangster"] },
   { emoji: "🪃", keywords: ["boomerang", "australia", "throw", "return", "curved", "outback", "come back"] },
   { emoji: "🪖", keywords: ["helmet", "military", "soldier", "army", "war", "protect", "camouflage"] },
@@ -469,7 +499,7 @@ const EMOJI_LIST = [
   { emoji: "💡", keywords: ["idea", "light", "bright", "invention", "think", "bulb", "eureka"] },
   { emoji: "📱", keywords: ["phone", "mobile", "call", "text", "app", "screen", "iphone"] },
   { emoji: "🖥️", keywords: ["computer", "screen", "tech", "digital", "work", "monitor", "pc"] },
-  { emoji: "🎮", keywords: ["game", "video game", "controller", "play", "fun", "console", "ps5", "xbox", "halo", "master chief", "spartan", "shooter"] },
+  { emoji: "🎮", keywords: ["game", "video game", "controller", "play", "fun", "console", "ps5", "xbox", "halo", "master chief", "spartan", "shooter", "nintendo", "mario", "zelda", "pokemon", "fortnite", "minecraft", "gaming"] },
   { emoji: "🧪", keywords: ["test tube", "science", "chemistry", "lab", "experiment", "liquid", "research"] },
   { emoji: "🔬", keywords: ["microscope", "science", "tiny", "lab", "biology", "cell", "research"] },
   { emoji: "🧬", keywords: ["dna", "genetics", "science", "biology", "helix", "code", "life"] },
@@ -599,7 +629,7 @@ const EMOJI_LIST = [
 
   // Olive / food colors
   { emoji: "🫒", keywords: ["olive", "green", "food", "mediterranean", "italian", "oil", "small", "salty", "branch"] },
-  { emoji: "🌿", keywords: ["olive", "green", "herb", "branch", "leaf", "plant", "nature", "fresh", "natural", "organic", "raw", "born"] },
+  { emoji: "🌿", keywords: ["olive", "green", "herb", "branch", "leaf", "plant", "nature", "fresh", "natural", "organic", "raw", "born", "imagine dragons"] },
 
   // Country flags
   { emoji: "🇺🇸", keywords: ["usa", "america", "united states", "american", "flag", "stars", "stripes"] },
@@ -662,6 +692,90 @@ const EMOJI_LIST = [
   { emoji: "🎌", keywords: ["japan", "flag", "crossed", "country", "asian", "tokyo", "red"] },
   { emoji: "🏴‍☠️", keywords: ["pirate", "flag", "skull", "ship", "treasure", "jolly roger"] },
   { emoji: "🚩", keywords: ["red flag", "warning", "danger", "mark", "signal", "alert"] },
+
+  // Video Game emojis
+  { emoji: "🎮", keywords: ["video game", "controller", "play", "console", "xbox", "playstation", "nintendo", "gaming", "gamer", "joystick"] },
+  { emoji: "👾", keywords: ["alien", "space invaders", "pixel", "arcade", "retro", "game", "monster", "8 bit", "video game"] },
+  { emoji: "🕹️", keywords: ["joystick", "arcade", "retro", "game", "control", "play", "old school", "pac man"] },
+  { emoji: "🃏", keywords: ["card", "wild", "joker", "game", "poker", "play", "trump"] },
+  { emoji: "🧱", keywords: ["brick", "block", "minecraft", "build", "lego", "wall", "construction", "tetris"] },
+  { emoji: "⛏️", keywords: ["pickaxe", "mine", "minecraft", "dig", "craft", "gold", "diamond", "cave"] },
+  { emoji: "🏰", keywords: ["castle", "zelda", "kingdom", "medieval", "princess", "tower", "fortress", "dungeon"] },
+  { emoji: "🍄", keywords: ["mushroom", "mario", "power up", "super", "grow", "toadstool", "1up"] },
+  { emoji: "⭐", keywords: ["star", "mario", "power", "collect", "shine", "invincible", "wish", "super"] },
+  { emoji: "🔫", keywords: ["gun", "shoot", "call of duty", "fortnite", "fps", "weapon", "battle", "war"] },
+  { emoji: "🗡️", keywords: ["sword", "zelda", "link", "fight", "knight", "weapon", "slash", "rpg"] },
+  { emoji: "🐲", keywords: ["dragon", "pokemon", "fantasy", "breathe fire", "beast", "legend", "dragonite"] },
+  { emoji: "⚡", keywords: ["pikachu", "pokemon", "electric", "thunder", "lightning", "bolt", "fast", "power"] },
+  { emoji: "🎯", keywords: ["target", "aim", "sniper", "call of duty", "bullseye", "precision", "hit", "shoot"] },
+  { emoji: "🏆", keywords: ["trophy", "win", "champion", "achievement", "unlocked", "gold", "first place", "victory"] },
+  { emoji: "💎", keywords: ["diamond", "minecraft", "gem", "rare", "precious", "collect", "currency", "wealth"] },
+  { emoji: "🧟", keywords: ["zombie", "undead", "call of duty", "apocalypse", "horror", "shuffle", "brain", "dead"] },
+  { emoji: "🚗", keywords: ["car", "gta", "grand theft auto", "racing", "drive", "vehicle", "speed", "road"] },
+  { emoji: "🏙️", keywords: ["city", "gta", "grand theft auto", "urban", "downtown", "skyline", "crime", "streets"] },
+  { emoji: "🌿", keywords: ["creeper", "minecraft", "green", "plant", "nature", "jungle", "grass", "garden"] },
+  { emoji: "🎪", keywords: ["circus", "fortnite", "event", "show", "battle royale", "arena", "spectacle"] },
+  { emoji: "🪂", keywords: ["parachute", "fortnite", "drop", "skydive", "battle royale", "land", "fall", "air"] },
+  { emoji: "🏝️", keywords: ["island", "fortnite", "battle royale", "tropical", "map", "zone", "paradise"] },
+  { emoji: "🦑", keywords: ["squid", "splatoon", "ink", "ocean", "tentacle", "nintendo", "shoot"] },
+
+  // Sports emojis  
+  { emoji: "⚽", keywords: ["soccer", "football", "messi", "ronaldo", "world cup", "kick", "goal", "pitch", "pele"] },
+  { emoji: "🏀", keywords: ["basketball", "lebron", "jordan", "kobe", "nba", "dunk", "hoop", "court", "slam"] },
+  { emoji: "🏈", keywords: ["football", "nfl", "tom brady", "touchdown", "super bowl", "field", "quarterback"] },
+  { emoji: "⚾", keywords: ["baseball", "babe ruth", "home run", "pitcher", "mlb", "bat", "world series"] },
+  { emoji: "🎾", keywords: ["tennis", "federer", "nadal", "djokovic", "serena", "wimbledon", "racket", "serve"] },
+  { emoji: "🥊", keywords: ["boxing", "muhammad ali", "mike tyson", "punch", "fight", "ring", "knockout", "jab"] },
+  { emoji: "🏊", keywords: ["swimming", "michael phelps", "pool", "olympics", "stroke", "race", "water", "gold"] },
+  { emoji: "🏃", keywords: ["running", "usain bolt", "sprint", "marathon", "race", "fast", "athletics", "track"] },
+  { emoji: "🤸", keywords: ["gymnastics", "simone biles", "flip", "vault", "olympics", "flexible", "routine"] },
+  { emoji: "⛳", keywords: ["golf", "tiger woods", "hole", "club", "fairway", "putt", "green", "birdie", "masters"] },
+  { emoji: "🏒", keywords: ["hockey", "gretzky", "puck", "stick", "ice", "nhl", "stanley cup", "slap shot"] },
+  { emoji: "🚴", keywords: ["cycling", "tour de france", "bike", "race", "pedal", "road", "velodrome", "sprint"] },
+  { emoji: "🏋️", keywords: ["weightlifting", "strong", "olympics", "lift", "barbell", "gym", "power", "clean jerk"] },
+  { emoji: "🥇", keywords: ["gold medal", "olympics", "first place", "champion", "winner", "podium", "best"] },
+  { emoji: "🏟️", keywords: ["stadium", "arena", "super bowl", "world cup", "crowd", "game", "sport", "event"] },
+  { emoji: "🎽", keywords: ["jersey", "uniform", "team", "sport", "wear", "athlete", "number", "kit"] },
+  { emoji: "🏄", keywords: ["surfing", "pipeline", "wave", "board", "beach", "ocean", "ride", "wipeout"] },
+  { emoji: "🎿", keywords: ["skiing", "downhill", "alpine", "slope", "winter", "olympics", "snow", "slalom"] },
+  { emoji: "🤼", keywords: ["wrestling", "wwe", "grapple", "pin", "match", "ring", "takedown", "submission"] },
+  { emoji: "🏇", keywords: ["horse racing", "derby", "jockey", "bet", "thoroughbred", "kentucky", "race", "gallop"] },
+
+  // Superhero emojis
+  { emoji: "🦸", keywords: ["superhero", "hero", "super", "cape", "power", "save", "strong", "marvel", "dc", "comic"] },
+  { emoji: "🦹", keywords: ["villain", "evil", "bad guy", "nemesis", "dark", "sinister", "enemy", "joker", "thanos"] },
+  { emoji: "🕷️", keywords: ["spider", "spiderman", "web", "spider-man", "peter parker", "marvel", "swing", "arachnid"] },
+  { emoji: "🦇", keywords: ["bat", "batman", "bruce wayne", "gotham", "dark knight", "night", "cave", "dc"] },
+  { emoji: "⚡", keywords: ["flash", "lightning", "electric", "speed", "fast", "bolt", "thunder", "quicksilver", "dc"] },
+  { emoji: "🔨", keywords: ["hammer", "thor", "mjolnir", "worthy", "asgard", "thunder god", "avengers", "strike"] },
+  { emoji: "🛡️", keywords: ["shield", "captain america", "defend", "protect", "vibranium", "avengers", "marvel", "block"] },
+  { emoji: "💚", keywords: ["hulk", "green", "smash", "angry", "strong", "gamma", "bruce banner", "avengers"] },
+  { emoji: "🕶️", keywords: ["cool", "iron man", "tony stark", "sunglasses", "style", "billionaire", "genius"] },
+  { emoji: "🌙", keywords: ["moon knight", "night", "dark", "batman", "shadow", "lurk", "crescent", "lunar"] },
+  { emoji: "🕸️", keywords: ["web", "spiderman", "spider", "trap", "sticky", "swing", "network", "spin"] },
+  { emoji: "💜", keywords: ["thanos", "purple", "infinity", "gauntlet", "snap", "villain", "powerful", "marvel"] },
+  { emoji: "🌊", keywords: ["aquaman", "ocean", "water", "sea", "atlantis", "wave", "trident", "dc"] },
+  { emoji: "👑", keywords: ["black panther", "king", "wakanda", "royal", "crown", "vibranium", "africa", "marvel"] },
+  { emoji: "🐺", keywords: ["wolverine", "claws", "animal", "feral", "x-men", "mutant", "logan", "adamantium"] },
+  { emoji: "🃏", keywords: ["joker", "wild card", "batman villain", "chaos", "card", "clown", "gotham", "madman"] },
+  { emoji: "💣", keywords: ["bomb", "villain", "explosion", "destroy", "danger", "boom", "detonate", "threat"] },
+  { emoji: "🎭", keywords: ["two-face", "mask", "duality", "villain", "actor", "persona", "dc", "batman"] },
+  { emoji: "❄️", keywords: ["ice", "frozen", "mr freeze", "iceman", "cold", "crystal", "winter", "chill", "frostbite"] },
+  { emoji: "🔥", keywords: ["fire", "human torch", "flame", "burn", "hot", "blaze", "pyro", "inferno", "ghost rider"] },
+  { emoji: "🧲", keywords: ["magnet", "magneto", "attract", "metal", "pull", "force", "mutant", "x-men", "villain"] },
+  { emoji: "💸", keywords: ["money", "lex luthor", "billionaire", "rich", "corporate", "villain", "power", "wealth"] },
+  { emoji: "🃏", keywords: ["harley quinn", "joker", "chaos", "clown", "wild", "batman", "gotham", "villain"] },
+
+  // Gap fixes for new categories
+  { emoji: "🔪", keywords: ["among us", "kill", "impostor", "sus", "knife", "blade", "sharp", "stab", "horror"] },
+  { emoji: "🚀", keywords: ["among us", "space", "spaceship", "rocket", "crew", "task", "nasa", "launch", "blast"] },
+  { emoji: "🤖", keywords: ["ultron", "robot", "ai", "android", "machine", "avengers", "metal", "cyber", "doom"] },
+  { emoji: "🌆", keywords: ["cyberpunk", "city", "neon", "future", "night city", "dystopia", "urban", "2077", "tech"] },
+  { emoji: "💀", keywords: ["doom", "skull", "death", "game", "demon", "hell", "undead", "bones", "bane"] },
+  { emoji: "🔵", keywords: ["mystique", "blue", "shapeshifter", "mutant", "x-men", "circle", "color", "round"] },
+  { emoji: "🦶", keywords: ["pele", "brazil", "soccer", "kick", "foot", "football", "legend", "goal", "brazil"] },
+  { emoji: "🌌", keywords: ["galactus", "space", "universe", "cosmos", "stars", "galaxy", "infinite", "vast", "silver surfer"] },
+  { emoji: "🏔️", keywords: ["bane", "mountain", "strong", "villain", "batman", "rise", "dark knight", "mask", "breaks"] },
 ]
 
 const RESET_MESSAGES = [
@@ -737,6 +851,33 @@ const CHEAT_MESSAGES = {
   chey:     "💍 Something sparkly is waiting... Tap it for a hint.",
   delicia:  "🎲 The Dungeon Master has arrived. Tap the footer for a secret hint.",
 }
+
+const ONBOARDING_CARDS = [
+  {
+    emoji: "🎯",
+    title: "Guess the Word",
+    desc: "One emoji at a time, your teammate tries to describe a secret word.",
+    bg: "#0066ff",
+  },
+  {
+    emoji: "👁️",
+    title: "Clue Giver",
+    desc: "You see the secret word. Search for emojis and tap to send them — no talking!",
+    bg: "#ff6600",
+  },
+  {
+    emoji: "👂",
+    title: "Guesser",
+    desc: "Watch the emojis come in. Type your guess in the box at the bottom.",
+    bg: "#00aa44",
+  },
+  {
+    emoji: "⏱️",
+    title: "Beat the Clock",
+    desc: "Guess correctly before time runs out to score a point. Most points wins!",
+    bg: "#cc0000",
+  },
+]
 
 const HOW_TO_PLAY_STEPS = [
   { emoji: "👥", title: "Form Teams", desc: "Split into 2 teams. Each team has a Clue Giver and a Guesser." },
@@ -1114,6 +1255,8 @@ export default function App() {
   const [editingName, setEditingName] = useState("")
   const [difficulty, setDifficulty] = useState("medium")
   const [showCredits, setShowCredits] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  const [onboardingCard, setOnboardingCard] = useState(0)
   const [suggestion, setSuggestion] = useState("")
   const [suggestionSent, setSuggestionSent] = useState(false)
   const [showSuggest, setShowSuggest] = useState(false)
@@ -1682,6 +1825,53 @@ export default function App() {
     )
   }
 
+  // ONBOARDING
+  if (showOnboarding) {
+    const card = ONBOARDING_CARDS[onboardingCard]
+    const isLast = onboardingCard === ONBOARDING_CARDS.length - 1
+    const finishOnboarding = () => {
+      localStorage.setItem("guessmoji_seen_onboarding", "true")
+      setShowOnboarding(false)
+      setScreen("lobby")
+    }
+    return (
+      <div style={{ fontFamily: "sans-serif", minHeight: "100dvh", background: card.bg, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "40px 24px 32px", boxSizing: "border-box", textAlign: "center", color: "white" }}>
+        {/* Progress dots */}
+        <div style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
+          {ONBOARDING_CARDS.map((_, i) => (
+            <div key={i} style={{ width: i === onboardingCard ? "24px" : "8px", height: "8px", borderRadius: "4px", background: i === onboardingCard ? "white" : "rgba(255,255,255,0.4)", transition: "width 0.3s" }} />
+          ))}
+        </div>
+
+        {/* Card content */}
+        <div>
+          <div style={{ fontSize: "100px", marginBottom: "24px" }}>{card.emoji}</div>
+          <h1 style={{ fontSize: "32px", fontWeight: "bold", margin: "0 0 16px" }}>{card.title}</h1>
+          <p style={{ fontSize: "18px", opacity: 0.9, lineHeight: "1.5", maxWidth: "300px", margin: "0 auto" }}>{card.desc}</p>
+        </div>
+
+        {/* Buttons */}
+        <div>
+          <button
+            onClick={() => {
+              if (isLast) finishOnboarding()
+              else setOnboardingCard(c => c + 1)
+            }}
+            style={{ width: "100%", padding: "16px", fontSize: "20px", borderRadius: "14px", background: "white", color: card.bg, border: "none", cursor: "pointer", fontWeight: "bold", marginBottom: "12px" }}
+          >
+            {isLast ? "Let's Play! 🎯" : "Next →"}
+          </button>
+          <button
+            onClick={finishOnboarding}
+            style={{ background: "none", border: "none", color: "rgba(255,255,255,0.7)", fontSize: "15px", cursor: "pointer", textDecoration: "underline" }}
+          >
+            Skip
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   // HOW TO PLAY
   if (showHowToPlay) {
     return (
@@ -2049,6 +2239,9 @@ ${suggestion}
                 💡 {hintText}
               </div>
             )}
+            {wrongGuesses.length === 0 && receivedEmojis.length > 0 && (
+              <p style={{ fontSize: "12px", color: teamColor, margin: "0 0 4px", textAlign: "center", opacity: 0.8 }}>👆 Type your guess below!</p>
+            )}
             <input
               autoFocus
               type="text"
@@ -2362,7 +2555,15 @@ ${suggestion}
       )}
       {nickname.trim() && (
         <div style={{ marginTop: "20px" }}>
-          <button onClick={() => setScreen("lobby")} style={{ padding: "14px 40px", fontSize: "20px", borderRadius: "12px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}>
+          <button onClick={() => {
+            const seen = localStorage.getItem("guessmoji_seen_onboarding")
+            if (!seen) {
+              setShowOnboarding(true)
+              setOnboardingCard(0)
+            } else {
+              setScreen("lobby")
+            }
+          }} style={{ padding: "14px 40px", fontSize: "20px", borderRadius: "12px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}>
             Let's Play →
           </button>
         </div>
