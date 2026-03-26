@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push, get } from "firebase/database"
 
-const VERSION = "v0.5.1"
+const VERSION = "v0.5.2"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -1802,8 +1802,7 @@ export default function App() {
   const joinGame = async () => {
     const code = joinCode.trim().toUpperCase()
     if (code.length < 3) return
-    try {
-      const snapshot = await get(ref(db, `rooms/${code}`))
+    onValue(ref(db, `rooms/${code}`), async (snapshot) => {
       const data = snapshot.val()
       if (!data) { alert("Room not found! Check the code and try again."); return }
       if (data.status === "ended") { alert("That game has already ended."); return }
@@ -1817,10 +1816,7 @@ export default function App() {
         [nickname]: { team: "unassigned" }
       })
       setScreen("waiting")
-    } catch(e) {
-      console.error("Join error:", e)
-      alert("Trouble connecting. Check your internet and try again.")
-    }
+    }, { onlyOnce: true })
   }
 
   const assignTeam = async (playerName, currentTeam) => {
