@@ -1027,13 +1027,13 @@ const ONBOARDING_CARDS = [
   {
     emoji: "👁️",
     title: "Clue Giver",
-    desc: "You see the secret word. Search for emojis and tap to send them — no talking!",
+    desc: 'You see the secret word. Type a word like "fire" → tap 🔥 to send it. No talking!',
     bg: "#ff6600",
   },
   {
     emoji: "👂",
     title: "Guesser",
-    desc: "Watch the emojis come in. Type your guess in the box at the bottom.",
+    desc: "Watch the emojis arrive. Type what you think the word is in the guess box and hit Submit!",
     bg: "#00aa44",
   },
   {
@@ -2090,6 +2090,14 @@ export default function App() {
           >
             Skip
           </button>
+          {isLast && (
+            <button
+              onClick={() => { finishOnboarding(); setTimeout(() => setShowCredits(true), 50) }}
+              style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", fontSize: "13px", cursor: "pointer", marginTop: "8px", textDecoration: "underline" }}
+            >
+              🎬 Credits
+            </button>
+          )}
         </div>
       </div>
     )
@@ -2606,12 +2614,28 @@ ${suggestion}
         <input
           ref={searchRef}
           type="text"
-          placeholder="Search emojis..."
+          placeholder="🔍 Search HERE for emojis — try: fire, ocean, love..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           disabled={!timerActive && !(difficulty === "easy" && guesserActive)}
           style={{ width: "100%", padding: "12px", fontSize: "16px", borderRadius: "12px", border: `2px solid ${teamColor}`, boxSizing: "border-box", marginBottom: "12px", background: (timerActive || (difficulty === "easy" && guesserActive)) ? "white" : "#f0f0f0", color: (timerActive || (difficulty === "easy" && guesserActive)) ? "black" : "#aaa", position: "sticky", bottom: "8px", zIndex: 10 }}
         />
+        {search.trim() === "" && (timerActive || (difficulty === "easy" && guesserActive)) && (
+          <div style={{ marginBottom: "8px" }}>
+            <p style={{ fontSize: "11px", color: "#aaa", margin: "0 0 6px", letterSpacing: "0.5px" }}>QUICK SEARCH — tap a word:</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+              {["fire", "water", "star", "love", "happy", "run", "big", "old", "king", "gold", "dark", "fly"].map(word => (
+                <button
+                  key={word}
+                  onClick={() => setSearch(word)}
+                  style={{ padding: "5px 12px", fontSize: "13px", borderRadius: "20px", background: "#f0f0f0", border: `1px solid #ddd`, color: "#555", cursor: "pointer", fontWeight: "normal" }}
+                >
+                  {word}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         {search.trim() !== "" && filteredEmojis.length === 0 && (
           <p style={{ color: "#999", textAlign: "center" }}>No emojis found. Try another word.</p>
         )}
