@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.4.7"
+const VERSION = "v0.4.9"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -1119,13 +1119,17 @@ const usedTopics = {}
 function getRandomTopic(category) {
   const list = TOPICS[category]
   if (!usedTopics[category]) usedTopics[category] = []
-  // Reset if all used
   if (usedTopics[category].length >= list.length) usedTopics[category] = []
-  // Shuffle remaining unused
   const unused = list.filter(t => !usedTopics[category].includes(t))
   const pick = unused[Math.floor(Math.random() * unused.length)]
   usedTopics[category].push(pick)
   return pick
+}
+
+function getRandomTopicFromCategories(cats) {
+  const pool = Array.isArray(cats) && cats.length > 0 ? cats : Object.keys(TOPICS)
+  const cat = pool[Math.floor(Math.random() * pool.length)]
+  return { topic: getRandomTopic(cat), category: cat }
 }
 
 function assignRoles(players, round) {
@@ -1326,18 +1330,19 @@ async function shareScoreCard({ scores, topic, sentEmojis, correct, rounds, curr
 }
 
 function GuesserAutoReady({ onReady, teamColor }) {
-  const [countdown, setCountdown] = useState(3)
+  const [secs, setSecs] = useState(4)
   useEffect(() => {
-    if (countdown <= 0) { onReady(); return }
-    const t = setTimeout(() => setCountdown(c => c - 1), 1000)
+    if (secs <= 0) { onReady(); return }
+    const t = setTimeout(() => setSecs(s => s - 1), 1000)
     return () => clearTimeout(t)
-  }, [countdown])
+  }, [secs])
   return (
-    <div style={{ textAlign: "center" }}>
-      <div style={{ fontSize: "48px", fontWeight: "bold", color: "white", opacity: 0.9 }}>{countdown}</div>
-      <p style={{ color: "white", opacity: 0.7, fontSize: "14px", margin: "4px 0 16px" }}>Heading to guesser screen...</p>
-      <button onClick={() => { setCountdown(0) }} style={{ padding: "14px 40px", fontSize: "20px", borderRadius: "12px", background: "white", color: teamColor, border: "none", cursor: "pointer", fontWeight: "bold" }}>
-        Go Now ✊
+    <div style={{ textAlign: "center", marginTop: "auto" }}>
+      <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.6)", marginBottom: "8px" }}>
+        Round starts in {secs}s...
+      </div>
+      <button onClick={() => setSecs(0)} style={{ padding: "14px 40px", fontSize: "20px", borderRadius: "12px", background: "white", color: teamColor, border: "none", cursor: "pointer", fontWeight: "bold" }}>
+        I'm Ready ✊
       </button>
     </div>
   )
@@ -1448,7 +1453,7 @@ export default function App() {
   const [countdown, setCountdown] = useState(null)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [resetMessage, setResetMessage] = useState("")
-  const [category, setCategory] = useState("")
+  const [categories, setCategories] = useState([])
   const [currentTopic, setCurrentTopic] = useState("")
   const [players, setPlayers] = useState({})
   const [receivedEmojis, setReceivedEmojis] = useState([])
@@ -1672,6 +1677,7 @@ export default function App() {
         setCurrentTopic(data.topic || "")
         setCurrentRound(data.currentRound || 1)
         setRounds(data.rounds || 3)
+        setCategories(data.categories || (data.category ? [data.category] : []))
         setCategory(data.category || "")
         const d = data.difficulty || "medium"
         setDifficulty(d)
@@ -1724,7 +1730,7 @@ export default function App() {
     setTimerActive(false); setCountdown(null); setReceivedEmojis([])
     setGuess(""); setWrongGuesses([]); setCorrect(false)
     setGuesserTimer(60); setGuesserActive(false)
-    setCategory(""); setCurrentTopic(""); setRoomCode(""); setRole("")
+    setCategories([]); setCategory(""); setCurrentTopic(""); setRoomCode(""); setRole("")
     setIsHost(false); setPlayers({}); setTeammate("")
     setHintUsed(false); setHintTexts([])
     setTeamNames({ "Team 1": "Team 1", "Team 2": "Team 2", "Team 3": "Team 3" }); setEditingTeam(null)
@@ -1758,13 +1764,14 @@ export default function App() {
   }
 
   const createGame = async () => {
-    if (!category) return
+    if (categories.length === 0) return
     const code = generateRoomCode()
     setRoomCode(code)
     setIsHost(true)
     await set(ref(db, `rooms/${code}`), {
       host: nickname,
-      category,
+      categories,
+      category: categories[0],
       rounds,
       difficulty,
       currentRound: 1,
@@ -1782,7 +1789,8 @@ export default function App() {
       if (!data) { alert("Room not found!"); return }
       setRoomCode(joinCode)
       setRounds(data.rounds)
-      setCategory(data.category)
+      setCategories(data.categories || (data.category ? [data.category] : []))
+      setCategory(data.category || "")
       setDifficulty(data.difficulty || "medium")
       setIsHost(false)
       await update(ref(db, `rooms/${joinCode}/players`), {
@@ -1811,7 +1819,9 @@ export default function App() {
   const startGame = async () => {
     const allAssigned = Object.values(players).every(p => p.team && p.team !== "unassigned")
     if (!allAssigned) { alert("All players must be assigned to a team!"); return }
-    const topic = getRandomTopic(category)
+    const { topic, category: pickedCat } = getRandomTopicFromCategories(categories)
+    const pickedCategory = pickedCat
+    setCategory(pickedCat)
     const roles = assignRoles(players, 1)
     const myRole = roles[nickname]
     const myTeam = players[nickname]?.team || ""
@@ -1826,6 +1836,7 @@ export default function App() {
     await update(ref(db, `rooms/${roomCode}`), {
       status: "playing",
       topic,
+      category: pickedCategory,
       currentRound: 1,
       roles
     })
@@ -1839,11 +1850,12 @@ export default function App() {
       return
     }
     const newRound = currentRound + 1
-    const newTopic = getRandomTopic(category)
+    const { topic: newTopic, category: nextCat } = getRandomTopicFromCategories(categories)
     const newRoles = assignRoles(players, newRound)
     await update(ref(db, `rooms/${roomCode}`), {
       status: "nextround",
       topic: newTopic,
+      category: nextCat,
       currentRound: newRound,
       roles: newRoles,
       difficulty,
@@ -1925,10 +1937,11 @@ export default function App() {
 
   const shuffleTopic = async () => {
     if (shufflesLeft <= 0) return
-    const newTopic = getRandomTopic(category)
+    const { topic: newTopic, category: newCat } = getRandomTopicFromCategories(categories)
+    setCategory(newCat)
     setCurrentTopic(newTopic)
     if (shufflesLeft !== 999) setShufflesLeft(s => s - 1)
-    await update(ref(db, `rooms/${roomCode}`), { topic: newTopic })
+    await update(ref(db, `rooms/${roomCode}`), { topic: newTopic, category: newCat })
   }
 
   const requestForfeit = async () => {
@@ -2260,7 +2273,7 @@ ${suggestion}
             {codeCopied ? "✅ Copied!" : "👆 tap to copy"}
           </div>
         </div>
-        <p style={{ color: "#999", fontSize: "13px", marginBottom: "4px" }}>{category} · {rounds} rounds</p>
+        <p style={{ color: "#999", fontSize: "13px", marginBottom: "4px" }}>{categories.length > 1 ? `${categories.length} categories mixed 🎲` : category} · {rounds} rounds</p>
         <p style={{ fontSize: "13px", fontWeight: "bold", color: DIFFICULTIES[difficulty]?.color || "#999", marginBottom: "20px" }}>{DIFFICULTIES[difficulty]?.label} · {DIFFICULTIES[difficulty]?.description}</p>
         <p style={{ fontSize: "13px", color: "#999", margin: "0 0 10px", letterSpacing: "1px" }}>PLAYERS</p>
         {playerList.map(([name, info]) => {
@@ -2442,8 +2455,29 @@ ${suggestion}
   // GUESSER SCREEN
   if (screen === "guesser") {
     return (
-      // FIX: min-height 100dvh + width 100% fills full phone screen, no white border
-      <div style={{ fontFamily: "sans-serif", padding: "20px", maxWidth: "400px", margin: "0 auto", minHeight: "100dvh", boxSizing: "border-box" }}>
+      <div style={{ fontFamily: "sans-serif", padding: "20px", maxWidth: "400px", margin: "0 auto", minHeight: "100dvh", boxSizing: "border-box", position: "relative" }}>
+        {/* Fade-out info overlay during countdown */}
+        {countdown !== null && (
+          <div style={{
+            position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+            background: teamColor,
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+            zIndex: 50, textAlign: "center", padding: "24px",
+            opacity: countdown === 0 ? 0 : 1,
+            transition: "opacity 0.8s ease",
+            pointerEvents: countdown === 0 ? "none" : "all"
+          }}>
+            <div style={{ fontSize: "44px", fontWeight: "bold", color: "white", opacity: 0.9 }}>👂</div>
+            <div style={{ fontSize: "22px", fontWeight: "bold", color: "white", letterSpacing: "2px", margin: "8px 0" }}>GUESSER</div>
+            <div style={{ background: "rgba(255,255,255,0.15)", borderRadius: "10px", padding: "10px 20px", marginBottom: "16px" }}>
+              <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.7)", margin: "0 0 2px" }}>CATEGORY</p>
+              <p style={{ fontSize: "16px", fontWeight: "bold", color: "white", margin: 0 }}>{category}</p>
+            </div>
+            <div style={{ fontSize: "72px", fontWeight: "bold", color: "white" }}>
+              {countdownWords[countdown] || "GO!"}
+            </div>
+          </div>
+        )}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
           <Logo onTap={handleLogoTap} />
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -2456,11 +2490,6 @@ ${suggestion}
             <DifficultyBadge difficulty={difficulty} timer={guesserTimer} />
           </div>
         </div>
-        {countdown !== null && (
-          <div style={{ fontSize: "100px", fontWeight: "bold", textAlign: "center", color: teamColor, margin: "20px 0" }}>
-            {countdownWords[countdown]}
-          </div>
-        )}
         <div style={{ background: "#f9f9f9", border: `2px solid ${teamColor}`, borderRadius: "12px", padding: "16px", margin: "16px 0", minHeight: "80px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
             <p style={{ margin: 0, fontSize: "12px", color: teamColor, letterSpacing: "1px" }}>CLUES FROM {teammate.toUpperCase() || "YOUR TEAMMATE"}</p>
@@ -2766,25 +2795,22 @@ ${suggestion}
               )}
             </div>
 
-            {/* Instructions */}
-            <div style={{ background: "rgba(0,0,0,0.15)", borderRadius: "12px", padding: "12px 16px", marginBottom: "12px" }}>
-              <p style={{ fontSize: "13px", fontWeight: "bold", margin: "0 0 6px" }}>How to give clues:</p>
-              <p style={{ fontSize: "13px", opacity: 0.9, margin: "0 0 4px", lineHeight: "1.4" }}>
-                🔍 Type a word in the search box to find emojis
-              </p>
-              <p style={{ fontSize: "13px", opacity: 0.9, margin: "0 0 4px", lineHeight: "1.4" }}>
-                👆 Tap an emoji to send it to {teammate || "your teammate"}
-              </p>
-              <p style={{ fontSize: "13px", opacity: 0.9, margin: 0, lineHeight: "1.4" }}>
-                🚫 No words, sounds, or pointing at the screen!
-              </p>
-            </div>
-
-            {/* Emoji hint tip */}
-            <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: "10px", padding: "8px 14px", marginBottom: "16px" }}>
-              <p style={{ fontSize: "12px", opacity: 0.85, margin: 0 }}>
-                💡 Tip: Try searching single words like <em>"fire"</em>, <em>"big"</em>, or <em>"old"</em>
-              </p>
+            {/* Instructions — icon row format */}
+            <div style={{ background: "rgba(0,0,0,0.15)", borderRadius: "12px", padding: "10px 14px", marginBottom: "12px" }}>
+              <p style={{ fontSize: "12px", fontWeight: "bold", margin: "0 0 8px", opacity: 0.8, letterSpacing: "1px" }}>HOW TO GIVE CLUES</p>
+              {[
+                { icon: "🔍", text: "Type a word in the IN-APP search box below" },
+                { icon: "👆", text: `Tap any emoji to send it to ${teammate || "your teammate"}` },
+                { icon: "↵",  text: "Use New Line to group related emojis" },
+                { icon: "✨", text: "Tap a sent emoji to highlight it for them" },
+                { icon: "🚫", text: "No words, sounds, or pointing allowed!" },
+                { icon: difficulty === "easy" ? "∞" : "⏱️", text: difficulty === "easy" ? "No timer — take your time!" : `${DIFFICULTIES[difficulty]?.timerSeconds}s on the clock once you start` },
+              ].map(({ icon, text }, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "10px", marginBottom: i < 5 ? "7px" : "0" }}>
+                  <span style={{ fontSize: "16px", minWidth: "22px", textAlign: "center", marginTop: "1px" }}>{icon}</span>
+                  <span style={{ fontSize: "13px", opacity: 0.92, lineHeight: "1.4" }}>{text}</span>
+                </div>
+              ))}
             </div>
 
             {/* Ready button — triggers countdown */}
@@ -2858,13 +2884,29 @@ ${suggestion}
         <button onClick={() => setRounds(r => r + 1)} style={{ fontSize: "24px", background: "none", border: "none", cursor: "pointer" }}>➕</button>
         <p>Category:</p>
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "8px", marginBottom: "20px" }}>
-          {Object.keys(TOPICS).map(cat => (
-            <button key={cat} onClick={() => setCategory(cat)} style={{ padding: "10px 16px", fontSize: "15px", borderRadius: "10px", background: category === cat ? "#0066ff" : "#eee", color: category === cat ? "white" : "black", border: "none", cursor: "pointer", fontWeight: category === cat ? "bold" : "normal" }}>{cat}</button>
-          ))}
+          {Object.keys(TOPICS).map(cat => {
+            const selected = categories.includes(cat)
+            const atMax = categories.length >= 3 && !selected
+            return (
+              <button key={cat} onClick={() => {
+                if (selected) setCategories(c => c.filter(x => x !== cat))
+                else if (!atMax) setCategories(c => [...c, cat])
+              }} style={{ padding: "10px 16px", fontSize: "15px", borderRadius: "10px", background: selected ? "#0066ff" : atMax ? "#f5f5f5" : "#eee", color: selected ? "white" : atMax ? "#bbb" : "black", border: selected ? "2px solid #0066ff" : "2px solid transparent", cursor: atMax ? "not-allowed" : "pointer", fontWeight: selected ? "bold" : "normal", position: "relative" }}>
+                {selected && <span style={{ position: "absolute", top: "-6px", right: "-6px", background: "#0066ff", color: "white", borderRadius: "50%", width: "18px", height: "18px", fontSize: "11px", display: "flex", alignItems: "center", justifyContent: "center" }}>{categories.indexOf(cat) + 1}</span>}
+                {cat}
+              </button>
+            )
+          })}
         </div>
+        {categories.length > 0 && (
+          <p style={{ fontSize: "13px", color: "#0066ff", margin: "0 0 12px", fontWeight: "bold" }}>
+            {categories.length === 1 ? categories[0] : `${categories.length} categories mixed 🎲`}
+            {categories.length < 3 && <span style={{ color: "#999", fontWeight: "normal" }}> · tap to add more (up to 3)</span>}
+          </p>
+        )}
         <button onClick={() => setScreen("lobby")} style={{ padding: "10px 30px", fontSize: "16px", borderRadius: "8px", background: "#ccc", color: "white", border: "none", cursor: "pointer", margin: "5px" }}>← Back</button>
-        <button onClick={createGame} style={{ padding: "10px 30px", fontSize: "16px", borderRadius: "8px", background: category ? "#0066ff" : "#aaa", color: "white", border: "none", cursor: category ? "pointer" : "not-allowed", margin: "5px" }}>Create Room →</button>
-        {!category && <p style={{ color: "#cc0000", fontSize: "13px" }}>Pick a category first!</p>}
+        <button onClick={createGame} style={{ padding: "10px 30px", fontSize: "16px", borderRadius: "8px", background: categories.length > 0 ? "#0066ff" : "#aaa", color: "white", border: "none", cursor: categories.length > 0 ? "pointer" : "not-allowed", margin: "5px" }}>Create Room →</button>
+        {categories.length === 0 && <p style={{ color: "#cc0000", fontSize: "13px" }}>Pick at least one category!</p>}
         <Footer nickname={nickname} onHint={useHint} onShowCredits={() => setShowCredits(true)} />
       </div>
     )
