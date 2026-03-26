@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
-import { ref, set, update, onValue, push } from "firebase/database"
+import { ref, set, update, onValue, push, get } from "firebase/database"
 
-const VERSION = "v0.5.0"
+const VERSION = "v0.5.1"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -1800,21 +1800,27 @@ export default function App() {
   }
 
   const joinGame = async () => {
-    if (joinCode.length < 4) return
-    onValue(ref(db, `rooms/${joinCode}`), async (snapshot) => {
+    const code = joinCode.trim().toUpperCase()
+    if (code.length < 3) return
+    try {
+      const snapshot = await get(ref(db, `rooms/${code}`))
       const data = snapshot.val()
-      if (!data) { alert("Room not found!"); return }
-      setRoomCode(joinCode)
-      setRounds(data.rounds)
+      if (!data) { alert("Room not found! Check the code and try again."); return }
+      if (data.status === "ended") { alert("That game has already ended."); return }
+      setRoomCode(code)
+      setRounds(data.rounds || 3)
       setCategories(data.categories || (data.category ? [data.category] : []))
       setCategory(data.category || "")
       setDifficulty(data.difficulty || "medium")
       setIsHost(false)
-      await update(ref(db, `rooms/${joinCode}/players`), {
+      await update(ref(db, `rooms/${code}/players`), {
         [nickname]: { team: "unassigned" }
       })
       setScreen("waiting")
-    }, { onlyOnce: true })
+    } catch(e) {
+      console.error("Join error:", e)
+      alert("Trouble connecting. Check your internet and try again.")
+    }
   }
 
   const assignTeam = async (playerName, currentTeam) => {
@@ -2345,6 +2351,9 @@ ${suggestion}
             <button onClick={startGame} disabled={!allAssigned || playerList.length < 2} style={{ padding: "10px 24px", fontSize: "15px", borderRadius: "10px", background: allAssigned && playerList.length >= 2 ? "#0066ff" : "#aaa", color: "white", border: "none", cursor: allAssigned && playerList.length >= 2 ? "pointer" : "not-allowed", fontWeight: "bold" }}>
               Start Game →
             </button>
+            {playerList.length < 2 && (
+              <p style={{ color: "#cc0000", fontSize: "12px", margin: "6px 0 0" }}>⏳ Need at least 2 players to start</p>
+            )}
           </div>
         )}
         {!isHost && <p style={{ color: "#999", marginTop: "20px" }}>⏳ Waiting for host to start...</p>}
@@ -2935,7 +2944,7 @@ ${suggestion}
       <div style={{ fontFamily: "sans-serif", padding: "20px", minHeight: "100dvh", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
         <Logo onTap={handleLogoTap} center />
         <p>Enter the room code:</p>
-        <input type="text" placeholder="Room code..." value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase())} maxLength={8} style={{ padding: "10px", fontSize: "32px", borderRadius: "8px", border: "2px solid #ff6600", textAlign: "center", letterSpacing: "6px", width: "100%", maxWidth: "260px", boxSizing: "border-box" }} />
+        <input type="text" placeholder="Room code..." value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase().trim())} maxLength={8} style={{ padding: "10px", fontSize: "32px", borderRadius: "8px", border: "2px solid #ff6600", textAlign: "center", letterSpacing: "6px", width: "100%", maxWidth: "260px", boxSizing: "border-box" }} />
         <br /><br />
         <button onClick={() => setScreen("lobby")} style={{ padding: "10px 30px", fontSize: "16px", borderRadius: "8px", background: "#ccc", color: "white", border: "none", cursor: "pointer", margin: "5px" }}>← Back</button>
         <button onClick={joinGame} style={{ padding: "10px 30px", fontSize: "16px", borderRadius: "8px", background: "#ff6600", color: "white", border: "none", cursor: "pointer", margin: "5px" }}>Join →</button>
