@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.4.6"
+const VERSION = "v0.4.7"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -93,6 +93,30 @@ const TOPICS = {
     "Loki", "Venom", "Green Goblin", "Two-Face", "Bane",
     "Catwoman", "Harley Quinn", "Poison Ivy", "Mystique", "Ultron",
     "Daredevil", "Punisher", "Ghost Rider", "Silver Surfer", "Galactus",
+  ],
+  "💬 Common Phrases": [
+    "Break a Leg", "Piece of Cake", "Hit the Nail on the Head", "Under the Weather",
+    "Bite the Bullet", "Spill the Beans", "Let the Cat Out of the Bag", "The Ball is in Your Court",
+    "Barking Up the Wrong Tree", "Burn Bridges", "Cut to the Chase", "Hit the Sack",
+    "Kill Two Birds with One Stone", "On the Fence", "Pull Someone's Leg", "See Eye to Eye",
+    "Sit on the Fence", "Speak of the Devil", "The Best of Both Worlds", "Time Flies",
+    "Actions Speak Louder Than Words", "Back to the Drawing Board", "Bite Off More Than You Can Chew",
+    "Caught Red Handed", "Don't Judge a Book by Its Cover", "Every Cloud Has a Silver Lining",
+    "Hit the Road", "It Takes Two to Tango", "Jump on the Bandwagon", "Miss the Boat",
+    "No Pain No Gain", "Once in a Blue Moon", "Read Between the Lines", "Steal Someone's Thunder",
+    "The Elephant in the Room", "Through Thick and Thin", "Turn Over a New Leaf", "Under the Bus",
+    "Up in the Air", "You Can't Judge a Book by Its Cover",
+  ],
+  "😊 Everyday Things": [
+    "Morning Coffee", "Traffic Jam", "Grocery Shopping", "Taking a Shower", "Doing Laundry",
+    "Walking the Dog", "Cooking Dinner", "Watching TV", "Charging Your Phone", "Setting an Alarm",
+    "Brushing Teeth", "Making the Bed", "Taking Out the Trash", "Checking the Mail", "Paying Bills",
+    "Stuck in Traffic", "Running Late", "Waiting in Line", "Online Shopping", "Video Call",
+    "Meal Prep", "Going to the Gym", "Reading Before Bed", "Sunday Brunch", "Date Night",
+    "Road Trip", "Moving Day", "Spring Cleaning", "Backyard Barbecue", "Game Night",
+    "Birthday Party", "Movie Night", "Pizza Night", "Taco Tuesday", "Happy Hour",
+    "Morning Jog", "Evening Walk", "Afternoon Nap", "Coffee Break", "Lunch Break",
+    "Power Outage", "Flat Tire", "Missed Flight", "Lost Keys", "Dead Battery",
   ],
   "🐾 Animals": [
     "Lion", "Elephant", "Giraffe", "Penguin", "Dolphin",
@@ -941,6 +965,39 @@ const EMOJI_LIST = [
   { emoji: "🌌", keywords: ["galaxy", "milky way", "space", "stars", "cosmos", "universe", "nebula", "infinite"] },
   { emoji: "🌩️", keywords: ["lightning", "storm", "thunder", "bolt", "cloud", "electric", "flash", "strike"] },
   { emoji: "🌦️", keywords: ["partly rainy", "sun shower", "weather", "mixed", "cloud", "rain", "sun", "forecast"] },
+
+  // Everyday life & common phrases helpers
+  { emoji: "🚗", keywords: ["traffic", "drive", "car", "road trip", "commute", "flat tire", "stuck", "vehicle"] },
+  { emoji: "🛒", keywords: ["grocery", "shopping", "cart", "store", "buy", "supermarket", "checkout", "list"] },
+  { emoji: "📱", keywords: ["phone", "dead battery", "charge", "call", "text", "app", "screen", "notification"] },
+  { emoji: "⏰", keywords: ["alarm", "wake up", "morning", "late", "time", "ring", "snooze", "clock"] },
+  { emoji: "🧺", keywords: ["laundry", "washing", "clothes", "basket", "clean", "fold", "dry", "spin"] },
+  { emoji: "🍕", keywords: ["pizza night", "dinner", "friday", "delivery", "slice", "order", "family"] },
+  { emoji: "🛁", keywords: ["bath", "shower", "clean", "relax", "soak", "morning routine", "wash", "bubbles"] },
+  { emoji: "🗑️", keywords: ["trash", "garbage", "take out", "bin", "rubbish", "throw away", "waste", "recycle"] },
+  { emoji: "📬", keywords: ["mail", "check", "letter", "box", "deliver", "post", "envelope", "receive"] },
+  { emoji: "💤", keywords: ["sleep", "nap", "rest", "afternoon nap", "snooze", "tired", "bed", "dream"] },
+  { emoji: "🏋️", keywords: ["gym", "workout", "exercise", "lift", "fitness", "health", "sweat", "train"] },
+  { emoji: "🍳", keywords: ["cooking", "fry", "egg", "pan", "morning", "breakfast", "sizzle", "kitchen"] },
+  { emoji: "🐕", keywords: ["dog", "walk", "pet", "leash", "park", "fetch", "puppy", "loyal"] },
+  { emoji: "🎮", keywords: ["game night", "play", "controller", "fun", "family", "compete", "win", "console"] },
+  { emoji: "🕯️", keywords: ["power outage", "dark", "candle", "light", "blackout", "glow", "flicker", "romantic"] },
+  { emoji: "✈️", keywords: ["missed flight", "travel", "airport", "late", "plane", "ticket", "board", "gate"] },
+  { emoji: "🔑", keywords: ["lost keys", "lock", "find", "search", "misplace", "door", "unlock", "house"] },
+  { emoji: "🚌", keywords: ["bus", "commute", "public", "transit", "stop", "route", "passengers", "morning"] },
+  { emoji: "☕", keywords: ["coffee break", "morning coffee", "cafe", "espresso", "wake up", "mug", "brew"] },
+  { emoji: "🥱", keywords: ["tired", "yawn", "sleepy", "bored", "morning", "exhausted", "drowsy", "wake"] },
+  { emoji: "📦", keywords: ["moving day", "box", "pack", "ship", "deliver", "online shopping", "amazon", "unbox"] },
+  { emoji: "🧹", keywords: ["spring cleaning", "sweep", "clean", "broom", "tidy", "floor", "dust", "chores"] },
+  { emoji: "🍖", keywords: ["barbecue", "grill", "backyard", "summer", "cookout", "meat", "smoky", "outdoor"] },
+  { emoji: "🎂", keywords: ["birthday party", "celebrate", "candle", "wish", "cake", "friends", "happy birthday"] },
+  { emoji: "🌧️", keywords: ["under the weather", "rain", "sick", "grey", "gloomy", "pour", "umbrella", "damp"] },
+  { emoji: "🎭", keywords: ["break a leg", "theatre", "performance", "good luck", "stage", "act", "show"] },
+  { emoji: "🫘", keywords: ["spill the beans", "beans", "tell", "secret", "reveal", "confess", "chickpea"] },
+  { emoji: "🐘", keywords: ["elephant in the room", "big", "ignore", "obvious", "problem", "trunk", "memory"] },
+  { emoji: "🌙", keywords: ["once in a blue moon", "rare", "night", "moon", "seldom", "hardly ever", "lunar"] },
+  { emoji: "🚢", keywords: ["miss the boat", "late", "opportunity", "ship", "gone", "missed", "chance"] },
+  { emoji: "🎸", keywords: ["jump on the bandwagon", "trend", "follow", "popular", "music", "band", "join"] },
 ]
 
 const RESET_MESSAGES = [
@@ -2538,11 +2595,7 @@ ${suggestion}
           <p style={{ margin: 0, fontSize: "11px", opacity: 0.6 }}>{category}</p>
           <p style={{ margin: 0, fontSize: "12px", opacity: 0.8 }}>YOUR TOPIC</p>
           <h1 style={{ margin: "4px 0 0", fontSize: "28px" }}>{currentTopic}</h1>
-          {difficulty !== "hard" && !timerActive && !guesserActive && (
-            <button onClick={shuffleTopic} style={{ marginTop: "8px", padding: "4px 14px", fontSize: "13px", borderRadius: "8px", background: "rgba(255,255,255,0.2)", color: "white", border: "1px solid rgba(255,255,255,0.4)", cursor: shufflesLeft > 0 ? "pointer" : "not-allowed", opacity: shufflesLeft > 0 ? 1 : 0.5 }}>
-              🔀 Shuffle {difficulty === "easy" ? "∞" : shufflesLeft > 0 ? `(${shufflesLeft} left)` : "(used)"}
-            </button>
-          )}
+
         </div>
         {countdown !== null && (
           <div style={{ fontSize: "100px", fontWeight: "bold", textAlign: "center", color: teamColor, margin: "20px 0" }}>
@@ -2550,14 +2603,9 @@ ${suggestion}
           </div>
         )}
         {!timerActive && !guesserActive && countdown === null && (
-          <>
-            <p style={{ color: readyPlayers[teammate] ? "#00aa44" : "#999", fontSize: "14px", textAlign: "center", margin: "0 0 10px", fontWeight: readyPlayers[teammate] ? "bold" : "normal" }}>
-              {readyPlayers[teammate] ? `✅ ${teammate} is on the guesser screen!` : `⏳ ${teammate || "Guesser"} is heading over...`}
-            </p>
-            <button onClick={startCountdown} style={{ width: "100%", padding: "14px", fontSize: "18px", borderRadius: "12px", background: teamColor, color: "white", border: "none", cursor: "pointer", marginBottom: "16px", fontWeight: "bold" }}>
-              Start Round ▶️
-            </button>
-          </>
+          <p style={{ color: readyPlayers[teammate] ? "#00aa44" : "#999", fontSize: "13px", textAlign: "center", margin: "0 0 12px", fontWeight: readyPlayers[teammate] ? "bold" : "normal" }}>
+            {readyPlayers[teammate] ? `✅ ${teammate} is ready!` : `⏳ ${teammate || "Guesser"} is heading over...`}
+          </p>
         )}
         <div style={{ minHeight: "50px", background: "#f5f5f5", borderRadius: "12px", padding: "10px", marginBottom: "4px" }}>
           {sentEmojis.length === 0
@@ -2670,29 +2718,119 @@ ${suggestion}
   // ROLE SCREEN
   if (screen === "role") {
     const isClue = role === "clue"
+    const displayTeamName = teamNames[team] || team
     return (
-      <div style={{ fontFamily: "sans-serif", background: teamColor, minHeight: "100dvh", color: "white", padding: "20px 20px 40px", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
-        <p style={{ fontSize: "14px", letterSpacing: "2px", opacity: 0.8 }}>🔒 DON'T SHOW YOUR SCREEN</p>
-        <p style={{ fontSize: "14px", opacity: 0.7 }}>Round {currentRound} of {rounds} · {team} · {DIFFICULTIES[difficulty]?.label || "Medium"}</p>
-        <h1 style={{ fontSize: "28px", marginTop: "20px" }}>Hey {displayNickname}!</h1>
-        {isHayden && (
-          <div style={{ fontSize: "22px", fontWeight: "bold", color: "white", background: "rgba(0,0,0,0.3)", borderRadius: "10px", padding: "8px 16px", margin: "8px auto", maxWidth: "300px" }}>
-            ⚡ FINISH HIM, RAYDEN! ⚡
+      <div style={{ fontFamily: "sans-serif", background: teamColor, minHeight: "100dvh", color: "white", padding: "20px", boxSizing: "border-box", display: "flex", flexDirection: "column", overflowY: "auto" }}>
+
+        {/* Header bar */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+          <span onClick={handleLogoTap} style={{ fontSize: "16px", fontWeight: "bold", opacity: 0.9, cursor: "pointer" }}>🎯 GuessMoji</span>
+          <DifficultyBadge difficulty={difficulty} timer={null} />
+        </div>
+
+        {/* Secret warning */}
+        <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: "8px", padding: "6px 12px", textAlign: "center", marginBottom: "12px" }}>
+          <p style={{ fontSize: "12px", letterSpacing: "1.5px", margin: 0, opacity: 0.9 }}>🔒 DON'T SHOW YOUR SCREEN</p>
+        </div>
+
+        {/* Player + team info */}
+        <div style={{ textAlign: "center", marginBottom: "12px" }}>
+          <p style={{ fontSize: "13px", opacity: 0.7, margin: "0 0 2px" }}>Round {currentRound} of {rounds}</p>
+          <p style={{ fontSize: "16px", fontWeight: "bold", margin: 0 }}>{displayTeamName} · {displayNickname}</p>
+          {isHayden && (
+            <div style={{ fontSize: "16px", fontWeight: "bold", background: "rgba(0,0,0,0.3)", borderRadius: "8px", padding: "4px 12px", margin: "6px auto", display: "inline-block" }}>
+              ⚡ FINISH HIM, RAYDEN! ⚡
+            </div>
+          )}
+        </div>
+
+        {/* Role badge */}
+        <div style={{ textAlign: "center", marginBottom: "16px" }}>
+          <div style={{ fontSize: "44px", fontWeight: "bold" }}>{isClue ? "👁️" : "👂"}</div>
+          <div style={{ fontSize: "22px", fontWeight: "bold", letterSpacing: "2px", marginTop: "4px" }}>
+            {isClue ? "CLUE GIVER" : "GUESSER"}
           </div>
+        </div>
+
+        {isClue ? (
+          <>
+            {/* Topic card */}
+            <div style={{ background: "rgba(0,0,0,0.25)", borderRadius: "14px", padding: "16px", marginBottom: "12px", textAlign: "center" }}>
+              <p style={{ fontSize: "11px", opacity: 0.7, letterSpacing: "1px", margin: "0 0 4px" }}>{category}</p>
+              <p style={{ fontSize: "12px", opacity: 0.8, margin: "0 0 6px" }}>YOUR TOPIC</p>
+              <h1 style={{ fontSize: "32px", margin: "0 0 8px", fontWeight: "bold" }}>{currentTopic}</h1>
+              {difficulty !== "hard" && (
+                <button onClick={shuffleTopic} style={{ padding: "4px 14px", fontSize: "12px", borderRadius: "8px", background: "rgba(255,255,255,0.2)", color: "white", border: "1px solid rgba(255,255,255,0.4)", cursor: shufflesLeft > 0 ? "pointer" : "not-allowed", opacity: shufflesLeft > 0 ? 1 : 0.5 }}>
+                  🔀 Shuffle {difficulty === "easy" ? "∞" : shufflesLeft > 0 ? `(${shufflesLeft} left)` : "(used)"}
+                </button>
+              )}
+            </div>
+
+            {/* Instructions */}
+            <div style={{ background: "rgba(0,0,0,0.15)", borderRadius: "12px", padding: "12px 16px", marginBottom: "12px" }}>
+              <p style={{ fontSize: "13px", fontWeight: "bold", margin: "0 0 6px" }}>How to give clues:</p>
+              <p style={{ fontSize: "13px", opacity: 0.9, margin: "0 0 4px", lineHeight: "1.4" }}>
+                🔍 Type a word in the search box to find emojis
+              </p>
+              <p style={{ fontSize: "13px", opacity: 0.9, margin: "0 0 4px", lineHeight: "1.4" }}>
+                👆 Tap an emoji to send it to {teammate || "your teammate"}
+              </p>
+              <p style={{ fontSize: "13px", opacity: 0.9, margin: 0, lineHeight: "1.4" }}>
+                🚫 No words, sounds, or pointing at the screen!
+              </p>
+            </div>
+
+            {/* Emoji hint tip */}
+            <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: "10px", padding: "8px 14px", marginBottom: "16px" }}>
+              <p style={{ fontSize: "12px", opacity: 0.85, margin: 0 }}>
+                💡 Tip: Try searching single words like <em>"fire"</em>, <em>"big"</em>, or <em>"old"</em>
+              </p>
+            </div>
+
+            {/* Ready button — triggers countdown */}
+            <button
+              onClick={async () => {
+                await update(ref(db, `rooms/${roomCode}/ready`), { [nickname]: true })
+                await startCountdown()
+                setScreen("cluegiver")
+              }}
+              style={{ width: "100%", padding: "16px", fontSize: "20px", borderRadius: "14px", background: "white", color: teamColor, border: "none", cursor: "pointer", fontWeight: "bold", marginTop: "auto" }}
+            >
+              I'm Ready — Start Round ▶️
+            </button>
+          </>
+        ) : (
+          <>
+            {/* Guesser instructions */}
+            <div style={{ background: "rgba(0,0,0,0.15)", borderRadius: "12px", padding: "16px", marginBottom: "12px", flex: 1 }}>
+              <p style={{ fontSize: "13px", fontWeight: "bold", margin: "0 0 10px" }}>Your job as Guesser:</p>
+              <p style={{ fontSize: "13px", opacity: 0.9, margin: "0 0 8px", lineHeight: "1.5" }}>
+                👀 Watch for emojis from <strong>{teammate || "your teammate"}</strong>
+              </p>
+              <p style={{ fontSize: "13px", opacity: 0.9, margin: "0 0 8px", lineHeight: "1.5" }}>
+                ⌨️ Type your best guess in the box and tap <strong>Submit</strong>
+              </p>
+              <p style={{ fontSize: "13px", opacity: 0.9, margin: "0 0 8px", lineHeight: "1.5" }}>
+                💡 Use the hint button if you're stuck
+              </p>
+              <p style={{ fontSize: "13px", opacity: 0.9, margin: 0, lineHeight: "1.5" }}>
+                ⏱️ {difficulty === "easy" ? "No timer — take your time!" : `You have ${DIFFICULTIES[difficulty]?.timerSeconds}s once the round starts`}
+              </p>
+            </div>
+
+            {/* Category hint for guesser */}
+            <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: "10px", padding: "10px 14px", marginBottom: "16px", textAlign: "center" }}>
+              <p style={{ fontSize: "12px", opacity: 0.7, margin: "0 0 2px" }}>CATEGORY</p>
+              <p style={{ fontSize: "15px", fontWeight: "bold", margin: 0 }}>{category}</p>
+            </div>
+
+            {/* Auto-advance with tap option */}
+            <GuesserAutoReady onReady={async () => {
+              await update(ref(db, `rooms/${roomCode}/ready`), { [nickname]: true })
+              setScreen("guesser")
+            }} teamColor={teamColor} />
+          </>
         )}
-        <p style={{ fontSize: "20px", opacity: 0.9 }}>You are the</p>
-        <div style={{ fontSize: "52px", fontWeight: "bold", margin: "20px 0" }}>{isClue ? "👁️ CLUE GIVER" : "👂 GUESSER"}</div>
-        <p style={{ fontSize: "18px", opacity: 0.85, maxWidth: "300px", margin: "0 auto" }}>
-          {isClue
-            ? `Search for emojis and send them to ${teammate || "your teammate"} one at a time!`
-            : `Watch for emojis from ${teammate || "your teammate"} and type your guess!`}
-        </p>
-        <br /><br />
-        <button onClick={() => setScreen(isClue ? "cluegiver" : "guesser")} style={{ padding: "14px 40px", fontSize: "20px", borderRadius: "12px", background: "white", color: teamColor, border: "none", cursor: "pointer", fontWeight: "bold" }}>
-          I'm Ready ✊
-        </button>
-        <br /><br />
-        <span onClick={handleLogoTap} style={{ fontSize: "14px", opacity: 0.6, cursor: "pointer", textDecoration: "underline" }}>🎯 GuessMoji</span>
       </div>
     )
   }
