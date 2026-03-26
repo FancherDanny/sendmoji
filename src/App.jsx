@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.4.9"
+const VERSION = "v0.5.0"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -1561,7 +1561,9 @@ export default function App() {
       }
 
       if (data.status === "ended") {
-        resetAllState()
+        if (screenRef.current !== "home") {
+          resetAllState()
+        }
         return
       }
 
@@ -1724,6 +1726,7 @@ export default function App() {
     countdownRef.current = null
     timerActiveRef.current = false
     difficultyRef.current = "medium"
+    // Core game state
     setTeam(""); setScreen("home"); setGameMode("sameroom"); setDifficulty("medium")
     setRounds(3); setCurrentRound(1); setScores({ "Team 1": 0, "Team 2": 0, "Team 3": 0 })
     setJoinCode(""); setSearch(""); setSentEmojis([]); setTimer(60)
@@ -1732,8 +1735,17 @@ export default function App() {
     setGuesserTimer(60); setGuesserActive(false)
     setCategories([]); setCategory(""); setCurrentTopic(""); setRoomCode(""); setRole("")
     setIsHost(false); setPlayers({}); setTeammate("")
-    setHintUsed(false); setHintTexts([])
+    // Hints & suggestions
+    setHintUsed(false); setHintTexts([]); setHintCount(0)
+    // UI state
     setTeamNames({ "Team 1": "Team 1", "Team 2": "Team 2", "Team 3": "Team 3" }); setEditingTeam(null)
+    setShowResetConfirm(false); setResetMessage("")
+    // Round state
+    setPingEmoji(null); setEmojiGroups([[]]); setForfeitRequested(false)
+    setTeammateForfeit(false); setShufflesLeft(0); setTimerPaused(false)
+    setTappedEmoji(null); setSuggestedEmoji(null); setSuggestionUsed(false)
+    setCheatVisible(false); setRoundStartTime(null); setMuting(false)
+    setSharing(false)
   }
 
   const endRound = async (won) => {
@@ -1756,11 +1768,16 @@ export default function App() {
   }
 
   const confirmReset = async () => {
-    if (roomCode) {
-      await update(ref(db, `rooms/${roomCode}`), { status: "ended" })
-    }
-    resetAllState()
     setShowResetConfirm(false)
+    const code = roomCode  // capture before reset clears it
+    resetAllState()        // reset immediately — don't wait for Firebase
+    if (code) {
+      try {
+        await update(ref(db, `rooms/${code}`), { status: "ended" })
+      } catch(e) {
+        console.log("Reset Firebase write error:", e)
+      }
+    }
   }
 
   const createGame = async () => {
