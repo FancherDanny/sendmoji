@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push } from "firebase/database"
 
-const VERSION = "v0.4.5"
+const VERSION = "v0.4.6"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -852,6 +852,95 @@ const EMOJI_LIST = [
   { emoji: "🦅", keywords: ["pennsylvania", "new york", "america", "eagle", "freedom", "bald", "soar", "patriot"] },
   { emoji: "🍎", keywords: ["new york", "apple", "big apple", "red", "teacher", "juice", "orchard", "newton"] },
   { emoji: "🎭", keywords: ["new york", "broadway", "theatre", "drama", "performance", "show", "stage", "act"] },
+
+  // Mythology & Fantasy
+  { emoji: "⚡", keywords: ["zeus", "thunder god", "olympus", "greek", "mythology", "power", "lightning", "bolt"] },
+  { emoji: "🔱", keywords: ["poseidon", "trident", "sea god", "neptune", "ocean", "greek", "mythology", "waves"] },
+  { emoji: "🏛️", keywords: ["olympus", "greek", "rome", "ancient", "temple", "column", "mythology", "gods"] },
+  { emoji: "🐍", keywords: ["medusa", "serpent", "snake", "greek", "myth", "gorgon", "hiss", "slither"] },
+  { emoji: "🌊", keywords: ["poseidon", "neptune", "sea", "ocean", "wave", "flood", "greek", "mythology"] },
+  { emoji: "🦁", keywords: ["hercules", "nemean lion", "strength", "courage", "hero", "greek", "myth", "brave"] },
+  { emoji: "☀️", keywords: ["apollo", "ra", "sun god", "helios", "light", "golden", "rays", "deity"] },
+  { emoji: "🌙", keywords: ["artemis", "diana", "moon goddess", "night", "hunt", "crescent", "lunar", "goddess"] },
+  { emoji: "🔥", keywords: ["hephaestus", "vulcan", "forge", "prometheus", "fire god", "flame", "smith", "volcano"] },
+  { emoji: "❤️", keywords: ["aphrodite", "venus", "love goddess", "romance", "beauty", "desire", "cupid", "heart"] },
+  { emoji: "🦉", keywords: ["athena", "minerva", "wisdom", "owl", "goddess", "strategy", "war", "knowledge"] },
+  { emoji: "🌿", keywords: ["demeter", "harvest", "nature goddess", "earth", "growth", "crop", "fertility", "green"] },
+  { emoji: "🍷", keywords: ["dionysus", "bacchus", "wine god", "grape", "party", "feast", "roman", "greek"] },
+  { emoji: "🐴", keywords: ["centaur", "pegasus", "horse", "myth", "half human", "chiron", "fly", "wings"] },
+  { emoji: "🦅", keywords: ["zeus", "eagle", "king of gods", "olympus", "greek", "powerful", "sky", "thunder"] },
+
+  // Technology & Modern
+  { emoji: "💻", keywords: ["laptop", "computer", "code", "work", "tech", "screen", "keyboard", "program", "developer"] },
+  { emoji: "🖨️", keywords: ["printer", "print", "paper", "office", "ink", "document", "copy", "laser"] },
+  { emoji: "⌨️", keywords: ["keyboard", "type", "code", "computer", "keys", "input", "mechanical", "click"] },
+  { emoji: "🖱️", keywords: ["mouse", "click", "computer", "cursor", "scroll", "point", "device", "wireless"] },
+  { emoji: "💾", keywords: ["floppy disk", "save", "old", "retro", "storage", "data", "90s", "computer"] },
+  { emoji: "📀", keywords: ["dvd", "cd", "disc", "movie", "music", "data", "optical", "blue ray", "burn"] },
+  { emoji: "📟", keywords: ["pager", "beeper", "retro", "message", "90s", "call", "buzz", "old school"] },
+  { emoji: "☎️", keywords: ["telephone", "call", "rotary", "old phone", "ring", "landline", "dial", "classic"] },
+  { emoji: "📠", keywords: ["fax", "machine", "office", "paper", "send", "old", "document", "business"] },
+  { emoji: "🔋", keywords: ["battery", "power", "charge", "energy", "low", "electric", "full", "drain"] },
+  { emoji: "🔌", keywords: ["plug", "power", "electric", "charge", "socket", "outlet", "cord", "wire"] },
+  { emoji: "💿", keywords: ["cd", "compact disc", "music", "album", "burn", "data", "silver", "spin"] },
+  { emoji: "🖲️", keywords: ["trackball", "mouse", "computer", "cursor", "retro", "roll", "control", "device"] },
+  { emoji: "📲", keywords: ["smartphone", "mobile", "notification", "app", "phone", "touch", "screen", "swipe"] },
+  { emoji: "🛜", keywords: ["wifi", "wireless", "internet", "signal", "network", "connect", "router", "online"] },
+  { emoji: "🤳", keywords: ["selfie", "phone", "photo", "camera", "arm", "snap", "instagram", "social media"] },
+
+  // Emotions & Gestures expanded
+  { emoji: "🥺", keywords: ["pleading", "puppy eyes", "beg", "cute", "sad", "adorable", "please", "emotional"] },
+  { emoji: "😤", keywords: ["frustrated", "huff", "steam", "annoyed", "proud", "nose", "determined", "angry"] },
+  { emoji: "🤩", keywords: ["star struck", "amazed", "excited", "wow", "celebrity", "fan", "gleam", "dazzled"] },
+  { emoji: "🥴", keywords: ["woozy", "dizzy", "drunk", "confused", "spinning", "wobbly", "tipsy", "dazed"] },
+  { emoji: "😵", keywords: ["dizzy", "dead", "spinning", "x eyes", "shocked", "out cold", "faint", "concussed"] },
+  { emoji: "🤢", keywords: ["nausea", "sick", "gross", "disgusting", "green", "queasy", "vomit", "ill"] },
+  { emoji: "🤮", keywords: ["vomit", "sick", "gross", "puke", "ill", "disgusting", "throw up", "nausea"] },
+  { emoji: "😤", keywords: ["angry", "huff", "steam", "frustrated", "annoyed", "nose", "snort", "pout"] },
+  { emoji: "🫠", keywords: ["melting", "hot", "embarrassed", "overwhelmed", "nervous", "awkward", "dissolve"] },
+  { emoji: "🫨", keywords: ["shaking", "nervous", "scared", "vibrate", "anxious", "rattled", "trembling"] },
+  { emoji: "🫶", keywords: ["heart hands", "love", "care", "together", "support", "hug", "warmth", "affection"] },
+  { emoji: "🤜", keywords: ["fist bump", "punch", "right", "strong", "fight", "bump", "hit", "connect"] },
+  { emoji: "🤛", keywords: ["fist bump", "left", "punch", "strong", "fight", "bump", "hit", "connect"] },
+  { emoji: "🫵", keywords: ["point", "you", "accuse", "choose", "select", "direct", "finger", "indicate"] },
+  { emoji: "🫴", keywords: ["open hand", "offer", "give", "palm", "receive", "hand out", "present", "share"] },
+
+  // Food expanded
+  { emoji: "🫕", keywords: ["pot", "fondue", "hotpot", "stew", "cook", "melt", "dip", "broth", "simmer"] },
+  { emoji: "🥘", keywords: ["paella", "pan", "stew", "rice", "spanish", "casserole", "cook", "pot", "mixed"] },
+  { emoji: "🍲", keywords: ["stew", "pot", "soup", "cook", "hotpot", "broth", "simmer", "warm", "bowl"] },
+  { emoji: "🥗", keywords: ["salad", "green", "healthy", "fresh", "vegetable", "bowl", "toss", "crisp", "diet"] },
+  { emoji: "🧆", keywords: ["falafel", "chickpea", "ball", "fried", "middle eastern", "crispy", "protein", "pita"] },
+  { emoji: "🫔", keywords: ["tamale", "wrap", "corn", "mexican", "steam", "masa", "filling", "leaf", "husk"] },
+  { emoji: "🥫", keywords: ["can", "tin", "soup", "canned", "preserve", "campbell", "store", "shelf", "food"] },
+  { emoji: "🫖", keywords: ["teapot", "tea", "brew", "pour", "ceramic", "kettle", "hot", "steep", "british"] },
+  { emoji: "🧊", keywords: ["ice", "cold", "cube", "freeze", "cool", "chill", "glass", "drink", "frozen"] },
+  { emoji: "🍱", keywords: ["bento", "japanese", "box", "lunch", "meal", "compartment", "sushi", "rice", "packed"] },
+  { emoji: "🍛", keywords: ["curry", "indian", "spicy", "rice", "sauce", "yellow", "hot", "flavor", "bowl"] },
+  { emoji: "🍤", keywords: ["shrimp", "fried", "seafood", "tempura", "japanese", "crispy", "prawn", "batter"] },
+  { emoji: "🧁", keywords: ["cupcake", "frosting", "sweet", "bake", "birthday", "sprinkle", "small", "vanilla"] },
+  { emoji: "🍡", keywords: ["dango", "japanese", "skewer", "sweet", "ball", "rice", "festival", "pink", "dessert"] },
+  { emoji: "🍧", keywords: ["shaved ice", "cold", "sweet", "summer", "flavored", "japanese", "kakigori", "dessert"] },
+  { emoji: "🍨", keywords: ["ice cream", "scoop", "cold", "sweet", "vanilla", "bowl", "dessert", "soft serve"] },
+  { emoji: "🎂", keywords: ["birthday cake", "celebrate", "candle", "sweet", "layer", "party", "frosting", "wish"] },
+
+  // Nature expanded
+  { emoji: "🌾", keywords: ["wheat", "grain", "harvest", "farm", "field", "golden", "bread", "cereal", "autumn"] },
+  { emoji: "🪷", keywords: ["lotus", "flower", "pink", "water", "zen", "buddhism", "bloom", "serene", "spiritual"] },
+  { emoji: "🌹", keywords: ["rose", "red", "love", "romance", "thorn", "beauty", "flower", "valentine", "garden"] },
+  { emoji: "🌷", keywords: ["tulip", "spring", "pink", "flower", "dutch", "netherlands", "bloom", "garden"] },
+  { emoji: "🌼", keywords: ["blossom", "yellow", "daisy", "spring", "flower", "bright", "garden", "fresh"] },
+  { emoji: "🪴", keywords: ["plant", "pot", "indoor", "green", "grow", "home", "houseplant", "leaf", "succulent"] },
+  { emoji: "🎍", keywords: ["bamboo", "japanese", "new year", "green", "lucky", "tall", "japan", "decoration"] },
+  { emoji: "🍃", keywords: ["leaf", "green", "wind", "flutter", "nature", "tree", "fresh", "blow", "organic"] },
+  { emoji: "🌱", keywords: ["sprout", "grow", "new", "plant", "seed", "fresh", "begin", "nature", "young"] },
+  { emoji: "🌏", keywords: ["asia", "australia", "pacific", "earth", "globe", "planet", "world", "map"] },
+  { emoji: "🌎", keywords: ["americas", "north", "south", "earth", "globe", "planet", "world", "western"] },
+  { emoji: "🪐", keywords: ["saturn", "planet", "ring", "space", "orbit", "solar system", "astronomy", "gas giant"] },
+  { emoji: "🌠", keywords: ["shooting star", "wish", "meteor", "night", "sky", "streak", "falling", "comet"] },
+  { emoji: "🌌", keywords: ["galaxy", "milky way", "space", "stars", "cosmos", "universe", "nebula", "infinite"] },
+  { emoji: "🌩️", keywords: ["lightning", "storm", "thunder", "bolt", "cloud", "electric", "flash", "strike"] },
+  { emoji: "🌦️", keywords: ["partly rainy", "sun shower", "weather", "mixed", "cloud", "rain", "sun", "forecast"] },
 ]
 
 const RESET_MESSAGES = [
@@ -1717,12 +1806,47 @@ export default function App() {
 
   // Whole-word keyword match: "man" won't match "mango" or "romance"
   const searchLower = search.trim().toLowerCase()
-  const filteredEmojis = searchLower === ""
-    ? []
-    : EMOJI_LIST.filter(e => e.keywords.some(k => {
+
+  const filteredEmojis = (() => {
+    if (searchLower === "") return []
+
+    // Get topic words for boosting relevant emojis
+    const topicWords = currentTopic
+      ? currentTopic.toLowerCase().replace(/[^a-z ]/g, "").split(" ").filter(w => w.length > 2)
+      : []
+
+    const scoreEmoji = (e) => {
+      let score = 0
+      for (const k of e.keywords) {
         const words = k.split(" ")
-        return words.some(w => w === searchLower || w.startsWith(searchLower))
-      }))
+        // Exact word match — highest score
+        if (words.some(w => w === searchLower)) { score += 10; break }
+        // Prefix match — high score
+        if (words.some(w => w.startsWith(searchLower))) { score += 7; break }
+        // Contains match — medium score (fallback)
+        if (k.includes(searchLower)) { score += 3; break }
+      }
+      // Boost if emoji is relevant to current topic
+      if (score > 0 && topicWords.length > 0) {
+        const kws = e.keywords.join(" ")
+        if (topicWords.some(tw => kws.includes(tw))) score += 2
+      }
+      return score
+    }
+
+    const scored = EMOJI_LIST
+      .map(e => ({ ...e, score: scoreEmoji(e) }))
+      .filter(e => e.score > 0)
+      .sort((a, b) => b.score - a.score)
+
+    // Deduplicate by emoji character
+    const seen = new Set()
+    return scored.filter(e => {
+      if (seen.has(e.emoji)) return false
+      seen.add(e.emoji)
+      return true
+    })
+  })()
 
   const maxEmojis = difficulty === "hard" ? 5 : Infinity
   // Check if teammate has requested forfeit
