@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push, get } from "firebase/database"
 
-const VERSION = "v0.5.3"
+const VERSION = "v0.5.7"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -1072,6 +1072,9 @@ const CHEAT_MESSAGES = {
   carrie:   "💖 CFanch1 activated. Tap the footer for a secret hint...",
   chey:     "💍 Something sparkly is waiting... Tap it for a hint.",
   delicia:  "🎲 The Dungeon Master has arrived. Tap the footer for a secret hint.",
+  kelsey:   "💕 Get em Babe! Extra hints are locked and loaded.",
+  bmw:      "🍆 BigTenNotSports unlocked. Extra hints ready.",
+  mary:     "🐶🐶🐶 Mary's here! The dogs are everywhere...",
 }
 
 const ONBOARDING_CARDS = [
@@ -1098,6 +1101,19 @@ const ONBOARDING_CARDS = [
     title: "Beat the Clock",
     desc: "Guess correctly before time runs out to score a point. Most points wins!",
     bg: "#cc0000",
+  },
+  {
+    emoji: "💡",
+    title: "Good to Know",
+    desc: "A few extras worth knowing about.",
+    bg: "#444455",
+    tips: [
+      { icon: "↵",  text: "New Line — group emojis into lines for clarity" },
+      { icon: "💡", text: "Hints — reveals a letter clue (costs time on Medium)" },
+      { icon: "🆓", text: "Freemoji — one free emoji suggestion per round (Easy only)" },
+      { icon: "🏳️", text: "Forfeit — both players must agree to skip a round" },
+      { icon: "🔊", text: "Music — mute or unmute background music anytime" },
+    ],
   },
 ]
 
@@ -1330,18 +1346,14 @@ async function shareScoreCard({ scores, topic, sentEmojis, correct, rounds, curr
 }
 
 function GuesserAutoReady({ onReady, teamColor }) {
-  const [secs, setSecs] = useState(4)
-  useEffect(() => {
-    if (secs <= 0) { onReady(); return }
-    const t = setTimeout(() => setSecs(s => s - 1), 1000)
-    return () => clearTimeout(t)
-  }, [secs])
+  // No auto-advance — clue giver starting the round will trigger countdown
+  // which fires on both screens via Firebase listener
   return (
     <div style={{ textAlign: "center", marginTop: "auto" }}>
-      <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.6)", marginBottom: "8px" }}>
-        Round starts in {secs}s...
+      <div style={{ fontSize: "14px", color: "rgba(255,255,255,0.7)", marginBottom: "12px" }}>
+        ⏳ Waiting for clue giver to start...
       </div>
-      <button onClick={() => setSecs(0)} style={{ padding: "14px 40px", fontSize: "20px", borderRadius: "12px", background: "white", color: teamColor, border: "none", cursor: "pointer", fontWeight: "bold" }}>
+      <button onClick={onReady} style={{ padding: "14px 40px", fontSize: "20px", borderRadius: "12px", background: "white", color: teamColor, border: "none", cursor: "pointer", fontWeight: "bold" }}>
         I'm Ready ✊
       </button>
     </div>
@@ -1377,6 +1389,9 @@ function Footer({ nickname, onHint, onShowCredits }) {
   const isCarrie = nl === "carrie"
   const isChey = nl === "chey"
   const isDelicia = nl === "delicia"
+  const isKelsey = nl === "kelsey"
+  const isBMW = nl === "bmw"
+  const isMary = nl === "mary"
 
   return (
     <div style={{ textAlign: "center", marginTop: "32px", paddingBottom: "16px" }}>
@@ -1419,6 +1434,21 @@ function Footer({ nickname, onHint, onShowCredits }) {
           style={{ fontSize: "11px", color: "#9b59b6", marginTop: "4px", cursor: "pointer", textDecoration: "underline" }}
         >
           🎲 Dungeon Master
+        </div>
+      )}
+      {isKelsey && (
+        <div style={{ fontSize: "11px", color: "#ff69b4", marginTop: "4px" }}>
+          💕 Get em Babe!
+        </div>
+      )}
+      {isBMW && (
+        <div style={{ fontSize: "11px", color: "#555", marginTop: "4px" }}>
+          🍆 BigTenNotSports
+        </div>
+      )}
+      {isMary && (
+        <div style={{ fontSize: "13px", marginTop: "4px" }}>
+          🐶🐕🦮🐩🐾
         </div>
       )}
     </div>
@@ -2052,14 +2082,17 @@ export default function App() {
   const isChey = nickLower === "chey"
   const isDelicia = nickLower === "delicia"
   const isFanch = nickLower === "fanch"
+  const isKelsey = nickLower === "kelsey"
+  const isBMW = nickLower === "bmw"
+  const isMary = nickLower === "mary"
 
   // Justin gets display name override
   const displayNickname = isJustin ? "🚀 MrSpacemanGuy" : nickname
 
   // Hint count max — Mamabear +5, Justin +2, others get easter egg hints via footer
   const maxHints = difficulty === "easy"
-    ? (isMamabear ? 7 : isJustin ? 4 : 2)
-    : (isMamabear ? 6 : isJustin ? 3 : 1)
+    ? (isMamabear ? 7 : isJustin ? 4 : isKelsey ? 4 : isBMW ? 4 : 2)
+    : (isMamabear ? 6 : isJustin ? 3 : isKelsey ? 3 : isBMW ? 3 : 1)
   const hintsLeft = maxHints - hintCount
 
   const useHint = async () => {
@@ -2086,7 +2119,7 @@ export default function App() {
     await update(ref(db, `rooms/${roomCode}`), { hints: newHints, hint: hintMsg })
   }
 
-  // Suggest an emoji for Easy mode
+  // Freemoji — like a free space in bingo, one per round
   const suggestEmoji = () => {
     if (suggestionUsed) return
     // Find emojis relevant to the current topic
@@ -2158,9 +2191,20 @@ export default function App() {
 
         {/* Card content */}
         <div>
-          <div style={{ fontSize: "100px", marginBottom: "24px" }}>{card.emoji}</div>
-          <h1 style={{ fontSize: "32px", fontWeight: "bold", margin: "0 0 16px" }}>{card.title}</h1>
-          <p style={{ fontSize: "18px", opacity: 0.9, lineHeight: "1.5", maxWidth: "300px", margin: "0 auto" }}>{card.desc}</p>
+          <div style={{ fontSize: card.tips ? "60px" : "100px", marginBottom: "16px" }}>{card.emoji}</div>
+          <h1 style={{ fontSize: "28px", fontWeight: "bold", margin: "0 0 10px" }}>{card.title}</h1>
+          {card.tips ? (
+            <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: "12px", padding: "12px 16px", textAlign: "left", maxWidth: "320px", margin: "0 auto" }}>
+              {card.tips.map(({ icon, text }, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "10px", marginBottom: i < card.tips.length - 1 ? "10px" : "0" }}>
+                  <span style={{ fontSize: "18px", minWidth: "24px", textAlign: "center" }}>{icon}</span>
+                  <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.9)", lineHeight: "1.4" }}>{text}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p style={{ fontSize: "18px", opacity: 0.9, lineHeight: "1.5", maxWidth: "300px", margin: "0 auto" }}>{card.desc}</p>
+          )}
         </div>
 
         {/* Buttons */}
@@ -2365,6 +2409,11 @@ ${suggestion}
     return (
       <div style={{ fontFamily: "sans-serif", padding: "20px", maxWidth: "400px", margin: "0 auto", textAlign: "center" }}>
         <Logo onTap={handleLogoTap} center />
+        {isMary && (
+          <div style={{ fontSize: "22px", letterSpacing: "3px", textAlign: "center", margin: "8px 0" }}>
+            🐾🐶🐕🦮🐩🐾🐶🐕
+          </div>
+        )}
         <div style={{ background: gotIt ? "#e6ffe6" : "#ffe6e6", border: `2px solid ${gotIt ? "#00aa44" : "#cc0000"}`, borderRadius: "16px", padding: "24px", margin: "16px 0" }}>
           <div style={{ fontSize: "60px" }}>{gotIt ? "🎉" : "⏰"}</div>
           <h2 style={{ color: gotIt ? "#00aa44" : "#cc0000", margin: "8px 0" }}>{gotIt ? "Got it!" : "Time's Up!"}</h2>
@@ -2513,6 +2562,11 @@ ${suggestion}
             <DifficultyBadge difficulty={difficulty} timer={guesserTimer} />
           </div>
         </div>
+        {isMary && (
+          <div style={{ fontSize: "22px", letterSpacing: "3px", textAlign: "center", margin: "4px 0", opacity: 0.7 }}>
+            🐾🐶🐕🦮🐩🐾🐶🐕
+          </div>
+        )}
         <div style={{ background: "#f9f9f9", border: `2px solid ${teamColor}`, borderRadius: "12px", padding: "16px", margin: "16px 0", minHeight: "80px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
             <p style={{ margin: 0, fontSize: "12px", color: teamColor, letterSpacing: "1px" }}>CLUES FROM {teammate.toUpperCase() || "YOUR TEAMMATE"}</p>
@@ -2649,6 +2703,11 @@ ${suggestion}
           <h1 style={{ margin: "4px 0 0", fontSize: "28px" }}>{currentTopic}</h1>
 
         </div>
+        {isMary && (
+          <div style={{ fontSize: "22px", letterSpacing: "3px", textAlign: "center", margin: "4px 0", opacity: 0.7 }}>
+            🐾🐶🐕🦮🐩🐾🐶🐕
+          </div>
+        )}
         {countdown !== null && (
           <div style={{ fontSize: "100px", fontWeight: "bold", textAlign: "center", color: teamColor, margin: "20px 0" }}>
             {countdownWords[countdown]}
@@ -2746,7 +2805,7 @@ ${suggestion}
               disabled={suggestionUsed}
               style={{ padding: "8px 16px", fontSize: "14px", borderRadius: "10px", background: suggestionUsed ? "#f0f0f0" : "#e8f4ff", color: suggestionUsed ? "#aaa" : "#0066ff", border: `1px solid ${suggestionUsed ? "#ddd" : "#0066ff"}`, cursor: suggestionUsed ? "not-allowed" : "pointer", fontWeight: "bold", whiteSpace: "nowrap" }}
             >
-              {suggestionUsed ? "✨ Suggested!" : "✨ Suggest Emoji"}
+              {suggestionUsed ? "🆓 Freemoji used!" : "🆓 Freemoji"}
             </button>
             {suggestedEmoji && (
               <button
@@ -2878,6 +2937,9 @@ ${suggestion}
               await update(ref(db, `rooms/${roomCode}/ready`), { [nickname]: true })
               setScreen("guesser")
             }} teamColor={teamColor} />
+            <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", marginTop: "10px", textAlign: "center" }}>
+              The round will start when your clue giver is ready
+            </p>
           </>
         )}
       </div>
