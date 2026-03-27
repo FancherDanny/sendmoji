@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push, get } from "firebase/database"
 
-const VERSION = "v0.5.2"
+const VERSION = "v0.5.3"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -1454,6 +1454,7 @@ export default function App() {
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [resetMessage, setResetMessage] = useState("")
   const [categories, setCategories] = useState([])
+  const [category, setCategory] = useState("")
   const [currentTopic, setCurrentTopic] = useState("")
   const [players, setPlayers] = useState({})
   const [receivedEmojis, setReceivedEmojis] = useState([])
