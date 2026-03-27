@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push, get } from "firebase/database"
 
-const VERSION = "v0.5.7"
+const VERSION = "v0.5.8"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -1075,6 +1075,7 @@ const CHEAT_MESSAGES = {
   kelsey:   "💕 Get em Babe! Extra hints are locked and loaded.",
   bmw:      "🍆 BigTenNotSports unlocked. Extra hints ready.",
   mary:     "🐶🐶🐶 Mary's here! The dogs are everywhere...",
+  "2428588": "🔐 Admin mode activated.",
 }
 
 const ONBOARDING_CARDS = [
@@ -1513,6 +1514,9 @@ export default function App() {
   const [editingName, setEditingName] = useState("")
   const [difficulty, setDifficulty] = useState("medium")
   const [showCredits, setShowCredits] = useState(false)
+  const [showAdmin, setShowAdmin] = useState(false)
+  const [adminRooms, setAdminRooms] = useState(null)
+  const [adminLoading, setAdminLoading] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [onboardingCard, setOnboardingCard] = useState(0)
   const [suggestion, setSuggestion] = useState("")
@@ -2083,6 +2087,7 @@ export default function App() {
   const isDelicia = nickLower === "delicia"
   const isFanch = nickLower === "fanch"
   const isKelsey = nickLower === "kelsey"
+  const isAdmin = nickLower === "2428588"
   const isBMW = nickLower === "bmw"
   const isMary = nickLower === "mary"
 
@@ -2131,6 +2136,87 @@ export default function App() {
     const pick = pool[Math.floor(Math.random() * pool.length)]
     setSuggestedEmoji(pick.emoji)
     setSuggestionUsed(true)
+  }
+
+  // ADMIN SCREEN
+  if (showAdmin) {
+    const active = (adminRooms || []).filter(r => !["ended", "gameover"].includes(r.status))
+    const inactive = (adminRooms || []).filter(r => ["ended", "gameover"].includes(r.status))
+    const statusColor = (s) => {
+      if (s === "playing" || s === "countdown") return "#00aa44"
+      if (s === "waiting") return "#0066ff"
+      if (s === "roundend" || s === "nextround") return "#ff9900"
+      return "#999"
+    }
+    return (
+      <div style={{ fontFamily: "sans-serif", padding: "20px", maxWidth: "400px", margin: "0 auto", minHeight: "100dvh", boxSizing: "border-box" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+          <h2 style={{ margin: 0, fontSize: "20px" }}>🔐 Admin</h2>
+          <button onClick={() => setShowAdmin(false)} style={{ padding: "6px 14px", fontSize: "14px", borderRadius: "8px", background: "#eee", border: "none", cursor: "pointer" }}>← Back</button>
+        </div>
+
+        {adminLoading ? (
+          <p style={{ textAlign: "center", color: "#999" }}>Loading rooms...</p>
+        ) : (
+          <>
+            {/* Summary */}
+            <div style={{ display: "flex", gap: "10px", marginBottom: "16px" }}>
+              {[
+                { label: "Total Rooms", value: (adminRooms || []).length, color: "#0066ff" },
+                { label: "Active", value: active.length, color: "#00aa44" },
+                { label: "Ended", value: inactive.length, color: "#999" },
+              ].map(({ label, value, color }) => (
+                <div key={label} style={{ flex: 1, background: "#f5f5f5", borderRadius: "10px", padding: "10px", textAlign: "center", border: `2px solid ${color}` }}>
+                  <div style={{ fontSize: "24px", fontWeight: "bold", color }}>{value}</div>
+                  <div style={{ fontSize: "11px", color: "#999" }}>{label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Active rooms */}
+            {active.length > 0 && (
+              <>
+                <p style={{ fontSize: "12px", color: "#999", letterSpacing: "1px", margin: "0 0 8px" }}>ACTIVE ROOMS</p>
+                {active.map(r => (
+                  <div key={r.code} style={{ background: "#f9f9f9", borderRadius: "10px", padding: "12px", marginBottom: "8px", border: `2px solid ${statusColor(r.status)}` }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                      <span style={{ fontWeight: "bold", fontSize: "16px", letterSpacing: "2px" }}>{r.code}</span>
+                      <span style={{ fontSize: "11px", background: statusColor(r.status), color: "white", borderRadius: "6px", padding: "2px 8px", fontWeight: "bold" }}>{r.status.toUpperCase()}</span>
+                    </div>
+                    <div style={{ fontSize: "13px", color: "#555" }}>
+                      👥 {r.playerNames.join(", ")}
+                    </div>
+                    {r.category && <div style={{ fontSize: "12px", color: "#999", marginTop: "2px" }}>{r.category} · Round {r.currentRound}/{r.rounds}</div>}
+                    {r.topic && <div style={{ fontSize: "12px", color: "#0066ff", marginTop: "2px" }}>Topic: {r.topic}</div>}
+                  </div>
+                ))}
+              </>
+            )}
+
+            {active.length === 0 && (
+              <div style={{ textAlign: "center", padding: "24px", color: "#999" }}>
+                <div style={{ fontSize: "40px" }}>😴</div>
+                <p>No active rooms right now</p>
+              </div>
+            )}
+
+            {/* Ended rooms */}
+            {inactive.length > 0 && (
+              <>
+                <p style={{ fontSize: "12px", color: "#999", letterSpacing: "1px", margin: "16px 0 8px" }}>ENDED ROOMS ({inactive.length})</p>
+                {inactive.slice(0, 5).map(r => (
+                  <div key={r.code} style={{ background: "#f5f5f5", borderRadius: "8px", padding: "8px 12px", marginBottom: "6px", opacity: 0.6 }}>
+                    <span style={{ fontWeight: "bold", fontSize: "13px", letterSpacing: "1px" }}>{r.code}</span>
+                    <span style={{ fontSize: "12px", color: "#999", marginLeft: "8px" }}>{r.playerNames.join(", ")}</span>
+                  </div>
+                ))}
+                {inactive.length > 5 && <p style={{ fontSize: "12px", color: "#bbb", textAlign: "center" }}>...and {inactive.length - 5} more</p>}
+              </>
+            )}
+          </>
+        )}
+      </div>
+    )
   }
 
   // CREDITS SCREEN
@@ -3040,7 +3126,8 @@ ${suggestion}
         onChange={(e) => {
           const val = e.target.value
           setNickname(val)
-          const msg = CHEAT_MESSAGES[val.toLowerCase().trim()]
+          const key = val.toLowerCase().trim()
+          const msg = CHEAT_MESSAGES[key] || CHEAT_MESSAGES[val.trim()]
           if (msg) {
             setCheatMessage(msg)
             setCheatVisible(true)
@@ -3071,17 +3158,45 @@ ${suggestion}
       )}
       {nickname.trim() && (
         <div style={{ marginTop: "20px" }}>
-          <button onClick={() => {
-            const seen = localStorage.getItem("guessmoji_seen_onboarding")
-            if (!seen) {
-              setShowOnboarding(true)
-              setOnboardingCard(0)
-            } else {
-              setScreen("lobby")
-            }
-          }} style={{ padding: "14px 40px", fontSize: "20px", borderRadius: "12px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}>
-            Let's Play →
-          </button>
+          {isAdmin ? (
+            <button onClick={async () => {
+              setAdminLoading(true)
+              setShowAdmin(true)
+              const snapshot = await get(ref(db, "rooms"))
+              const data = snapshot.val() || {}
+              const rooms = Object.entries(data).map(([code, room]) => ({
+                code,
+                status: room.status,
+                players: Object.keys(room.players || {}).length,
+                playerNames: Object.keys(room.players || {}),
+                scores: room.scores,
+                category: room.category,
+                currentRound: room.currentRound,
+                rounds: room.rounds,
+                topic: room.topic,
+              }))
+              rooms.sort((a, b) => {
+                const order = ["playing", "waiting", "countdown", "roundend", "nextround", "gameover", "ended"]
+                return order.indexOf(a.status) - order.indexOf(b.status)
+              })
+              setAdminRooms(rooms)
+              setAdminLoading(false)
+            }} style={{ padding: "14px 40px", fontSize: "20px", borderRadius: "12px", background: "#222", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}>
+              🔐 Admin View
+            </button>
+          ) : (
+            <button onClick={() => {
+              const seen = localStorage.getItem("guessmoji_seen_onboarding")
+              if (!seen) {
+                setShowOnboarding(true)
+                setOnboardingCard(0)
+              } else {
+                setScreen("lobby")
+              }
+            }} style={{ padding: "14px 40px", fontSize: "20px", borderRadius: "12px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}>
+              Let's Play →
+            </button>
+          )}
         </div>
       )}
       <div style={{ marginTop: "24px" }}>
