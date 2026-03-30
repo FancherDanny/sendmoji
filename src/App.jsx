@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push, get } from "firebase/database"
 
-const VERSION = "v0.5.8"
+const VERSION = "v0.5.9"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -1517,6 +1517,8 @@ export default function App() {
   const [showAdmin, setShowAdmin] = useState(false)
   const [adminRooms, setAdminRooms] = useState(null)
   const [adminLoading, setAdminLoading] = useState(false)
+  const [cleanupConfirm, setCleanupConfirm] = useState(false)
+  const [cleanupLoading, setCleanupLoading] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [onboardingCard, setOnboardingCard] = useState(0)
   const [suggestion, setSuggestion] = useState("")
@@ -2152,7 +2154,31 @@ export default function App() {
       <div style={{ fontFamily: "sans-serif", padding: "20px", maxWidth: "400px", margin: "0 auto", minHeight: "100dvh", boxSizing: "border-box" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
           <h2 style={{ margin: 0, fontSize: "20px" }}>🔐 Admin</h2>
-          <button onClick={() => setShowAdmin(false)} style={{ padding: "6px 14px", fontSize: "14px", borderRadius: "8px", background: "#eee", border: "none", cursor: "pointer" }}>← Back</button>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button onClick={async () => {
+              setAdminLoading(true)
+              const snapshot = await get(ref(db, "rooms"))
+              const data = snapshot.val() || {}
+              const rooms = Object.entries(data).map(([code, room]) => ({
+                code,
+                status: room.status,
+                players: Object.keys(room.players || {}).length,
+                playerNames: Object.keys(room.players || {}),
+                scores: room.scores,
+                category: room.category,
+                currentRound: room.currentRound,
+                rounds: room.rounds,
+                topic: room.topic,
+              }))
+              rooms.sort((a, b) => {
+                const order = ["playing", "waiting", "countdown", "roundend", "nextround", "gameover", "ended"]
+                return order.indexOf(a.status) - order.indexOf(b.status)
+              })
+              setAdminRooms(rooms)
+              setAdminLoading(false)
+            }} style={{ padding: "6px 14px", fontSize: "14px", borderRadius: "8px", background: "#eee", border: "none", cursor: "pointer" }}>🔄 Refresh</button>
+            <button onClick={() => setShowAdmin(false)} style={{ padding: "6px 14px", fontSize: "14px", borderRadius: "8px", background: "#eee", border: "none", cursor: "pointer" }}>← Back</button>
+          </div>
         </div>
 
         {adminLoading ? (
@@ -2212,6 +2238,39 @@ export default function App() {
                 ))}
                 {inactive.length > 5 && <p style={{ fontSize: "12px", color: "#bbb", textAlign: "center" }}>...and {inactive.length - 5} more</p>}
               </>
+            )}
+
+            {/* Cleanup section */}
+            {inactive.length > 0 && (
+              <div style={{ marginTop: "20px", padding: "14px", background: "#fff5f5", borderRadius: "10px", border: "1px solid #ffcccc" }}>
+                {!cleanupConfirm ? (
+                  <>
+                    <p style={{ fontSize: "13px", color: "#cc0000", margin: "0 0 8px", fontWeight: "bold" }}>🗑️ Clean Up Ended Rooms</p>
+                    <p style={{ fontSize: "12px", color: "#999", margin: "0 0 10px" }}>Delete all {inactive.length} ended/gameover rooms. Active rooms are safe.</p>
+                    <button onClick={() => setCleanupConfirm(true)} style={{ width: "100%", padding: "8px", fontSize: "14px", borderRadius: "8px", background: "#cc0000", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}>
+                      Delete Ended Rooms
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <p style={{ fontSize: "13px", fontWeight: "bold", color: "#cc0000", margin: "0 0 8px" }}>⚠️ Are you sure? This can't be undone.</p>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <button onClick={() => setCleanupConfirm(false)} style={{ flex: 1, padding: "8px", fontSize: "14px", borderRadius: "8px", background: "#eee", border: "none", cursor: "pointer" }}>Cancel</button>
+                      <button onClick={async () => {
+                        setCleanupLoading(true)
+                        setCleanupConfirm(false)
+                        const updates = {}
+                        inactive.forEach(r => { updates[`rooms/${r.code}`] = null })
+                        await update(ref(db), updates)
+                        setAdminRooms(prev => prev.filter(r => !["ended", "gameover"].includes(r.status)))
+                        setCleanupLoading(false)
+                      }} style={{ flex: 1, padding: "8px", fontSize: "14px", borderRadius: "8px", background: "#cc0000", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}>
+                        {cleanupLoading ? "Deleting..." : "Yes, Delete"}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             )}
           </>
         )}
