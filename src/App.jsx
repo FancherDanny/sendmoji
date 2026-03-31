@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase"
 import { ref, set, update, onValue, push, get } from "firebase/database"
 
-const VERSION = "v0.5.9"
+const VERSION = "v0.6.4"
 const MADE_BY = "Fanch"
 
 const TOPICS = {
@@ -966,6 +966,32 @@ const EMOJI_LIST = [
   { emoji: "🌩️", keywords: ["lightning", "storm", "thunder", "bolt", "cloud", "electric", "flash", "strike"] },
   { emoji: "🌦️", keywords: ["partly rainy", "sun shower", "weather", "mixed", "cloud", "rain", "sun", "forecast"] },
 
+  // Directional & motion — critical for Common Phrases
+  { emoji: "⬆️", keywords: ["up", "above", "rise", "climb", "higher", "north", "increase", "top", "upward", "forward", "ahead"] },
+  { emoji: "⬇️", keywords: ["down", "below", "fall", "lower", "south", "decrease", "bottom", "downward", "descend", "drop"] },
+  { emoji: "⬅️", keywords: ["left", "back", "return", "west", "previous", "reverse", "behind", "backward", "retreat"] },
+  { emoji: "➡️", keywords: ["right", "forward", "next", "east", "ahead", "continue", "proceed", "onward", "direction"] },
+  { emoji: "↩️", keywords: ["back", "return", "undo", "reverse", "go back", "turn back", "retreat", "revert"] },
+  { emoji: "↪️", keywords: ["forward", "redirect", "turn", "continue", "proceed", "next", "go forward"] },
+  { emoji: "🔄", keywords: ["repeat", "cycle", "loop", "turn over", "refresh", "rotate", "again", "revolve", "spin"] },
+  { emoji: "🔃", keywords: ["reload", "refresh", "cycle", "up down", "vertical", "repeat", "loop"] },
+  { emoji: "↕️", keywords: ["up down", "vertical", "both ways", "height", "expand", "resize"] },
+  { emoji: "↔️", keywords: ["left right", "horizontal", "both ways", "width", "expand", "side to side"] },
+  { emoji: "🔙", keywords: ["back", "return", "previous", "go back", "backward", "reverse", "undo"] },
+  { emoji: "🔛", keywords: ["on", "forward", "ahead", "continue", "go on", "next", "proceed"] },
+  { emoji: "🔝", keywords: ["top", "up", "highest", "best", "back to top", "above", "peak"] },
+  { emoji: "🆙", keywords: ["up", "upgrade", "level up", "rise", "improve", "above", "higher"] },
+  { emoji: "🚀", keywords: ["up", "launch", "rise", "fast", "forward", "blast off", "soar", "rocket"] },
+  { emoji: "📈", keywords: ["up", "rise", "increase", "grow", "improve", "higher", "gain", "profit", "chart"] },
+  { emoji: "📉", keywords: ["down", "fall", "decrease", "drop", "lower", "lose", "decline", "chart"] },
+  { emoji: "🏃", keywords: ["forward", "run", "fast", "move", "go", "sprint", "flee", "chase", "away"] },
+  { emoji: "👈", keywords: ["left", "back", "point left", "that way", "direction", "this", "look"] },
+  { emoji: "👉", keywords: ["right", "forward", "point right", "that way", "direction", "next", "look"] },
+  { emoji: "👆", keywords: ["up", "above", "point up", "top", "look up", "higher", "there"] },
+  { emoji: "👇", keywords: ["down", "below", "point down", "look down", "under", "lower", "there"] },
+  { emoji: "🌀", keywords: ["spin", "cycle", "dizzy", "turn", "rotate", "spiral", "around", "swirl"] },
+  { emoji: "♻️", keywords: ["recycle", "cycle", "repeat", "green", "turn over", "around", "loop", "again"] },
+
   // Everyday life & common phrases helpers
   { emoji: "🚗", keywords: ["traffic", "drive", "car", "road trip", "commute", "flat tire", "stuck", "vehicle"] },
   { emoji: "🛒", keywords: ["grocery", "shopping", "cart", "store", "buy", "supermarket", "checkout", "list"] },
@@ -1038,6 +1064,8 @@ const DIFFICULTIES = {
     description: "35 seconds · Max 5 emojis",
   },
 }
+
+const AVATARS = ["😎","🤠","🥷","👸","🤴","🦸","🦹","🧙","🐺","🦁","🐼","🦊","🎯","🚀","👾","🎮","🔥","⚡","🌟","🎲"]
 
 const ROOM_WORDS = [
   "MANGO", "TIGER", "DISCO", "PIZZA", "NINJA", "LEMON", "PANDA", "COBRA",
@@ -1466,6 +1494,7 @@ function Logo({ onTap, center = false }) {
 
 export default function App() {
   const [nickname, setNickname] = useState("")
+  const [avatar, setAvatar] = useState("")
   const [screen, setScreen] = useState("home")
   const [showHowToPlay, setShowHowToPlay] = useState(false)
   const [gameMode, setGameMode] = useState("sameroom")
@@ -1473,6 +1502,7 @@ export default function App() {
   const [currentRound, setCurrentRound] = useState(1)
   const [scores, setScores] = useState({ "Team 1": 0, "Team 2": 0, "Team 3": 0 })
   const [joinCode, setJoinCode] = useState("")
+  const [deepLinkCode, setDeepLinkCode] = useState("")
   const [role, setRole] = useState("")
   const [team, setTeam] = useState("")
   const [isHost, setIsHost] = useState(false)
@@ -1501,10 +1531,15 @@ export default function App() {
   const [hintTexts, setHintTexts] = useState([])
   const [hintCount, setHintCount] = useState(0)
   const [roundStartTime, setRoundStartTime] = useState(null)
+  const [revealedLetters, setRevealedLetters] = useState(0)
+  const [lastRevealTime, setLastRevealTime] = useState(null)
   const [pingEmoji, setPingEmoji] = useState(null)
   const [tappedEmoji, setTappedEmoji] = useState(null)
+  const [tappedGuess, setTappedGuess] = useState(null)
+  const [pinnedGuess, setPinnedGuess] = useState(null)
   const [emojiGroups, setEmojiGroups] = useState([[]])
   const [muted, setMuted] = useState(false)
+  const mutedRef = useRef(false)
   const [sharing, setSharing] = useState(false)
   const [forfeitRequested, setForfeitRequested] = useState(false)
   const [teammateForfeit, setTeammateForfeit] = useState(false)
@@ -1538,6 +1573,18 @@ export default function App() {
   const lastStatusRef = useRef("")
 
   useEffect(() => { screenRef.current = screen }, [screen])
+
+  // Deep link detection — auto-join if ?room=CODE in URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const roomParam = params.get("room")
+    if (roomParam) {
+      setJoinCode(roomParam.toUpperCase().trim())
+      setDeepLinkCode(roomParam.toUpperCase().trim())
+      // Clean the URL without reloading
+      window.history.replaceState({}, "", window.location.pathname)
+    }
+  }, [])
   useEffect(() => { countdownRef.current = countdown }, [countdown])
   useEffect(() => { timerActiveRef.current = timerActive }, [timerActive])
   useEffect(() => { difficultyRef.current = difficulty }, [difficulty])
@@ -1559,6 +1606,7 @@ export default function App() {
       else setHintTexts([])
       if (data.teamNames) setTeamNames(data.teamNames)
       if (data.ping !== undefined) setPingEmoji(data.ping)
+      if (data.pinnedGuess !== undefined) setPinnedGuess(data.pinnedGuess)
       // Sync forfeit states
       if (data.forfeit && nickname && data.players) {
         const myTeam = data.players?.[nickname]?.team
@@ -1615,8 +1663,8 @@ export default function App() {
           setScreen(isClue ? "cluegiver" : "guesser")
         }
         setCountdown(0)
-        // Start music on countdown
-        if (!muted) playChiptune()
+        // Start music on countdown — use ref to avoid stale closure
+        if (!mutedRef.current) playChiptune()
         let index = 0
         const interval = setInterval(() => {
           index += 1
@@ -1740,6 +1788,20 @@ export default function App() {
     return () => clearInterval(interval)
   }, [guesserActive, guesserTimer, difficulty, timerPaused])
 
+  // Letter reveal timer — Easy mode only, every 15 seconds
+  useEffect(() => {
+    if (!guesserActive || difficulty !== "easy" || correct) return
+    const interval = setInterval(() => {
+      setRevealedLetters(r => {
+        const maxLetters = currentTopic.replace(/\s/g, "").length
+        if (r >= maxLetters) return r
+        setLastRevealTime(Date.now())
+        return r + 1
+      })
+    }, 15000)
+    return () => clearInterval(interval)
+  }, [guesserActive, difficulty, correct, currentTopic])
+
   useEffect(() => {
     if (timerActive && timer <= 0 && difficulty !== "easy") {
       stopChiptune()
@@ -1764,7 +1826,7 @@ export default function App() {
     timerActiveRef.current = false
     difficultyRef.current = "medium"
     // Core game state
-    setTeam(""); setScreen("home"); setGameMode("sameroom"); setDifficulty("medium")
+    setTeam(""); setAvatar(""); setDeepLinkCode(""); setScreen("home"); setGameMode("sameroom"); setDifficulty("medium")
     setRounds(3); setCurrentRound(1); setScores({ "Team 1": 0, "Team 2": 0, "Team 3": 0 })
     setJoinCode(""); setSearch(""); setSentEmojis([]); setTimer(60)
     setTimerActive(false); setCountdown(null); setReceivedEmojis([])
@@ -1783,6 +1845,10 @@ export default function App() {
     setTappedEmoji(null); setSuggestedEmoji(null); setSuggestionUsed(false)
     setCheatVisible(false); setRoundStartTime(null); setMuting(false)
     setSharing(false)
+    setRevealedLetters(0)
+    setLastRevealTime(null)
+    setTappedGuess(null)
+    setPinnedGuess(null)
   }
 
   const endRound = async (won) => {
@@ -1831,7 +1897,7 @@ export default function App() {
       currentRound: 1,
       status: "waiting",
       scores: { "Team 1": 0, "Team 2": 0, "Team 3": 0 },
-      players: { [nickname]: { team: "unassigned" } }
+      players: { [nickname]: { team: "unassigned", avatar: avatar || "🎯" } }
     })
     setScreen("waiting")
   }
@@ -1850,7 +1916,7 @@ export default function App() {
       setDifficulty(data.difficulty || "medium")
       setIsHost(false)
       await update(ref(db, `rooms/${code}/players`), {
-        [nickname]: { team: "unassigned" }
+        [nickname]: { team: "unassigned", avatar: avatar || "🎯" }
       })
       setScreen("waiting")
     }, { onlyOnce: true })
@@ -1920,7 +1986,9 @@ export default function App() {
       wrongGuesses: null,
       ready: null,
       hint: null,
+      hints: null,
       forfeit: null,
+      pinnedGuess: null,
       scores
     })
   }
@@ -2029,11 +2097,44 @@ export default function App() {
   }
 
   const normalizeGuess = (str) => {
-    const base = str.trim().toLowerCase().replace(/^the\s+/, "").replace(/['']/g, "'").replace(/\s+/g, " ")
+    const base = str.trim().toLowerCase()
+      .replace(/^the\s+/, "")      // strip leading "the"
+      .replace(/\s+the\s+/g, " ") // strip middle "the"
+      .replace(/['']/g, "'")
+      .replace(/\s+/g, " ")
+      .trim()
     return base
   }
   // Also check spaceless version for compound words like hummingbird/humming bird
   const normalizeNoSpaces = (str) => normalizeGuess(str).replace(/\s/g, "")
+
+  const wrongGuessStyle = (guess, i) => {
+    const isPinned = pinnedGuess === guess + i
+    const isTapped = tappedGuess === guess + i
+    return {
+      background: isPinned ? "#ff6600" : isTapped ? "#ff9944" : "#ffe0e0",
+      color: isPinned || isTapped ? "white" : "#cc0000",
+      padding: "6px 12px",
+      borderRadius: "20px",
+      fontSize: "14px",
+      cursor: "pointer",
+      border: isPinned ? "2px solid #ff6600" : "2px solid transparent",
+      fontWeight: isPinned ? "bold" : "normal",
+      transform: isTapped ? "scale(1.08)" : "scale(1)",
+      transition: "all 0.15s",
+      display: "inline-block",
+    }
+  }
+
+  const buildRevealedWord = (topic, revealed) => {
+    if (revealed === 0) return null
+    let count = 0
+    return topic.split("").map((char, i) => {
+      if (char === " ") return " "
+      count++
+      return count <= revealed ? char : "_"
+    }).join("")
+  }
 
   const formatTime = (seconds) => {
     if (seconds < 60) return `${seconds}s`
@@ -2063,9 +2164,11 @@ export default function App() {
   const toggleMute = () => {
     if (muted) {
       setMuted(false)
+      mutedRef.current = false
       if (timerActive || guesserActive) playChiptune()
     } else {
       setMuted(true)
+      mutedRef.current = true
       stopChiptune()
     }
   }
@@ -2127,17 +2230,25 @@ export default function App() {
   }
 
   // Freemoji — like a free space in bingo, one per round
-  const suggestEmoji = () => {
+  const suggestEmoji = async () => {
     if (suggestionUsed) return
-    // Find emojis relevant to the current topic
+    // Score emojis by topic relevance using same engine as search
     const topicWords = currentTopic.toLowerCase().replace(/[^a-z ]/g, "").split(" ").filter(w => w.length > 2)
-    const relevant = EMOJI_LIST.filter(e =>
-      e.keywords.some(k => topicWords.some(w => k.includes(w) || w.includes(k)))
-    )
-    const pool = relevant.length > 0 ? relevant : EMOJI_LIST
+    const scored = EMOJI_LIST.map(e => {
+      let score = 0
+      for (const k of e.keywords) {
+        if (topicWords.some(tw => k.includes(tw) || tw.includes(k))) score += 1
+        if (topicWords.some(tw => k === tw)) score += 3
+      }
+      return { ...e, score }
+    }).filter(e => e.score > 0).sort((a, b) => b.score - a.score)
+    // Pick from top results with some randomness
+    const pool = scored.length > 0 ? scored.slice(0, Math.min(5, scored.length)) : EMOJI_LIST
     const pick = pool[Math.floor(Math.random() * pool.length)]
     setSuggestedEmoji(pick.emoji)
     setSuggestionUsed(true)
+    // Auto-send it
+    await sendEmoji(pick.emoji)
   }
 
   // ADMIN SCREEN
@@ -2482,6 +2593,29 @@ ${suggestion}
             {codeCopied ? "✅ Copied!" : "👆 tap to copy"}
           </div>
         </div>
+        <button
+          onClick={async () => {
+            const url = `${window.location.origin}${window.location.pathname}?room=${roomCode}`
+            const msg = `Join my GuessMoji room! 🎯
+Tap to join: ${url}`
+            if (navigator.share) {
+              try {
+                await navigator.share({ title: "GuessMoji", text: msg })
+              } catch(e) {
+                await navigator.clipboard.writeText(url)
+                setCodeCopied(true)
+                setTimeout(() => setCodeCopied(false), 2000)
+              }
+            } else {
+              await navigator.clipboard.writeText(url)
+              setCodeCopied(true)
+              setTimeout(() => setCodeCopied(false), 2000)
+            }
+          }}
+          style={{ padding: "8px 20px", fontSize: "15px", borderRadius: "10px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", fontWeight: "bold", marginBottom: "8px" }}
+        >
+          📨 Invite Friends
+        </button>
         <p style={{ color: "#999", fontSize: "13px", marginBottom: "4px" }}>{categories.length > 1 ? `${categories.length} categories mixed 🎲` : category} · {rounds} rounds</p>
         <p style={{ fontSize: "13px", fontWeight: "bold", color: DIFFICULTIES[difficulty]?.color || "#999", marginBottom: "20px" }}>{DIFFICULTIES[difficulty]?.label} · {DIFFICULTIES[difficulty]?.description}</p>
         <p style={{ fontSize: "13px", color: "#999", margin: "0 0 10px", letterSpacing: "1px" }}>PLAYERS</p>
@@ -2490,7 +2624,9 @@ ${suggestion}
           const displayName = teamNames[info.team] || info.team
           return (
             <div key={name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", borderRadius: "12px", marginBottom: "8px", background: info.team !== "unassigned" ? tc : "#f5f5f5", border: `2px solid ${tc}` }}>
-              <span style={{ fontWeight: "bold", fontSize: "16px", color: info.team !== "unassigned" ? "white" : "#111" }}>{name} {name === nickname ? "👤" : ""}</span>
+              <span style={{ fontWeight: "bold", fontSize: "16px", color: info.team !== "unassigned" ? "white" : "#111" }}>
+                {info.avatar || "🎯"} {name} {name === nickname ? "·  you" : ""}
+              </span>
               {isHost ? (
                 <button onClick={() => assignTeam(name, info.team)} style={{ padding: "6px 14px", fontSize: "13px", borderRadius: "8px", background: info.team !== "unassigned" ? "rgba(255,255,255,0.25)" : "#eee", color: info.team !== "unassigned" ? "white" : "#333", border: info.team !== "unassigned" ? "1px solid rgba(255,255,255,0.4)" : "none", cursor: "pointer", fontWeight: "bold" }}>
                   {info.team === "unassigned" ? "Assign +" : displayName}
@@ -2614,6 +2750,10 @@ ${suggestion}
               setSharing(true)
               await shareScoreCard({ scores, topic: currentTopic, sentEmojis, correct, rounds, currentRound, difficulty, wrongGuesses, teamNames, players, cheater: correct && sentEmojis.length === 0 })
               setSharing(false)
+    setRevealedLetters(0)
+    setLastRevealTime(null)
+    setTappedGuess(null)
+    setPinnedGuess(null)
             }}
             style={{ padding: "12px 20px", fontSize: "15px", borderRadius: "12px", background: "#6c3fc5", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}
           >
@@ -2657,6 +2797,10 @@ ${suggestion}
               setSharing(true)
               await shareScoreCard({ scores, topic: currentTopic, sentEmojis, correct, rounds, currentRound: rounds, difficulty, wrongGuesses, teamNames, players, cheater: correct && sentEmojis.length === 0 })
               setSharing(false)
+    setRevealedLetters(0)
+    setLastRevealTime(null)
+    setTappedGuess(null)
+    setPinnedGuess(null)
             }}
             style={{ padding: "14px 28px", fontSize: "18px", borderRadius: "12px", background: "#6c3fc5", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}
           >
@@ -2696,7 +2840,10 @@ ${suggestion}
           </div>
         )}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-          <Logo onTap={handleLogoTap} />
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ fontSize: "20px" }}>{avatar || "🎯"}</span>
+            <Logo onTap={handleLogoTap} />
+          </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             {isBert && timerActive && (
               <button onClick={togglePauseTimer} style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", padding: "4px" }} title="Bert's special power">
@@ -2782,6 +2929,14 @@ ${suggestion}
                 ))}
               </div>
             )}
+            {difficulty === "easy" && revealedLetters > 0 && buildRevealedWord(currentTopic, revealedLetters) && (
+              <div style={{ background: "#f0fff4", border: "2px solid #00aa44", borderRadius: "10px", padding: "8px 14px", marginBottom: "10px", textAlign: "center" }}>
+                <p style={{ fontSize: "11px", color: "#00aa44", margin: "0 0 4px", letterSpacing: "1px", fontWeight: "bold" }}>LETTERS REVEALED</p>
+                <p style={{ fontSize: "22px", fontWeight: "bold", color: "#111", letterSpacing: "4px", margin: 0, fontFamily: "monospace" }}>
+                  {buildRevealedWord(currentTopic, revealedLetters)}
+                </p>
+              </div>
+            )}
             {wrongGuesses.length === 0 && receivedEmojis.length > 0 && (
               <p style={{ fontSize: "12px", color: teamColor, margin: "0 0 4px", textAlign: "center", opacity: 0.8 }}>👆 Type your guess below!</p>
             )}
@@ -2816,9 +2971,24 @@ ${suggestion}
         )}
         {wrongGuesses.length > 0 && (
           <div style={{ marginTop: "16px" }}>
-            <p style={{ fontSize: "13px", color: "#999", margin: "0 0 6px" }}>WRONG GUESSES</p>
+            <p style={{ fontSize: "13px", color: "#999", margin: "0 0 6px" }}>WRONG GUESSES <span style={{ fontSize: "11px" }}>· tap to highlight</span></p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-              {wrongGuesses.map((g, i) => <span key={i} style={{ background: "#ffe0e0", color: "#cc0000", padding: "4px 10px", borderRadius: "20px", fontSize: "14px" }}>❌ {g}</span>)}
+              {wrongGuesses.map((g, i) => (
+                <span
+                  key={i}
+                  onClick={async () => {
+                    const key = g + i
+                    const isNowPinned = pinnedGuess !== key
+                    setPinnedGuess(isNowPinned ? key : null)
+                    setTappedGuess(key)
+                    setTimeout(() => setTappedGuess(null), 300)
+                    await update(ref(db, `rooms/${roomCode}`), { pinnedGuess: isNowPinned ? key : null })
+                  }}
+                  style={wrongGuessStyle(g, i)}
+                >
+                  ❌ {g}
+                </span>
+              ))}
             </div>
           </div>
         )}
@@ -2831,7 +3001,10 @@ ${suggestion}
     return (
       <div style={{ fontFamily: "sans-serif", padding: "20px", maxWidth: "400px", margin: "0 auto", minHeight: "100dvh", boxSizing: "border-box" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-          <Logo onTap={handleLogoTap} />
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ fontSize: "20px" }}>{avatar || "🎯"}</span>
+            <Logo onTap={handleLogoTap} />
+          </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             {isBert && timerActive && (
               <button onClick={togglePauseTimer} style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", padding: "4px" }} title="Bert's special power">
@@ -2896,6 +3069,14 @@ ${suggestion}
             {teammateForfeit && !forfeitRequested ? "⚠️ Teammate wants to forfeit! Tap to confirm" : forfeitRequested ? "🏳️ Forfeit requested — tap to cancel" : "🏳️ Forfeit round"}
           </button>
         )}
+        {difficulty === "easy" && guesserActive && revealedLetters > 0 && (
+          <div style={{ background: "#f0fff4", border: "2px solid #00aa44", borderRadius: "10px", padding: "8px 14px", marginBottom: "8px", textAlign: "center" }}>
+            <p style={{ fontSize: "11px", color: "#00aa44", margin: "0 0 4px", letterSpacing: "1px", fontWeight: "bold" }}>LETTERS REVEALED TO GUESSER</p>
+            <p style={{ fontSize: "20px", fontWeight: "bold", color: "#111", letterSpacing: "4px", margin: 0, fontFamily: "monospace" }}>
+              {buildRevealedWord(currentTopic, revealedLetters)}
+            </p>
+          </div>
+        )}
         {timerActive && (
           <div style={{ background: "#fff8f8", border: "2px solid #ffcccc", borderRadius: "12px", padding: "10px", marginBottom: "12px" }}>
             <p style={{ margin: "0 0 6px", fontSize: "12px", color: "#cc0000", letterSpacing: "1px" }}>THEIR GUESSES SO FAR</p>
@@ -2911,7 +3092,9 @@ ${suggestion}
           <div style={{ background: "#fff8f8", border: "2px solid #ffcccc", borderRadius: "12px", padding: "10px", marginBottom: "12px" }}>
             <p style={{ margin: "0 0 6px", fontSize: "12px", color: "#cc0000", letterSpacing: "1px" }}>THEIR GUESSES SO FAR</p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-              {wrongGuesses.map((g, i) => <span key={i} style={{ background: "#ffe0e0", color: "#cc0000", padding: "4px 10px", borderRadius: "20px", fontSize: "14px" }}>❌ {g}</span>)}
+              {wrongGuesses.map((g, i) => (
+                <span key={i} style={wrongGuessStyle(g, i)}>❌ {g}</span>
+              ))}
             </div>
           </div>
         )}
@@ -2950,16 +3133,8 @@ ${suggestion}
               disabled={suggestionUsed}
               style={{ padding: "8px 16px", fontSize: "14px", borderRadius: "10px", background: suggestionUsed ? "#f0f0f0" : "#e8f4ff", color: suggestionUsed ? "#aaa" : "#0066ff", border: `1px solid ${suggestionUsed ? "#ddd" : "#0066ff"}`, cursor: suggestionUsed ? "not-allowed" : "pointer", fontWeight: "bold", whiteSpace: "nowrap" }}
             >
-              {suggestionUsed ? "🆓 Freemoji used!" : "🆓 Freemoji"}
+              {suggestionUsed ? `🆓 Sent ${suggestedEmoji || ""}` : "🆓 Freemoji"}
             </button>
-            {suggestedEmoji && (
-              <button
-                onClick={() => sendEmoji(suggestedEmoji)}
-                style={{ fontSize: "32px", background: "#fffbe6", border: "2px solid #ffcc00", borderRadius: "10px", padding: "6px 10px", cursor: "pointer", animation: "pulse 0.5s ease" }}
-              >
-                {suggestedEmoji}
-              </button>
-            )}
           </div>
         )}
         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center", paddingBottom: "120px" }}>
@@ -2992,6 +3167,7 @@ ${suggestion}
         {/* Player + team info */}
         <div style={{ textAlign: "center", marginBottom: "12px" }}>
           <p style={{ fontSize: "13px", opacity: 0.7, margin: "0 0 2px" }}>Round {currentRound} of {rounds}</p>
+          <p style={{ fontSize: "22px", margin: "0 0 2px" }}>{avatar || "🎯"}</p>
           <p style={{ fontSize: "16px", fontWeight: "bold", margin: 0 }}>{displayTeamName} · {displayNickname}</p>
           {isHayden && (
             <div style={{ fontSize: "16px", fontWeight: "bold", background: "rgba(0,0,0,0.3)", borderRadius: "8px", padding: "4px 12px", margin: "6px auto", display: "inline-block" }}>
@@ -3178,26 +3354,50 @@ ${suggestion}
       <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
       <Logo onTap={null} center />
       <p style={{ color: "#999", fontSize: "14px", margin: "0 0 24px" }}>Send emojis. Guess the word.</p>
-      <input
-        type="text"
-        placeholder="Your nickname..."
-        value={nickname}
-        onChange={(e) => {
-          const val = e.target.value
-          setNickname(val)
-          const key = val.toLowerCase().trim()
-          const msg = CHEAT_MESSAGES[key] || CHEAT_MESSAGES[val.trim()]
-          if (msg) {
-            setCheatMessage(msg)
-            setCheatVisible(true)
-          } else {
-            setCheatVisible(false)
-            setCheatMessage("")
-          }
-        }}
-        onKeyDown={(e) => { if (e.key === "Enter" && nickname.trim()) setScreen("lobby") }}
-        style={{ padding: "10px", fontSize: "18px", borderRadius: "8px", border: "1px solid #ccc", width: "100%", boxSizing: "border-box", maxWidth: "300px" }}
-      />
+
+      {/* Avatar picker */}
+      <div style={{ marginBottom: "16px", width: "100%", maxWidth: "320px" }}>
+        <p style={{ fontSize: "12px", color: "#bbb", letterSpacing: "1px", margin: "0 0 8px" }}>PICK YOUR AVATAR</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", justifyContent: "center" }}>
+          {AVATARS.map(a => (
+            <button key={a} onClick={() => setAvatar(a)} style={{
+              fontSize: "28px", width: "48px", height: "48px",
+              borderRadius: "12px", border: `2px solid ${avatar === a ? "#0066ff" : "#eee"}`,
+              background: avatar === a ? "#e8f4ff" : "white",
+              cursor: "pointer", transition: "all 0.15s",
+              transform: avatar === a ? "scale(1.15)" : "scale(1)"
+            }}>{a}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Nickname input */}
+      <div style={{ width: "100%", maxWidth: "300px", marginBottom: "4px" }}>
+        <p style={{ fontSize: "12px", color: "#bbb", letterSpacing: "1px", margin: "0 0 8px", textAlign: "left" }}>WHAT SHOULD WE CALL YOU?</p>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {avatar && <span style={{ fontSize: "28px" }}>{avatar}</span>}
+          <input
+            type="text"
+            placeholder="Your name..."
+            value={nickname}
+            onChange={(e) => {
+              const val = e.target.value
+              setNickname(val)
+              const key = val.toLowerCase().trim()
+              const msg = CHEAT_MESSAGES[key] || CHEAT_MESSAGES[val.trim()]
+              if (msg) {
+                setCheatMessage(msg)
+                setCheatVisible(true)
+              } else {
+                setCheatVisible(false)
+                setCheatMessage("")
+              }
+            }}
+            onKeyDown={(e) => { if (e.key === "Enter" && nickname.trim()) setScreen("lobby") }}
+            style={{ flex: 1, padding: "10px", fontSize: "18px", borderRadius: "8px", border: "1px solid #ccc", boxSizing: "border-box" }}
+          />
+        </div>
+      </div>
       {cheatVisible && cheatMessage && (
         <div style={{
           marginTop: "12px",
@@ -3215,7 +3415,33 @@ ${suggestion}
           {cheatMessage}
         </div>
       )}
-      {nickname.trim() && (
+      {deepLinkCode && nickname.trim() && (
+        <div style={{ marginTop: "16px", background: "#e8f4ff", border: "2px solid #0066ff", borderRadius: "12px", padding: "14px 16px", maxWidth: "300px", textAlign: "center" }}>
+          <p style={{ margin: "0 0 4px", fontWeight: "bold", color: "#0066ff", fontSize: "15px" }}>🎮 Game invite detected!</p>
+          <p style={{ margin: "0 0 10px", color: "#555", fontSize: "13px" }}>Room code: <strong>{deepLinkCode}</strong></p>
+          <button onClick={async () => {
+            const code = deepLinkCode
+            onValue(ref(db, `rooms/${code}`), async (snapshot) => {
+              const data = snapshot.val()
+              if (!data) { alert("Room not found!"); return }
+              setRoomCode(code)
+              setRounds(data.rounds || 3)
+              setCategories(data.categories || (data.category ? [data.category] : []))
+              setCategory(data.category || "")
+              setDifficulty(data.difficulty || "medium")
+              setIsHost(false)
+              await update(ref(db, `rooms/${code}/players`), {
+                [nickname]: { team: "unassigned", avatar: avatar || "🎯" }
+              })
+              setDeepLinkCode("")
+              setScreen("waiting")
+            }, { onlyOnce: true })
+          }} style={{ width: "100%", padding: "10px", fontSize: "16px", borderRadius: "10px", background: "#0066ff", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}>
+            Join Room →
+          </button>
+        </div>
+      )}
+      {nickname.trim() && !deepLinkCode && (
         <div style={{ marginTop: "20px" }}>
           {isAdmin ? (
             <button onClick={async () => {
